@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+class InvoiceItem extends Model
 {
     protected $fillable = [
         'invoice_id',
-        'payment_date',
-        'amount',
-        'payment_method',
+        'description',
+        'quantity',
+        'unit_price',
+        'total_price',
     ];
 
     /**
-     * The invoice this payment belongs to.
+     * The invoice this item belongs to.
      */
     public function invoice()
     {

@@ -7,28 +7,60 @@ use Illuminate\Database\Eloquent\Model;
 class Invoice extends Model
 {
     protected $fillable = [
-        'invoice_number',
-        'order_id',
-        'customer_id',
+        'client_id',
+        'user_id',
+        'status',
+        'due_date',
         'subtotal',
         'tax',
-        'discount',
         'total',
-        'status'
     ];
 
-    public function order()
+    /**
+     * The client this invoice belongs to.
+     */
+    public function client()
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Client::class);
     }
 
+    /**
+     * The user who created this invoice.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The invoice items/line items belonging to this invoice.
+     */
+    public function invoiceItems()
+    {
+        return $this->hasMany(InvoiceItem::class);
+    }
+
+    /**
+     * The payments made for this invoice.
+     */
     public function payments()
     {
         return $this->hasMany(Payment::class);
     }
 
-    public function customer()
+    /**
+     * The platform fees charged on this invoice.
+     */
+    public function platformFees()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->hasMany(PlatformFee::class);
+    }
+
+    /**
+     * Scope for filtering invoices by status.
+     */
+    public function scopeStatus($query, $status)
+    {
+        return $query->where('status', $status);
     }
 }

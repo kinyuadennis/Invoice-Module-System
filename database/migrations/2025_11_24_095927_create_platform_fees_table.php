@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('platform_fees', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
-            $table->decimal('amount', 10, 2);
-            $table->string('method')->default('cash'); // cash, mpesa, card, etc.
-            $table->string('reference')->nullable(); // transaction ref
+            $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
+            $table->decimal('fee_amount', 10, 2);
+            $table->enum('fee_status', ['pending', 'paid', 'waived'])->default('pending');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('platform_fees');
     }
 };

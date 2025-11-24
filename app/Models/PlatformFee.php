@@ -4,17 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+class PlatformFee extends Model
 {
     protected $fillable = [
         'invoice_id',
-        'payment_date',
-        'amount',
-        'payment_method',
+        'fee_amount',
+        'fee_status',
     ];
 
     /**
-     * The invoice this payment belongs to.
+     * The invoice this platform fee is associated with.
      */
     public function invoice()
     {

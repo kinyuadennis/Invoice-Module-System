@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_number')->unique();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // user who created the invoice
+            $table->enum('status', ['draft', 'sent', 'paid', 'overdue', 'cancelled'])->default('draft');
+            $table->date('due_date')->nullable();
             $table->decimal('subtotal', 10, 2);
             $table->decimal('tax', 10, 2)->default(0);
-            $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('total', 10, 2);
-            $table->string('status')->default('unpaid'); // unpaid, paid, partial
             $table->timestamps();
         });
     }
