@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreCustomerRequest;
 use App\Models\Customer;
 
 class CustomerController extends Controller
@@ -19,9 +20,10 @@ class CustomerController extends Controller
         return view('customers.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreCustomerRequest $request)
     {
-        Customer::create($request->all());
-        return redirect()->route('customers.index');
+        Customer::create($request->validated());
+        return back()->with('success', 'Customer added.');
     }
+    
 }

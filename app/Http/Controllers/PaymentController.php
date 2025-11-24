@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Services\PaymentService;
+use App\Http\Requests\StorePaymentRequest;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -15,7 +16,7 @@ class PaymentController extends Controller
         $this->paymentService = $paymentService;
     }
 
-    public function store(Request $request, Invoice $invoice)
+    public function store(StorePaymentRequest $request, Invoice $invoice)
     {
         $request->validate([
             'amount'    => 'required|numeric|min:1',

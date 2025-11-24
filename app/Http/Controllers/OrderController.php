@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\OrderService;
 use App\Models\Product;
 use App\Models\Customer;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreOrderRequest;
 
 class OrderController extends Controller
 {
@@ -26,10 +26,11 @@ class OrderController extends Controller
     }
 
     // Save order + items
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request)
     {
         $order = $this->orderService->createOrder($request);
 
         return redirect()->route('invoices.generate', $order->id);
     }
+
 }
