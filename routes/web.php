@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Orders;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\OrderController;
 use App\Http\Controllers\InvoiceController;
 
 
