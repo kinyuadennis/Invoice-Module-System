@@ -1,14 +1,18 @@
 <?php
 
 namespace App\Http\Controllers\Orders;
+
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\InvoiceController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return Inertia::render('Dashboard');
+ Route::get('/', [InvoiceController::class, 'index']);
 });
 
 
@@ -30,9 +34,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/Dashboard', function () {
+        return Inertia::render('');
+    })->name('');
 
     // Email verification notice (ask user to verify)
     Route::get('/email/verify', function () {

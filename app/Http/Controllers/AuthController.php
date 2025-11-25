@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -10,9 +11,15 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function showDashboard()
+    {
+        return Inertia::render('Dashboard'); // this matches Dashboard.vue in Pages/
+    }
+    
     public function showRegistrationForm()
     {
-        return view('auth.register'); // or return JSON for SPA
+     return Inertia::render('Auth/Register');
+
     }
 
     // Handle user registration
@@ -39,7 +46,7 @@ class AuthController extends Controller
     // Show login form
     public function showLoginForm()
     {
-        return view('auth.login'); // or return JSON for SPA
+        return Inertia::render('auth.login'); 
     }
 
     // Handle user login
