@@ -2,48 +2,50 @@
   import { computed } from 'vue'
   import { Link, usePage } from '@inertiajs/vue3'
   import AppLayout from '@/Layouts/AppLayout.vue'
+  import { useFormatting } from '@/composables/useFormatting'
+  import { useStatusBadge } from '@/composables/useStatusBadge'
   
   const page = usePage()
+  const { formatDate, formatNumber } = useFormatting()
+  const { getStatusBadgeClass } = useStatusBadge()
   
   const props = defineProps({
-    stats: Object,
-    recentInvoices: Array,
-    statusDistribution: Array,
-    alerts: Array
+    stats: {
+      type: Object,
+      default: () => ({
+        totalRevenue: 0,
+        revenueChange: 0,
+        totalPlatformFees: 0,
+        outstanding: 0,
+        outstandingCount: 0,
+        overdue: 0,
+        overdueCount: 0,
+        paidCount: 0,
+        totalClients: 0,
+        activeClients: 0
+      })
+    },
+    recentInvoices: {
+      type: Array,
+      default: () => []
+    },
+    statusDistribution: {
+      type: Array,
+      default: () => []
+    },
+    alerts: {
+      type: Array,
+      default: () => []
+    }
   })
   
   const user = computed(() => page.props.auth.user)
   
   const canManageClients = computed(() => {
+    if (!user.value) return false
     const role = user.value.role
     return role === 'admin' || role === 'staff'
   })
-  
-  const getStatusBadgeClass = (status) => {
-    const classes = {
-      draft: 'bg-gray-100 text-gray-800',
-      sent: 'bg-blue-100 text-blue-800',
-      paid: 'bg-green-100 text-green-800',
-      overdue: 'bg-red-100 text-red-800',
-      cancelled: 'bg-gray-100 text-gray-600'
-    }
-    return classes[status] || classes.draft
-  }
-  
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-  
-  const formatNumber = (num) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(num)
-  }
   </script>
   
   <template>
@@ -51,7 +53,7 @@
       <div class="space-y-6">
         <!-- Welcome Message -->
         <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-lg p-6 text-white">
-          <h1 class="text-2xl font-bold mb-2">Welcome back, {{ user.name }}!</h1>
+          <h1 class="text-2xl font-bold mb-2">Welcome back, {{ user?.name || 'Guest' }}!</h1>
           <p class="text-blue-100">Here's an overview of your invoice activity</p>
         </div>
   
@@ -180,7 +182,25 @@
                 View All
               </Link>
             </div>
-            <div class="divide-y divide-gray-200">
+            <div v-if="recentInvoices.length === 0" class="px-6 py-12 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No invoices yet</h3>
+              <p class="mt-1 text-sm text-gray-500">Get started by creating your first invoice.</p>
+              <div class="mt-6">
+                <Link
+                  href="/invoices/create"
+                  class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg"
+                >
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Invoice
+                </Link>
+              </div>
+            </div>
+            <div v-else class="divide-y divide-gray-200">
               <div
                 v-for="invoice in recentInvoices"
                 :key="invoice.id"

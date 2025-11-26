@@ -1,13 +1,22 @@
 <script setup>
-  import { ref, computed, watch } from 'vue'
+  import { ref, computed } from 'vue'
   import { Link, router, useForm } from '@inertiajs/vue3'
   import AppLayout from '@/Layouts/AppLayout.vue'
   import Modal from '@/Components/UI/Modal.vue'
+  import { useFormatting } from '@/composables/useFormatting'
+  
+  const { formatNumber } = useFormatting()
   
   const props = defineProps({
     invoice: Object,
-    clients: Array,
-    errors: Object
+    clients: {
+      type: Array,
+      default: () => []
+    },
+    errors: {
+      type: Object,
+      default: () => ({})
+    }
   })
   
   const isEditing = computed(() => !!props.invoice)
@@ -114,13 +123,6 @@
   const saveAsDraft = () => {
     form.status = 'draft'
     submitForm()
-  }
-  
-  const formatNumber = (num) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(num || 0)
   }
   
   // Initialize with one item if creating new invoice

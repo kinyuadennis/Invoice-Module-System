@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { useForm, Link } from '@inertiajs/vue3'
 import GuestLayout from '@/Layouts/GuestLayout.vue'
 

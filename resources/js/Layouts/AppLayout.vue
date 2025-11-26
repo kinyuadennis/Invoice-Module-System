@@ -1,6 +1,7 @@
 <script setup>
   import { ref, computed } from 'vue'
-  import { Link,usePage } from '@inertiajs/vue3'
+  import { Link, usePage } from '@inertiajs/vue3'
+  import { route as ziggyRoute } from 'ziggy-js'
   
   const page = usePage()
   const sidebarOpen = ref(false)
@@ -13,43 +14,33 @@
     }
   })
   
+  const user = computed(() => page.props.auth.user)
+  
   const userInitials = computed(() => {
-    const name = page.props.auth.user.name
+    if (!user.value) return 'GU'
+    const name = user.value.name || 'Guest User'
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
   })
   
   const canManageClients = computed(() => {
-    const role = page.props.auth.user.role
+    if (!user.value) return false
+    const role = user.value.role
     return role === 'admin' || role === 'staff'
   })
   
   const canManagePayments = computed(() => {
-    const role = page.props.auth.user.role
+    if (!user.value) return false
+    const role = user.value.role
     return role === 'admin' || role === 'staff'
   })
   
-  
-  // NavLink component
-
-   const NavLink = {
-    props: {
-      href: String,
-      active: Boolean
-    },
-    components: { Link },
-    template: `
-      <Link
-        :href="href"
-        :class="[
-          'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-          active
-            ? 'bg-blue-50 text-blue-700'
-            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-        ]"
-      >
-        <slot />
-      </Link>
-    `
+  // Helper function to check if route is active
+  const isRouteActive = (routeName) => {
+    try {
+      return ziggyRoute().current(routeName)
+    } catch (e) {
+      return false
+    }
   }
   </script>
 
@@ -80,33 +71,67 @@
   
           <!-- Navigation -->
           <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            <NavLink href="/dashboard" :active="route().current('dashboard')">
+            <Link
+              href="/dashboard"
+              :class="[
+                'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                isRouteActive('dashboard') || isRouteActive('home')
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              ]"
+            >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               Dashboard
-            </NavLink>
+            </Link>
   
-            <NavLink href="/invoices" :active="route().current('invoices.*')">
+            <Link
+              href="/invoices"
+              :class="[
+                'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                isRouteActive('invoices.*')
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              ]"
+            >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Invoices
-            </NavLink>
+            </Link>
   
-            <NavLink href="/clients" :active="route().current('clients.*')" v-if="canManageClients">
+            <Link
+              v-if="canManageClients"
+              href="/clients"
+              :class="[
+                'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                isRouteActive('clients.*')
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              ]"
+            >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               Clients
-            </NavLink>
+            </Link>
   
-            <NavLink href="/payments" :active="route().current('payments.*')" v-if="canManagePayments">
+            <Link
+              v-if="canManagePayments"
+              href="/payments"
+              :class="[
+                'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                isRouteActive('payments.*')
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              ]"
+            >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
               Payments
-            </NavLink>
+            </Link>
           </nav>
   
           <!-- User Menu -->
@@ -116,9 +141,9 @@
                 <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                   {{ userInitials }}
                 </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-900 truncate">{{ $page.props.auth.user.name }}</p>
-                  <p class="text-xs text-gray-500 truncate">{{ $page.props.auth.user.email }}</p>
+                <div class="flex-1 min-w-0" v-if="user">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ user.name }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
                 </div>
               </div>
               <button @click="showUserMenu = !showUserMenu" class="text-gray-400 hover:text-gray-600">
@@ -171,21 +196,21 @@
         <!-- Page content -->
         <main class="p-4 sm:p-6 lg:p-8">
           <!-- Flash messages -->
-          <div v-if="$page.props.flash.success" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start">
+          <div v-if="$page.props.flash?.success" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start">
             <svg class="w-5 h-5 text-green-600 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
             </svg>
             <div>
-              <p class="text-sm font-medium text-green-800">{{ $page.props.flash.success }}</p>
+              <p class="text-sm font-medium text-green-800">{{ $page.props.flash?.success }}</p>
             </div>
           </div>
   
-          <div v-if="$page.props.flash.error" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+          <div v-if="$page.props.flash?.error" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
             <svg class="w-5 h-5 text-red-600 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
             </svg>
             <div>
-              <p class="text-sm font-medium text-red-800">{{ $page.props.flash.error }}</p>
+              <p class="text-sm font-medium text-red-800">{{ $page.props.flash?.error }}</p>
             </div>
           </div>
   

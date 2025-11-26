@@ -8,48 +8,38 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
-
 class AuthController extends Controller
 {
-    public function showDashboard()
-    {
-        return Inertia::render('Dashboard'); // this matches Dashboard.vue in Pages/
-    }
-    
     public function showRegistrationForm()
     {
-     return Inertia::render('Auth/Register');
-
+        return Inertia::render('Auth/Register');
     }
 
-    // Handle user registration
     public function register(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user', // default role
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'user',
         ]);
 
         Auth::login($user);
 
-        return response()->json(['message' => 'Registration successful', 'user' => $user], 201);
+        return redirect()->route('dashboard');
     }
 
-    // Show login form
     public function showLoginForm()
     {
-        return Inertia::render('auth.login'); 
+        return Inertia::render('Auth/Login');
     }
 
-    // Handle user login
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -57,23 +47,30 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return response()->json(['message' => 'Login successful', 'user' => Auth::user()]);
+
+            return redirect()->intended(route('dashboard'));
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');
     }
 
-    // Handle user logout
     public function logout(Request $request)
     {
         Auth::logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return response()->json(['message' => 'Logged out successfully']);
+        return redirect()->route('home');
+    }
+
+    public function sendResetLinkEmail(Request $request)
+    {
+        // Password reset functionality - implement as needed
+        return back()->with('status', 'Password reset link sent!');
     }
 }

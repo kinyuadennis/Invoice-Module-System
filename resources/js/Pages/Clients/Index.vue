@@ -1,13 +1,22 @@
 <script setup>
-  import { ref } from 'vue'
+  import { ref, onMounted, onUnmounted } from 'vue'
   import { Link, router } from '@inertiajs/vue3'
   import AppLayout from '@/Layouts/AppLayout.vue'
   import Modal from '@/Components/UI/Modal.vue'
   import LoadingSpinner from '@/Components/UI/LoadingSpinner.vue'
+  import { useFormatting } from '@/composables/useFormatting'
+  
+  const { formatNumber } = useFormatting()
   
   const props = defineProps({
-    clients: Object,
-    stats: Object
+    clients: {
+      type: Object,
+      default: () => ({ data: [], links: [] })
+    },
+    stats: {
+      type: Object,
+      default: () => ({ total: 0, active: 0, totalRevenue: 0 })
+    }
   })
   
   const loading = ref(false)
@@ -51,20 +60,24 @@
   }
   
   const getInitials = (name) => {
+    if (!name) return 'NA'
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
   
-  const formatNumber = (num) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(num || 0)
-  }
-  
-  // Close menu when clicking outside
-  document.addEventListener('click', (e) => {
+  const handleClickOutside = (e) => {
     if (!e.target.closest('button')) {
       activeMenu.value = null
+    }
+  }
+  
+  onMounted(() => {
+    document.addEventListener('click', handleClickOutside)
+  })
+  
+  onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
+    if (searchTimeout) {
+      clearTimeout(searchTimeout)
     }
   })
 </script>
@@ -126,7 +139,7 @@
           <LoadingSpinner size="lg" />
         </div>
   
-        <div v-else-if="clients.data.length === 0" class="bg-white rounded-lg shadow py-12">
+        <div v-else-if="!clients.data || clients.data.length === 0" class="bg-white rounded-lg shadow py-12">
           <div class="text-center">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -229,7 +242,7 @@
         </div>
   
         <!-- Pagination -->
-        <div v-if="clients.data.length > 0" class="bg-white rounded-lg shadow px-4 py-3">
+        <div v-if="clients.data && clients.data.length > 0" class="bg-white rounded-lg shadow px-4 py-3">
           <div class="flex items-center justify-between">
             <div class="text-sm text-gray-700">
               Showing {{ clients.from }} to {{ clients.to }} of {{ clients.total }} results

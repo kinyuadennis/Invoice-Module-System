@@ -3,11 +3,18 @@
   import { Link, router, usePage } from '@inertiajs/vue3'
   import AppLayout from '@/Layouts/AppLayout.vue'
   import Modal from '@/Components/UI/Modal.vue'
+  import { useFormatting } from '@/composables/useFormatting'
+  import { useStatusBadge } from '@/composables/useStatusBadge'
   
   const page = usePage()
+  const { formatDateLong, formatNumber } = useFormatting()
+  const { getStatusBadgeClass } = useStatusBadge()
   
   const props = defineProps({
-    invoice: Object
+    invoice: {
+      type: Object,
+      required: true
+    }
   })
   
   const showEmailModal = ref(false)
@@ -24,47 +31,46 @@
   }
   
   const emailForm = ref({
-    to: props.invoice.client.email,
+    to: props.invoice.client?.email || '',
     subject: `Invoice #${props.invoice.invoice_number} from ${companyInfo.name}`,
-    message: `Dear ${props.invoice.client.name},\n\nPlease find attached invoice #${props.invoice.invoice_number} for $${props.invoice.total}.\n\nThank you for your business!`
+    message: `Dear ${props.invoice.client?.name || 'Client'},\n\nPlease find attached invoice #${props.invoice.invoice_number} for $${props.invoice.total}.\n\nThank you for your business!`
   })
   
   const paymentForm = ref({
-    amount: props.invoice.amount_due,
+    amount: props.invoice.amount_due || 0,
     payment_date: new Date().toISOString().split('T')[0],
     payment_method: '',
     reference: ''
   })
   
+  const user = computed(() => page.props.auth.user)
+  
   const canEdit = computed(() => {
-    const role = page.props.auth.user.role
+    if (!user.value) return false
+    const role = user.value.role
     return (role === 'admin' || role === 'staff') && props.invoice.status !== 'paid'
   })
   
   const canSendEmail = computed(() => {
-    const role = page.props.auth.user.role
+    if (!user.value) return false
+    const role = user.value.role
     return role === 'admin' || role === 'staff'
   })
   
   const canRecordPayment = computed(() => {
-    const role = page.props.auth.user.role
+    if (!user.value) return false
+    const role = user.value.role
     return (role === 'admin' || role === 'staff') && props.invoice.amount_due > 0
   })
   
   const isOverdue = computed(() => {
     if (props.invoice.status === 'paid') return false
+    if (!props.invoice.due_date) return false
     return new Date(props.invoice.due_date) < new Date()
   })
   
   const statusBadgeClasses = computed(() => {
-    const classes = {
-      draft: 'bg-gray-100 text-gray-800',
-      sent: 'bg-blue-100 text-blue-800',
-      paid: 'bg-green-100 text-green-800',
-      overdue: 'bg-red-100 text-red-800',
-      cancelled: 'bg-gray-100 text-gray-600'
-    }
-    return classes[props.invoice.status] || classes.draft
+    return getStatusBadgeClass(props.invoice.status)
   })
   
   const printInvoice = () => {
@@ -104,20 +110,7 @@
     })
   }
   
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-  
-  const formatNumber = (num) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(num)
-  }
+  const formatDate = formatDateLong
 </script>
 
 <template>
@@ -196,7 +189,7 @@
               <div class="text-right">
                 <div class="mb-4">
                   <span :class="statusBadgeClasses" class="px-4 py-2 inline-flex text-sm leading-5 font-semibold rounded-full">
-                    {{ invoice.status.toUpperCase() }}
+                    {{ invoice.status?.toUpperCase() || 'DRAFT' }}
                   </span>
                 </div>
                 <div class="space-y-1">
@@ -295,9 +288,9 @@
                   <span class="text-gray-900 font-medium">${{ formatNumber(invoice.subtotal) }}</span>
                 </div>
                 
-                <div v-if="invoice.tax_amount > 0" class="flex justify-between text-sm">
+                <div v-if="invoice.tax > 0" class="flex justify-between text-sm">
                   <span class="text-gray-600">Tax ({{ invoice.tax_rate }}%):</span>
-                  <span class="text-gray-900 font-medium">${{ formatNumber(invoice.tax_amount) }}</span>
+                  <span class="text-gray-900 font-medium">${{ formatNumber(invoice.tax) }}</span>
                 </div>
                 
                 <div class="flex justify-between text-lg font-bold pt-3 border-t-2 border-gray-300">

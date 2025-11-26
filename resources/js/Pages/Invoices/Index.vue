@@ -1,10 +1,14 @@
 <script setup>
-  import { ref, computed, watch } from 'vue'
+  import { ref, computed } from 'vue'
   import { Link, router, usePage } from '@inertiajs/vue3'
   import AppLayout from '@/Layouts/AppLayout.vue'
   import Modal from '@/Components/UI/Modal.vue'
+  import { useFormatting } from '@/composables/useFormatting'
+  import { useStatusBadge } from '@/composables/useStatusBadge'
   
   const page = usePage()
+  const { formatDate, formatNumber } = useFormatting()
+  const { getStatusBadgeClass } = useStatusBadge()
   
   const props = defineProps({
     invoices: Object,
@@ -17,13 +21,16 @@
   const deleteTarget = ref(null)
   
   const filters = ref({
-    search: props.filters.search || '',
-    status: props.filters.status || '',
-    dateRange: props.filters.dateRange || ''
+    search: props.filters?.search || '',
+    status: props.filters?.status || '',
+    dateRange: props.filters?.dateRange || ''
   })
   
+  const user = computed(() => page.props.auth.user)
+  
   const canCreateInvoice = computed(() => {
-    const role = page.props.auth.user.role
+    if (!user.value) return false
+    const role = user.value.role
     return role === 'admin' || role === 'staff'
   })
   
@@ -60,24 +67,15 @@
     applyFilters()
   }
   
-  const statusClasses = (status) => {
-    const classes = {
-      draft: 'bg-gray-100 text-gray-800',
-      sent: 'bg-blue-100 text-blue-800',
-      paid: 'bg-green-100 text-green-800',
-      overdue: 'bg-red-100 text-red-800',
-      cancelled: 'bg-gray-100 text-gray-600'
-    }
-    return classes[status] || classes.draft
-  }
-  
   const canEditInvoice = (invoice) => {
-    const role = page.props.auth.user.role
+    if (!user.value) return false
+    const role = user.value.role
     return (role === 'admin' || role === 'staff') && invoice.status !== 'paid'
   }
   
   const canDeleteInvoice = (invoice) => {
-    const role = page.props.auth.user.role
+    if (!user.value) return false
+    const role = user.value.role
     return role === 'admin' && invoice.status === 'draft'
   }
   
@@ -93,21 +91,6 @@
         deleteTarget.value = null
       }
     })
-  }
-  
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-  
-  const formatNumber = (num) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(num)
   }
 </script>
 
@@ -327,7 +310,7 @@
                     ${{ formatNumber(invoice.total) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span :class="statusClasses(invoice.status)" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full">
+                    <span :class="getStatusBadgeClass(invoice.status)" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full">
                       {{ invoice.status }}
                     </span>
                   </td>

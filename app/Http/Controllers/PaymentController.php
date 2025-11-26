@@ -27,4 +27,4 @@ class PaymentController extends Controller
             'message' => 'Payment processed successfully.'
         ], 201);
     }
-}
+    }
