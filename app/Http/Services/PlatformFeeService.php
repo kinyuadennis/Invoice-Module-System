@@ -15,7 +15,7 @@ class PlatformFeeService
     public function generateFeeForInvoice(Invoice $invoice)
     {
         // Example: 5% fee on invoice total
-        $feeAmount = $invoice->total * 0.05;
+        $feeAmount = $invoice->total * 0.1;
 
         // Create the fee record linked to invoice
         return PlatformFee::create([

@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    hgtfuyfrtyfrfrfrtf
+    @inertia
 </body>
 
 </html>
