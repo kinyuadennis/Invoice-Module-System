@@ -16,19 +16,21 @@ class DashboardService
 
     /**
      * Get all dashboard data
+     *
+     * @param  int|null  $userId  If provided, scope data to this user. If null, get all data (admin).
      */
-    public function getDashboardData(): array
+    public function getDashboardData(?int $userId = null): array
     {
-        if (!$this->tablesExist()) {
+        if (! $this->tablesExist()) {
             return $this->getEmptyData();
         }
 
         try {
             return [
-                'stats' => $this->getStats(),
-                'recentInvoices' => $this->getRecentInvoices(),
-                'statusDistribution' => $this->getStatusDistribution(),
-                'alerts' => $this->getAlerts(),
+                'stats' => $this->getStats($userId),
+                'recentInvoices' => $this->getRecentInvoices($userId),
+                'statusDistribution' => $this->getStatusDistribution($userId),
+                'alerts' => $this->getAlerts($userId),
             ];
         } catch (\Exception $e) {
             return $this->getEmptyData();
@@ -37,22 +39,29 @@ class DashboardService
 
     /**
      * Get dashboard statistics
+     *
+     * @param  int|null  $userId  If provided, scope to this user's invoices
      */
-    protected function getStats(): array
+    protected function getStats(?int $userId = null): array
     {
-        $paidTotal = (float) Invoice::where('status', 'paid')->sum('total');
-        
-        $currentMonthRevenue = (float) Invoice::where('status', 'paid')
+        $invoiceQuery = Invoice::query();
+        if ($userId) {
+            $invoiceQuery->where('user_id', $userId);
+        }
+
+        $paidTotal = (float) (clone $invoiceQuery)->where('status', 'paid')->sum('total');
+
+        $currentMonthRevenue = (float) (clone $invoiceQuery)->where('status', 'paid')
             ->whereBetween('created_at', [
-                Carbon::now()->startOfMonth(), 
-                Carbon::now()->endOfMonth()
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth(),
             ])
             ->sum('total');
 
-        $previousMonthRevenue = (float) Invoice::where('status', 'paid')
+        $previousMonthRevenue = (float) (clone $invoiceQuery)->where('status', 'paid')
             ->whereBetween('created_at', [
-                Carbon::now()->subMonth()->startOfMonth(), 
-                Carbon::now()->subMonth()->endOfMonth()
+                Carbon::now()->subMonth()->startOfMonth(),
+                Carbon::now()->subMonth()->endOfMonth(),
             ])
             ->sum('total');
 
@@ -60,17 +69,26 @@ class DashboardService
             ? round((($currentMonthRevenue - $previousMonthRevenue) / $previousMonthRevenue) * 100, 1)
             : 0;
 
-        $totalPlatformFees = Schema::hasTable('platform_fees') 
-            ? (float) PlatformFee::sum('fee_amount') 
+        $totalPlatformFees = Schema::hasTable('platform_fees')
+            ? (float) PlatformFee::sum('fee_amount')
             : 0;
 
-        $outstandingCount = Invoice::whereIn('status', ['draft', 'sent'])->count();
-        $outstandingAmount = (float) Invoice::whereIn('status', ['draft', 'sent'])->sum('total');
-        $overdueCount = Invoice::where('status', 'overdue')->count();
-        $overdueAmount = (float) Invoice::where('status', 'overdue')->sum('total');
-        $paidCount = Invoice::where('status', 'paid')->count();
-        $totalClients = Client::count();
-        $activeClients = Client::has('invoices')->count();
+        $outstandingCount = (clone $invoiceQuery)->whereIn('status', ['draft', 'sent'])->count();
+        $outstandingAmount = (float) (clone $invoiceQuery)->whereIn('status', ['draft', 'sent'])->sum('total');
+        $overdueCount = (clone $invoiceQuery)->where('status', 'overdue')->count();
+        $overdueAmount = (float) (clone $invoiceQuery)->where('status', 'overdue')->sum('total');
+        $paidCount = (clone $invoiceQuery)->where('status', 'paid')->count();
+
+        // Clients are shared, but we can count clients with invoices for this user
+        if ($userId) {
+            $totalClients = Client::whereHas('invoices', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })->count();
+            $activeClients = $totalClients; // Same for user scope
+        } else {
+            $totalClients = Client::count();
+            $activeClients = Client::has('invoices')->count();
+        }
 
         return [
             'totalRevenue' => $paidTotal,
@@ -88,15 +106,21 @@ class DashboardService
 
     /**
      * Get recent invoices
+     *
+     * @param  int|null  $userId  If provided, scope to this user's invoices
      */
-    protected function getRecentInvoices(): array
+    protected function getRecentInvoices(?int $userId = null): array
     {
-        return Invoice::with('client')
-            ->latest()
-            ->take(5)
+        $query = Invoice::with('client')->latest();
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        return $query->take(5)
             ->get()
             ->map(function (Invoice $invoice) {
                 $data = $this->formatInvoiceForDisplay($invoice);
+
                 // Only return needed fields for recent invoices list
                 return [
                     'id' => $data['id'],
@@ -115,14 +139,19 @@ class DashboardService
 
     /**
      * Get status distribution for charts
+     *
+     * @param  int|null  $userId  If provided, scope to this user's invoices
      */
-    protected function getStatusDistribution(): array
+    protected function getStatusDistribution(?int $userId = null): array
     {
         $statusColors = $this->getStatusColors();
         $allStatuses = $this->getInvoiceStatuses();
-        
-        $statusCounts = Invoice::selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
+
+        $query = Invoice::selectRaw('status, COUNT(*) as count');
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+        $statusCounts = $query->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
@@ -147,11 +176,13 @@ class DashboardService
 
     /**
      * Get dashboard alerts
+     *
+     * @param  int|null  $userId  If provided, scope to this user's invoices
      */
-    protected function getAlerts(): array
+    protected function getAlerts(?int $userId = null): array
     {
         $alerts = collect();
-        $stats = $this->getStats();
+        $stats = $this->getStats($userId);
 
         if ($stats['overdueCount'] > 0) {
             $alerts->push([
@@ -181,9 +212,10 @@ class DashboardService
     {
         $statusColors = $this->getStatusColors();
         $allStatuses = $this->getInvoiceStatuses();
-        
+
         $statusDistribution = collect($allStatuses)->map(function (string $status) use ($statusColors) {
             $colors = $statusColors[$status] ?? $statusColors['cancelled'];
+
             return [
                 'name' => ucfirst($status),
                 'count' => 0,
@@ -224,4 +256,3 @@ class DashboardService
         }
     }
 }
-

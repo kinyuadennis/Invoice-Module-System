@@ -1,18 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Invoice Module</title>
-    @routes
-    @vite('resources/js/app.js')
-    @inertiaHead
+    <title>{{ config('app.name', 'Invoice Module') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-
 <body>
-    @inertia
+    @yield('content')
 </body>
-
 </html>

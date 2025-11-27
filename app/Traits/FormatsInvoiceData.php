@@ -14,16 +14,17 @@ trait FormatsInvoiceData
      */
     protected function formatInvoiceForDisplay(Invoice $invoice): array
     {
-        return [
+        $data = [
             'id' => $invoice->id,
             'invoice_number' => $this->formatInvoiceNumber($invoice->id),
             'status' => $invoice->status,
             'total' => (float) $invoice->total,
             'subtotal' => (float) $invoice->subtotal,
             'tax' => (float) $invoice->tax,
-            'due_date' => $invoice->due_date 
-                ? Carbon::parse($invoice->due_date)->toDateString() 
+            'due_date' => $invoice->due_date
+                ? Carbon::parse($invoice->due_date)->toDateString()
                 : null,
+            'issue_date' => $invoice->created_at->toDateString(),
             'date' => $invoice->created_at->toDateString(),
             'client_id' => $invoice->client_id,
             'client' => [
@@ -34,6 +35,17 @@ trait FormatsInvoiceData
                 'address' => optional($invoice->client)->address ?? null,
             ],
         ];
+
+        // Include user data if relationship is loaded (for admin views)
+        if ($invoice->relationLoaded('user') && $invoice->user) {
+            $data['user'] = [
+                'id' => $invoice->user->id,
+                'name' => $invoice->user->name,
+                'email' => $invoice->user->email,
+            ];
+        }
+
+        return $data;
     }
 
     /**
@@ -42,10 +54,19 @@ trait FormatsInvoiceData
     protected function formatInvoiceWithDetails(Invoice $invoice): array
     {
         $data = $this->formatInvoiceForDisplay($invoice);
-        
-        $data['tax_rate'] = $data['subtotal'] > 0 
-            ? round(($data['tax'] / $data['subtotal']) * 100, 2) 
+
+        $data['tax_rate'] = $data['subtotal'] > 0
+            ? round(($data['tax'] / $data['subtotal']) * 100, 2)
             : 0;
+
+        // Include user data if relationship is loaded
+        if ($invoice->relationLoaded('user') && $invoice->user) {
+            $data['user'] = [
+                'id' => $invoice->user->id,
+                'name' => $invoice->user->name,
+                'email' => $invoice->user->email,
+            ];
+        }
 
         $data['items'] = $invoice->invoiceItems->map(function ($item) {
             return [
@@ -73,4 +94,3 @@ trait FormatsInvoiceData
         return $data;
     }
 }
-

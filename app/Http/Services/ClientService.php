@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Http\Services;
 
 use App\Models\Client;
 
@@ -25,6 +25,7 @@ class ClientService
     {
         $client = Client::findOrFail($id);
         $client->update($data);
+
         return $client;
     }
 

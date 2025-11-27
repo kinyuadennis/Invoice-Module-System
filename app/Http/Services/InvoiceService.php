@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Http\Services;
 
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Traits\FormatsInvoiceData;
 use Illuminate\Http\Request;
 
@@ -17,7 +16,10 @@ class InvoiceService
     public function createInvoice(Request $request)
     {
         // Validate and prepare data for invoice creation
-        $data = $request->only(['client_id', 'user_id', 'due_date', 'status']);
+        $data = $request->only(['client_id', 'due_date', 'status']);
+
+        // Automatically set user_id from authenticated user
+        $data['user_id'] = $request->user()->id;
 
         // Start creating invoice entry
         $invoice = Invoice::create($data);
@@ -56,20 +58,32 @@ class InvoiceService
     public function formatInvoiceForList(Invoice $invoice): array
     {
         $data = $this->formatInvoiceForDisplay($invoice);
+
         // Return only fields needed for list view
-        return [
+        $formatted = [
             'id' => $data['id'],
             'invoice_number' => $data['invoice_number'],
             'status' => $data['status'],
             'total' => $data['total'],
             'due_date' => $data['due_date'],
-            'date' => $data['date'],
+            'issue_date' => $data['date'],
             'client' => [
                 'id' => $data['client']['id'],
                 'name' => $data['client']['name'],
                 'email' => $data['client']['email'],
             ],
         ];
+
+        // Include user data if invoice has user relationship loaded (for admin views)
+        if ($invoice->relationLoaded('user') && $invoice->user) {
+            $formatted['user'] = [
+                'id' => $invoice->user->id,
+                'name' => $invoice->user->name,
+                'email' => $invoice->user->email,
+            ];
+        }
+
+        return $formatted;
     }
 
     /**
@@ -86,7 +100,7 @@ class InvoiceService
     public function formatInvoiceForEdit(Invoice $invoice): array
     {
         $data = $this->formatInvoiceForDisplay($invoice);
-        
+
         $data['items'] = $invoice->invoiceItems->map(function ($item) {
             return [
                 'id' => $item->id,
@@ -97,8 +111,8 @@ class InvoiceService
             ];
         });
 
-        $data['tax_rate'] = $data['subtotal'] > 0 
-            ? round(($data['tax'] / $data['subtotal']) * 100, 2) 
+        $data['tax_rate'] = $data['subtotal'] > 0
+            ? round(($data['tax'] / $data['subtotal']) * 100, 2)
             : 0;
 
         $data['notes'] = null; // Add notes field if needed
@@ -108,14 +122,21 @@ class InvoiceService
 
     /**
      * Get invoice statistics
+     *
+     * @param  int|null  $userId  If provided, scope to this user's invoices
      */
-    public function getInvoiceStats(): array
+    public function getInvoiceStats(?int $userId = null): array
     {
+        $query = Invoice::query();
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
         return [
-            'total' => Invoice::count(),
-            'paid' => (float) Invoice::where('status', 'paid')->sum('total'),
-            'outstanding' => (float) Invoice::whereIn('status', ['draft', 'sent'])->sum('total'),
-            'overdue' => (float) Invoice::where('status', 'overdue')->sum('total'),
+            'total' => (clone $query)->count(),
+            'paid' => (float) (clone $query)->where('status', 'paid')->sum('total'),
+            'outstanding' => (float) (clone $query)->whereIn('status', ['draft', 'sent'])->sum('total'),
+            'overdue' => (float) (clone $query)->where('status', 'overdue')->sum('total'),
         ];
     }
 }

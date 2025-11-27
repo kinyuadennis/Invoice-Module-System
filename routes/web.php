@@ -1,27 +1,33 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ClientController;
+use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\PlatformFeeController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Public\AuthController;
+use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\User\DashboardController;
+use App\Http\Controllers\User\InvoiceController;
+use App\Http\Controllers\User\PaymentController;
+use App\Http\Controllers\User\ProfileController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
 
-// Public routes
-Route::get('/', [DashboardController::class, '__invoke'])->name('home');
+// Public routes (no prefix)
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/about', [HomeController::class, 'about'])->name('about');
+Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
 
-Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register.form');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
-Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('throttle:5,1')
-    ->name('login');
-
-Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail'])
-    ->middleware('throttle:5,1');
+// Authentication (public)
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail'])->middleware('throttle:5,1');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
@@ -34,43 +40,41 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
-        return redirect()->route('dashboard');
+
+        // Redirect based on role
+        if ($request->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('user.dashboard');
     })->middleware('signed')->name('verification.verify');
 
     Route::post('/email/verification-notification', function (Request $request) {
         $request->user()->sendEmailVerificationNotification();
+
         return back()->with('message', 'Verification link sent!');
     })->middleware('throttle:6,1')->name('verification.send');
 
-    // Dashboard (requires verified email)
-    Route::get('/dashboard', [DashboardController::class, '__invoke'])
-        ->middleware('verified')
-        ->name('dashboard');
-
-    // Invoice routes
-    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
-    Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
-    Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
-    Route::get('/invoices/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
-    Route::get('/invoices/{id}/edit', [InvoiceController::class, 'edit'])->name('invoices.edit');
-    Route::put('/invoices/{id}', [InvoiceController::class, 'update'])->name('invoices.update');
-    Route::delete('/invoices/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
-
-    // Client routes (admin/staff only)
-    Route::middleware('role:admin,staff')->group(function () {
-        Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
-        Route::get('/clients/create', [ClientController::class, 'create'])->name('clients.create');
-        Route::post('/clients', [ClientController::class, 'store'])->name('clients.store');
-        Route::get('/clients/{id}', [ClientController::class, 'show'])->name('clients.show');
-        Route::get('/clients/{id}/edit', [ClientController::class, 'edit'])->name('clients.edit');
-        Route::put('/clients/{id}', [ClientController::class, 'update'])->name('clients.update');
-        Route::delete('/clients/{id}', [ClientController::class, 'destroy'])->name('clients.destroy');
+    // User area (prefix: /app)
+    Route::prefix('app')->name('user.')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
+        Route::resource('invoices', InvoiceController::class);
+        Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     });
 
-    // Profile route
-    Route::get('/profile', function (Request $request) {
-        return Inertia::render('Profile/Index', [
-            'user' => $request->user(),
-        ]);
-    })->name('profile');
+    // Admin area (prefix: /admin)
+    Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, '__invoke'])->name('dashboard');
+        Route::resource('clients', ClientController::class);
+        Route::get('/invoices', [AdminInvoiceController::class, 'index'])->name('invoices.index');
+        Route::get('/invoices/{id}', [AdminInvoiceController::class, 'show'])->name('invoices.show');
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{id}', [AdminPaymentController::class, 'show'])->name('payments.show');
+        Route::resource('users', UserController::class)->except(['create', 'store']);
+        Route::get('/platform-fees', [PlatformFeeController::class, 'index'])->name('platform-fees.index');
+        Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    });
 });

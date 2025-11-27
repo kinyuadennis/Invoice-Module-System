@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Services;
+namespace App\Http\Services;
 
-use App\Models\PlatformFee;
 use App\Models\Invoice;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Models\PlatformFee;
 
 class PlatformFeeService
 {
@@ -44,6 +42,7 @@ class PlatformFeeService
         if ($status) {
             return PlatformFee::where('fee_status', $status)->get();
         }
+
         return PlatformFee::all();
     }
 }

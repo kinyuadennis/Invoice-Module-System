@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Http\Services;
 
 use App\Models\InvoiceItem;
 
@@ -15,6 +15,7 @@ class InvoiceItemService
     {
         $item = InvoiceItem::findOrFail($id);
         $item->update($data);
+
         return $item;
     }
 
