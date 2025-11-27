@@ -56,7 +56,7 @@
 
     <div class="text-center text-sm">
         <span class="text-gray-600">Already have an account?</span>
-        <a href="{{ route('login.form') }}" class="font-medium text-indigo-600 hover:text-indigo-500">Sign in</a>
+        <a href="{{ route('login') }}" class="font-medium text-indigo-600 hover:text-indigo-500">Sign in</a>
     </div>
 </form>
 @endsection

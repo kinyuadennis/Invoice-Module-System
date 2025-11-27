@@ -3,73 +3,82 @@
 @section('title', 'Home')
 
 @section('content')
-<div class="bg-white">
-    <!-- Hero Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+<!-- Hero Section -->
+<div class="bg-gradient-to-b from-indigo-50 to-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-32">
         <div class="text-center">
-            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl lg:text-7xl">
                 Invoice Management
-                <span class="text-indigo-600">Made Simple</span>
+                <span class="text-indigo-600 block mt-2">Made Simple</span>
             </h1>
-            <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                Create, manage, and track invoices effortlessly. Professional invoicing software designed for modern businesses.
+            <p class="mt-6 max-w-3xl mx-auto text-lg sm:text-xl text-gray-600">
+                Create, manage, and track invoices effortlessly. Professional invoicing software designed for Kenyan businesses. Get paid faster with automated reminders and payment tracking.
             </p>
-            <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-                <div class="rounded-md shadow">
-                    <a href="{{ route('register') }}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
-                        Get started
-                    </a>
-                </div>
-                <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-                    <a href="{{ route('pricing') }}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10">
-                        View pricing
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="bg-gray-50 py-24">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <h2 class="text-3xl font-extrabold text-gray-900">Everything you need</h2>
-                <p class="mt-4 text-lg text-gray-600">Powerful features to manage your invoicing workflow</p>
-            </div>
-
-            <div class="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                <div class="text-center">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white mx-auto">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </div>
-                    <h3 class="mt-6 text-lg font-medium text-gray-900">Create Invoices</h3>
-                    <p class="mt-2 text-base text-gray-500">Quickly create professional invoices with customizable line items and automatic calculations.</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white mx-auto">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="mt-6 text-lg font-medium text-gray-900">Client Management</h3>
-                    <p class="mt-2 text-base text-gray-500">Organize and manage your clients efficiently with detailed contact information.</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white mx-auto">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                    </div>
-                    <h3 class="mt-6 text-lg font-medium text-gray-900">Payment Tracking</h3>
-                    <p class="mt-2 text-base text-gray-500">Track payments, manage outstanding invoices, and get paid faster.</p>
-                </div>
+            <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="{{ route('register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200">
+                    Start Free Trial
+                </a>
+                <a href="#features" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 shadow-sm hover:shadow-md transition-all duration-200">
+                    See Features
+                </a>
             </div>
         </div>
     </div>
 </div>
-@endsection
 
+<!-- Recent Invoices Section -->
+@if(isset($recentInvoices) && $recentInvoices->count() > 0)
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Recent Invoices</h2>
+        <p class="mt-4 text-lg text-gray-600">See how easy it is to manage your invoices</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach($recentInvoices as $invoice)
+            <x-invoice-card :invoice="$invoice" />
+        @endforeach
+    </div>
+</div>
+@endif
+
+<!-- Demo Clients Section -->
+@if(isset($demoClients) && $demoClients->count() > 0)
+<div id="features" class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Trusted by Kenyan Businesses</h2>
+            <p class="mt-4 text-lg text-gray-600">Join leading companies managing their invoices with InvoiceHub</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach($demoClients as $client)
+                <x-client-card :client="$client" />
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Call to Action Section -->
+<div class="bg-indigo-600 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
+                Start Creating Invoices Free Today
+            </h2>
+            <p class="mt-4 text-lg text-indigo-100 max-w-2xl mx-auto">
+                Create unlimited invoices for free. Only pay a small platform fee (5%) when you receive payment. No monthly subscriptions, no hidden fees.
+            </p>
+            <div class="mt-10">
+                <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-200">
+                    Get Started Free
+                </a>
+            </div>
+            <p class="mt-6 text-sm text-indigo-200">
+                No credit card required • Free forever • Pay only when you get paid
+            </p>
+        </div>
+    </div>
+</div>
+@endsection

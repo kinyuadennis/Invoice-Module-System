@@ -42,7 +42,7 @@
 
     <div class="text-center text-sm">
         <span class="text-gray-600">Don't have an account?</span>
-        <a href="{{ route('register.form') }}" class="font-medium text-indigo-600 hover:text-indigo-500">Sign up</a>
+        <a href="{{ route('register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">Sign up</a>
     </div>
 </form>
 @endsection
