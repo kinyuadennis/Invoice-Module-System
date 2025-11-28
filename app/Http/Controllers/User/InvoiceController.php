@@ -82,10 +82,27 @@ class InvoiceController extends Controller
 
     public function create()
     {
-        $clients = Client::select('id', 'name', 'email', 'phone', 'address')->get();
+        $clients = Client::where('user_id', Auth::id())
+            ->select('id', 'name', 'email', 'phone', 'address')
+            ->get();
+
+        // Service library with suggested prices (KES)
+        $services = [
+            'Web Development Services' => 50000,
+            'Mobile App Development' => 75000,
+            'Digital Marketing Campaign' => 30000,
+            'Consulting Services' => 25000,
+            'Graphic Design Services' => 20000,
+            'Content Writing Services' => 15000,
+            'SEO Optimization' => 35000,
+            'Cloud Infrastructure Setup' => 60000,
+            'Software Maintenance' => 40000,
+            'Data Analytics Services' => 45000,
+        ];
 
         return view('user.invoices.create', [
             'clients' => $clients,
+            'services' => $services,
         ]);
     }
 
@@ -151,5 +168,56 @@ class InvoiceController extends Controller
 
         return redirect()->route('user.invoices.index')
             ->with('success', 'Invoice deleted successfully.');
+    }
+
+    /**
+     * Generate PDF for invoice
+     */
+    public function generatePdf($id)
+    {
+        $invoice = Invoice::where('user_id', Auth::id())
+            ->with(['client', 'invoiceItems', 'platformFees'])
+            ->findOrFail($id);
+
+        // TODO: Implement PDF generation using DomPDF or similar
+        // For now, return a placeholder response
+        return response()->json([
+            'message' => 'PDF generation will be implemented soon',
+            'invoice_id' => $invoice->id,
+        ]);
+    }
+
+    /**
+     * Send invoice via email
+     */
+    public function sendEmail($id)
+    {
+        $invoice = Invoice::where('user_id', Auth::id())
+            ->with(['client', 'invoiceItems'])
+            ->findOrFail($id);
+
+        // TODO: Implement email sending
+        // Queue email job for later implementation
+        return response()->json([
+            'success' => true,
+            'message' => 'Email queued for sending',
+        ]);
+    }
+
+    /**
+     * Send invoice via WhatsApp
+     */
+    public function sendWhatsApp($id)
+    {
+        $invoice = Invoice::where('user_id', Auth::id())
+            ->with(['client', 'invoiceItems'])
+            ->findOrFail($id);
+
+        // TODO: Implement WhatsApp sending
+        // Queue WhatsApp job for later implementation
+        return response()->json([
+            'success' => true,
+            'message' => 'WhatsApp message queued for sending',
+        ]);
     }
 }

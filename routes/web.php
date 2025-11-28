@@ -22,6 +22,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
 
+// AJAX endpoint for invoice preview calculations
+Route::post('/api/calculate-invoice-preview', [HomeController::class, 'calculatePreview'])->name('api.calculate-preview')->middleware('throttle:30,1');
+
 // Authentication (public)
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
@@ -59,6 +62,10 @@ Route::middleware('auth')->group(function () {
     Route::prefix('app')->name('user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
         Route::resource('invoices', InvoiceController::class);
+        Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
+        Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
+        Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
+        Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');

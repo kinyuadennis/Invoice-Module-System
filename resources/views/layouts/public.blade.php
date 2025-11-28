@@ -16,6 +16,7 @@
                     <a href="{{ route('home') }}" class="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors">InvoiceHub</a>
                 </div>
                 <div class="flex items-center space-x-1 sm:space-x-4">
+                    <a href="{{ route('home') }}" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">🏠 Home</a>
                     <a href="#features" class="hidden sm:block text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Features</a>
                     <a href="{{ route('pricing') }}" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Pricing</a>
                     @auth

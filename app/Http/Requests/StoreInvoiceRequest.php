@@ -23,12 +23,18 @@ class StoreInvoiceRequest extends FormRequest
     {
         return [
             'client_id' => 'required|exists:clients,id',
-            'due_date' => 'required|date|after_or_equal:today',
+            'issue_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:issue_date',
+            'invoice_reference' => 'nullable|string|max:50|unique:invoices,invoice_reference',
             'status' => 'required|in:draft,sent,paid,overdue,cancelled',
+            'payment_method' => 'nullable|in:mpesa,bank_transfer,cash',
+            'payment_details' => 'nullable|string|max:500',
+            'notes' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.total_price' => 'required|numeric|min:0',
         ];
     }
 }

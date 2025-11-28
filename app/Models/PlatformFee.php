@@ -9,7 +9,13 @@ class PlatformFee extends Model
     protected $fillable = [
         'invoice_id',
         'fee_amount',
+        'fee_rate',
         'fee_status',
+    ];
+
+    protected $casts = [
+        'fee_amount' => 'decimal:2',
+        'fee_rate' => 'decimal:2',
     ];
 
     /**

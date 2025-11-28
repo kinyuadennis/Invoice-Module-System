@@ -10,27 +10,61 @@ class InvoiceService
 {
     use FormatsInvoiceData;
 
+    protected PlatformFeeService $platformFeeService;
+
+    public function __construct(PlatformFeeService $platformFeeService)
+    {
+        $this->platformFeeService = $platformFeeService;
+    }
+
     /**
      * Create a new invoice
      */
-    public function createInvoice(Request $request)
+    public function createInvoice(Request $request): Invoice
     {
         // Validate and prepare data for invoice creation
-        $data = $request->only(['client_id', 'due_date', 'status']);
+        $data = $request->only([
+            'client_id',
+            'issue_date',
+            'due_date',
+            'status',
+            'invoice_reference',
+            'payment_method',
+            'payment_details',
+            'notes',
+        ]);
 
         // Automatically set user_id from authenticated user
         $data['user_id'] = $request->user()->id;
+
+        // Generate invoice reference if not provided
+        if (empty($data['invoice_reference'])) {
+            $data['invoice_reference'] = $this->generateInvoiceReference();
+        }
+
+        // Set issue_date to today if not provided
+        if (empty($data['issue_date'])) {
+            $data['issue_date'] = now()->toDateString();
+        }
 
         // Start creating invoice entry
         $invoice = Invoice::create($data);
 
         // Add invoice items
         foreach ($request->input('items') as $item) {
-            $invoice->invoiceItems()->create($item);
+            $invoice->invoiceItems()->create([
+                'description' => $item['description'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'] ?? $item['rate'] ?? 0,
+                'total_price' => $item['total_price'] ?? (($item['quantity'] ?? 1) * ($item['unit_price'] ?? $item['rate'] ?? 0)),
+            ]);
         }
 
         // Calculate totals and update invoice
         $this->updateTotals($invoice);
+
+        // Auto-generate platform fee
+        $this->platformFeeService->generateFeeForInvoice($invoice);
 
         return $invoice;
     }
@@ -38,18 +72,23 @@ class InvoiceService
     /**
      * Update invoice totals based on items
      */
-    public function updateTotals(Invoice $invoice)
+    public function updateTotals(Invoice $invoice): void
     {
         $subtotal = $invoice->invoiceItems->sum(function ($item) {
             return $item->total_price;
         });
 
-        $tax = $subtotal * 0.1; // Example 10% tax
+        $tax = $subtotal * 0.16; // 16% VAT (Kenyan standard)
 
         $invoice->subtotal = $subtotal;
         $invoice->tax = $tax;
         $invoice->total = $subtotal + $tax;
         $invoice->save();
+
+        // Update platform fee if invoice already has one
+        if ($invoice->platformFees()->exists()) {
+            $this->platformFeeService->generateFeeForInvoice($invoice);
+        }
     }
 
     /**
@@ -138,5 +177,25 @@ class InvoiceService
             'outstanding' => (float) (clone $query)->whereIn('status', ['draft', 'sent'])->sum('total'),
             'overdue' => (float) (clone $query)->where('status', 'overdue')->sum('total'),
         ];
+    }
+
+    /**
+     * Generate unique invoice reference
+     */
+    private function generateInvoiceReference(): string
+    {
+        $year = date('Y');
+        $lastInvoice = Invoice::whereYear('created_at', $year)
+            ->whereNotNull('invoice_reference')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($lastInvoice && preg_match('/INV-(\d{4})-(\d+)/', $lastInvoice->invoice_reference, $matches)) {
+            $sequence = (int) $matches[2] + 1;
+        } else {
+            $sequence = 1;
+        }
+
+        return sprintf('INV-%s-%04d', $year, $sequence);
     }
 }

@@ -27,8 +27,14 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
-        // Create 8 Kenyan business clients
+        // Create 12 Kenyan business clients (mix of large and small businesses)
         $kenyanClients = [
+            // Small businesses for testimonials
+            ['name' => "John's Garage", 'email' => 'john@garage.co.ke', 'phone' => '+254722111111', 'address' => 'Industrial Area, Nairobi'],
+            ['name' => "Mary's Salon", 'email' => 'mary@salon.co.ke', 'phone' => '+254733222222', 'address' => 'Westlands, Nairobi'],
+            ['name' => 'TechFix Ltd', 'email' => 'info@techfix.co.ke', 'phone' => '+254711333333', 'address' => 'Kilimani, Nairobi'],
+            ['name' => 'Design Studio', 'email' => 'hello@designstudio.co.ke', 'phone' => '+254720444444', 'address' => 'Karen, Nairobi'],
+            // Medium businesses
             ['name' => 'Safaricom Limited', 'email' => 'info@safaricom.co.ke', 'phone' => '+254722000000', 'address' => 'Safaricom House, Waiyaki Way, Westlands, Nairobi'],
             ['name' => 'Equity Bank Kenya', 'email' => 'contact@equitybank.co.ke', 'phone' => '+254733000000', 'address' => 'Equity Centre, Hospital Road, Upper Hill, Nairobi'],
             ['name' => 'KCB Group', 'email' => 'info@kcbgroup.com', 'phone' => '+254711000000', 'address' => 'Kencom House, Moi Avenue, Nairobi'],
@@ -83,6 +89,13 @@ class DemoDataSeeder extends Seeder
             // Create 2-5 line items for each invoice
             $itemCount = $faker->numberBetween(2, 5);
             $services = [
+                // Kenyan business services
+                'Car Repair Service',
+                'Parts & Materials',
+                'Haircut & Styling',
+                'Hair Treatment',
+                'Computer Repair',
+                'Software Installation',
                 'Web Development Services',
                 'Mobile App Development',
                 'Digital Marketing Campaign',
@@ -121,13 +134,14 @@ class DemoDataSeeder extends Seeder
                 'total' => $invoiceTotal,
             ]);
 
-            // Create platform fee (5% of total)
-            $platformFeeAmount = $invoiceTotal * 0.05;
+            // Create platform fee (0.8% of total)
+            $platformFeeAmount = $invoiceTotal * 0.8;
             $feeStatus = $status === 'paid' ? 'paid' : ($faker->randomElement(['pending', 'paid']));
 
             PlatformFee::create([
                 'invoice_id' => $invoice->id,
                 'fee_amount' => $platformFeeAmount,
+                'fee_rate' => 0.8, // 0.8% as percentage
                 'fee_status' => $feeStatus,
             ]);
         }
