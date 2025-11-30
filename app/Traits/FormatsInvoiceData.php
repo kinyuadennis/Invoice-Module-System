@@ -21,6 +21,9 @@ trait FormatsInvoiceData
             'total' => (float) $invoice->total,
             'subtotal' => (float) $invoice->subtotal,
             'tax' => (float) $invoice->tax,
+            'vat_amount' => (float) ($invoice->vat_amount ?? $invoice->tax),
+            'platform_fee' => (float) ($invoice->platform_fee ?? 0),
+            'grand_total' => (float) ($invoice->grand_total ?? $invoice->total),
             'due_date' => $invoice->due_date
                 ? Carbon::parse($invoice->due_date)->toDateString()
                 : null,
@@ -52,6 +55,20 @@ trait FormatsInvoiceData
             ];
         }
 
+        // Include company data if relationship is loaded
+        if ($invoice->relationLoaded('company') && $invoice->company) {
+            $data['company'] = [
+                'id' => $invoice->company->id,
+                'name' => $invoice->company->name,
+                'logo' => $invoice->company->logo,
+                'email' => $invoice->company->email,
+                'phone' => $invoice->company->phone,
+                'address' => $invoice->company->address,
+                'kra_pin' => $invoice->company->kra_pin,
+                'invoice_prefix' => $invoice->company->invoice_prefix,
+            ];
+        }
+
         return $data;
     }
 
@@ -72,6 +89,20 @@ trait FormatsInvoiceData
                 'id' => $invoice->user->id,
                 'name' => $invoice->user->name,
                 'email' => $invoice->user->email,
+            ];
+        }
+
+        // Include company data if relationship is loaded
+        if ($invoice->relationLoaded('company') && $invoice->company) {
+            $data['company'] = [
+                'id' => $invoice->company->id,
+                'name' => $invoice->company->name,
+                'logo' => $invoice->company->logo,
+                'email' => $invoice->company->email,
+                'phone' => $invoice->company->phone,
+                'address' => $invoice->company->address,
+                'kra_pin' => $invoice->company->kra_pin,
+                'invoice_prefix' => $invoice->company->invoice_prefix,
             ];
         }
 

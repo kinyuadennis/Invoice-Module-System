@@ -17,15 +17,18 @@ class PlatformFeeService
      */
     public function generateFeeForInvoice(Invoice $invoice): PlatformFee
     {
-        // Calculate 0.8% fee on invoice total
-        $feeAmount = $invoice->total * self::FEE_RATE;
+        // Calculate 0.8% fee on invoice grand_total (subtotal + VAT)
+        $feeAmount = ($invoice->subtotal + $invoice->vat_amount) * self::FEE_RATE;
 
         // Check if fee already exists
-        $existingFee = PlatformFee::where('invoice_id', $invoice->id)->first();
+        $existingFee = PlatformFee::where('invoice_id', $invoice->id)
+            ->where('company_id', $invoice->company_id)
+            ->first();
 
         if ($existingFee) {
             // Update existing fee
             $existingFee->update([
+                'company_id' => $invoice->company_id,
                 'fee_amount' => $feeAmount,
                 'fee_rate' => self::FEE_RATE * 100, // Store as percentage (0.8)
             ]);
@@ -35,6 +38,7 @@ class PlatformFeeService
 
         // Create the fee record linked to invoice
         return PlatformFee::create([
+            'company_id' => $invoice->company_id,
             'invoice_id' => $invoice->id,
             'fee_amount' => $feeAmount,
             'fee_rate' => self::FEE_RATE * 100, // Store as percentage (0.8)
@@ -51,46 +55,10 @@ class PlatformFeeService
     }
 
     /**
-     * Get fee summary for dashboard
+     * Get platform fee rate
      */
-    public function getFeeSummary(?int $userId = null): array
+    public function getFeeRate(): float
     {
-        $query = PlatformFee::query();
-
-        if ($userId) {
-            $query->whereHas('invoice', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            });
-        }
-
-        return [
-            'total_collected' => (float) (clone $query)->where('fee_status', 'paid')->sum('fee_amount'),
-            'pending' => (clone $query)->where('fee_status', 'pending')->count(),
-            'paid' => (clone $query)->where('fee_status', 'paid')->count(),
-            'total_amount' => (float) (clone $query)->sum('fee_amount'),
-        ];
-    }
-
-    /**
-     * Update the status of a platform fee.
-     */
-    public function updateFeeStatus(PlatformFee $platformFee, string $status)
-    {
-        $platformFee->fee_status = $status;
-        $platformFee->save();
-
-        return $platformFee;
-    }
-
-    /**
-     * Get all fees with optional status filtering.
-     */
-    public function getFeesByStatus(?string $status = null)
-    {
-        if ($status) {
-            return PlatformFee::where('fee_status', $status)->get();
-        }
-
-        return PlatformFee::all();
+        return self::FEE_RATE;
     }
 }

@@ -3,19 +3,41 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends Model
 {
-    protected $fillable = ['user_id', 'name', 'email', 'phone', 'address'];
+    protected $fillable = [
+        'company_id',
+        'user_id',
+        'name',
+        'email',
+        'phone',
+        'address',
+        'kra_pin',
+    ];
 
-    // Linked user account (optional)
-    public function user()
+    /**
+     * The company this client belongs to.
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Linked user account (optional).
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    // A client can have many invoices
-    public function invoices()
+    /**
+     * All invoices for this client.
+     */
+    public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
     }

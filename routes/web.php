@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Public\AuthController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\User\CompanyController;
 use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\InvoiceController;
 use App\Http\Controllers\User\PaymentController;
@@ -58,8 +59,12 @@ Route::middleware('auth')->group(function () {
         return back()->with('message', 'Verification link sent!');
     })->middleware('throttle:6,1')->name('verification.send');
 
+    // Company setup (must be before other routes to catch users without companies)
+    Route::get('/company/setup', [CompanyController::class, 'setup'])->name('company.setup');
+    Route::post('/company', [CompanyController::class, 'store'])->name('company.store');
+
     // User area (prefix: /app)
-    Route::prefix('app')->name('user.')->group(function () {
+    Route::prefix('app')->middleware(\App\Http\Middleware\EnsureUserHasCompany::class)->name('user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
         Route::resource('invoices', InvoiceController::class);
         Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
@@ -70,6 +75,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::get('/company/settings', [CompanyController::class, 'settings'])->name('company.settings');
+        Route::put('/company', [CompanyController::class, 'update'])->name('company.update');
     });
 
     // Admin area (prefix: /admin)

@@ -2,6 +2,8 @@
 
 namespace App\Http\Services;
 
+use App\Models\Client;
+use App\Models\Company;
 use App\Models\Invoice;
 use App\Traits\FormatsInvoiceData;
 use Illuminate\Http\Request;
@@ -22,6 +24,18 @@ class InvoiceService
      */
     public function createInvoice(Request $request): Invoice
     {
+        $user = $request->user();
+        $companyId = $user->company_id;
+
+        if (! $companyId) {
+            throw new \RuntimeException('User must belong to a company to create invoices.');
+        }
+
+        // Validate client belongs to same company
+        $client = Client::where('id', $request->input('client_id'))
+            ->where('company_id', $companyId)
+            ->firstOrFail();
+
         // Validate and prepare data for invoice creation
         $data = $request->only([
             'client_id',
@@ -34,12 +48,16 @@ class InvoiceService
             'notes',
         ]);
 
-        // Automatically set user_id from authenticated user
-        $data['user_id'] = $request->user()->id;
+        // Automatically set company_id and user_id from authenticated user
+        $data['company_id'] = $companyId;
+        $data['user_id'] = $user->id;
+
+        // Get company for invoice prefix
+        $company = Company::findOrFail($companyId);
 
         // Generate invoice reference if not provided
         if (empty($data['invoice_reference'])) {
-            $data['invoice_reference'] = $this->generateInvoiceReference();
+            $data['invoice_reference'] = $this->generateInvoiceReference($company);
         }
 
         // Set issue_date to today if not provided
@@ -50,29 +68,37 @@ class InvoiceService
         // Calculate totals BEFORE creating invoice (required fields)
         $items = $request->input('items', []);
         $subtotal = 0;
-        
+
         foreach ($items as $item) {
             $itemTotal = $item['total_price'] ?? (($item['quantity'] ?? 1) * ($item['unit_price'] ?? $item['rate'] ?? 0));
             $subtotal += $itemTotal;
         }
-        
-        $tax = $subtotal * 0.16; // 16% VAT (Kenyan standard)
-        $total = $subtotal + $tax;
-        
+
+        $vatAmount = $subtotal * 0.16; // 16% VAT (Kenyan standard)
+        $totalBeforeFee = $subtotal + $vatAmount;
+        $platformFee = $totalBeforeFee * 0.008; // 0.8% platform fee
+        $grandTotal = $totalBeforeFee + $platformFee;
+
         // Add calculated totals to invoice data
         $data['subtotal'] = $subtotal;
-        $data['tax'] = $tax;
-        $data['total'] = $total;
+        $data['tax'] = $vatAmount; // Keep for backward compatibility
+        $data['vat_amount'] = $vatAmount;
+        $data['platform_fee'] = $platformFee;
+        $data['total'] = $totalBeforeFee; // Keep for backward compatibility
+        $data['grand_total'] = $grandTotal;
 
         // Start creating invoice entry with all required fields
         $invoice = Invoice::create($data);
 
-        // Add invoice items
+        // Add invoice items with company_id
         foreach ($items as $item) {
             $invoice->invoiceItems()->create([
+                'company_id' => $companyId,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'] ?? $item['rate'] ?? 0,
+                'vat_included' => $item['vat_included'] ?? false,
+                'vat_rate' => $item['vat_rate'] ?? 16.00,
                 'total_price' => $item['total_price'] ?? (($item['quantity'] ?? 1) * ($item['unit_price'] ?? $item['rate'] ?? 0)),
             ]);
         }
@@ -81,7 +107,7 @@ class InvoiceService
         $invoice->refresh();
         $this->updateTotals($invoice);
 
-        // Auto-generate platform fee
+        // Auto-generate platform fee (with company_id)
         $this->platformFeeService->generateFeeForInvoice($invoice);
 
         return $invoice;
@@ -96,11 +122,17 @@ class InvoiceService
             return $item->total_price;
         });
 
-        $tax = $subtotal * 0.16; // 16% VAT (Kenyan standard)
+        $vatAmount = $subtotal * 0.16; // 16% VAT (Kenyan standard)
+        $totalBeforeFee = $subtotal + $vatAmount;
+        $platformFee = $totalBeforeFee * 0.008; // 0.8% platform fee
+        $grandTotal = $totalBeforeFee + $platformFee;
 
         $invoice->subtotal = $subtotal;
-        $invoice->tax = $tax;
-        $invoice->total = $subtotal + $tax;
+        $invoice->tax = $vatAmount; // Keep for backward compatibility
+        $invoice->vat_amount = $vatAmount;
+        $invoice->platform_fee = $platformFee;
+        $invoice->total = $totalBeforeFee; // Keep for backward compatibility
+        $invoice->grand_total = $grandTotal;
         $invoice->save();
 
         // Update platform fee if invoice already has one
@@ -164,6 +196,8 @@ class InvoiceService
                 'description' => $item->description,
                 'quantity' => (int) $item->quantity,
                 'unit_price' => (float) $item->unit_price,
+                'vat_included' => (bool) $item->vat_included,
+                'vat_rate' => (float) $item->vat_rate,
                 'total' => (float) $item->total_price,
             ];
         });
@@ -178,42 +212,39 @@ class InvoiceService
     }
 
     /**
-     * Get invoice statistics
+     * Get invoice statistics scoped by company
      *
-     * @param  int|null  $userId  If provided, scope to this user's invoices
+     * @param  int  $companyId  Company ID to scope statistics
      */
-    public function getInvoiceStats(?int $userId = null): array
+    public function getInvoiceStats(int $companyId): array
     {
-        $query = Invoice::query();
-        if ($userId) {
-            $query->where('user_id', $userId);
-        }
+        $query = Invoice::where('company_id', $companyId);
 
         return [
             'total' => (clone $query)->count(),
-            'paid' => (float) (clone $query)->where('status', 'paid')->sum('total'),
-            'outstanding' => (float) (clone $query)->whereIn('status', ['draft', 'sent'])->sum('total'),
-            'overdue' => (float) (clone $query)->where('status', 'overdue')->sum('total'),
+            'paid' => (float) (clone $query)->where('status', 'paid')->sum('grand_total'),
+            'outstanding' => (float) (clone $query)->whereIn('status', ['draft', 'sent'])->sum('grand_total'),
+            'overdue' => (float) (clone $query)->where('status', 'overdue')->sum('grand_total'),
         ];
     }
 
     /**
-     * Generate unique invoice reference
+     * Generate unique invoice reference using company prefix
      */
-    private function generateInvoiceReference(): string
+    private function generateInvoiceReference(Company $company): string
     {
-        $year = date('Y');
-        $lastInvoice = Invoice::whereYear('created_at', $year)
+        $prefix = $company->invoice_prefix ?? 'INV';
+        $lastInvoice = Invoice::where('company_id', $company->id)
             ->whereNotNull('invoice_reference')
             ->orderBy('id', 'desc')
             ->first();
 
-        if ($lastInvoice && preg_match('/INV-(\d{4})-(\d+)/', $lastInvoice->invoice_reference, $matches)) {
-            $sequence = (int) $matches[2] + 1;
+        if ($lastInvoice && preg_match('/'.preg_quote($prefix, '/').'-(\d+)/', $lastInvoice->invoice_reference, $matches)) {
+            $sequence = (int) $matches[1] + 1;
         } else {
             $sequence = 1;
         }
 
-        return sprintf('INV-%s-%04d', $year, $sequence);
+        return sprintf('%s-%04d', $prefix, $sequence);
     }
 }

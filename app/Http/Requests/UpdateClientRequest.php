@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateClientRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class UpdateClientRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->company_id !== null;
     }
 
     /**
@@ -21,11 +22,21 @@ class UpdateClientRequest extends FormRequest
      */
     public function rules(): array
     {
+        $companyId = $this->user()->company_id;
+        $clientId = $this->route('id') ?? $this->route('client');
+
         return [
             'name' => 'sometimes|required|string|max:255',
-            'email' => 'nullable|email|unique:clients,email,' . $this->route('id'),
+            'email' => [
+                'nullable',
+                'email',
+                Rule::unique('clients', 'email')
+                    ->where('company_id', $companyId)
+                    ->ignore($clientId),
+            ],
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
+            'kra_pin' => 'nullable|string|max:20',
         ];
     }
 }

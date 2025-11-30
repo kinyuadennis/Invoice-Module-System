@@ -28,7 +28,17 @@
             padding-bottom: 20px;
             border-bottom: 2px solid #e5e7eb;
         }
-        .logo {
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            max-width: 80px;
+            max-height: 80px;
+            object-fit: contain;
+        }
+        .logo-text {
             font-size: 24px;
             font-weight: bold;
             color: #059669;
@@ -163,10 +173,15 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div>
-                <div class="logo">Invoice Hub</div>
-                <div style="margin-top: 10px; color: #6b7280;">
-                    Professional Invoice Management
+            <div class="logo-section">
+                @if(isset($invoice['company']['logo']) && $invoice['company']['logo'])
+                    <img src="{{ public_path('storage/' . $invoice['company']['logo']) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" class="logo-img">
+                @endif
+                <div>
+                    <div class="logo-text">{{ $invoice['company']['name'] ?? 'Invoice Hub' }}</div>
+                    @if(isset($invoice['company']['kra_pin']) && $invoice['company']['kra_pin'])
+                        <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">KRA PIN: {{ $invoice['company']['kra_pin'] }}</div>
+                    @endif
                 </div>
             </div>
             <div class="invoice-info">
@@ -185,11 +200,23 @@
                 <div class="section-title">Bill From</div>
                 <div class="info-row">
                     <div class="info-value" style="font-weight: bold; margin-bottom: 5px;">
-                        {{ $invoice['user']['name'] ?? 'Your Business Name' }}
+                        {{ $invoice['company']['name'] ?? 'Your Business Name' }}
                     </div>
-                    <div class="info-value" style="color: #6b7280;">
-                        {{ $invoice['user']['email'] ?? 'your@email.com' }}
-                    </div>
+                    @if(isset($invoice['company']['email']) && $invoice['company']['email'])
+                        <div class="info-value" style="color: #6b7280;">
+                            {{ $invoice['company']['email'] }}
+                        </div>
+                    @endif
+                    @if(isset($invoice['company']['phone']) && $invoice['company']['phone'])
+                        <div class="info-value" style="color: #6b7280;">
+                            {{ $invoice['company']['phone'] }}
+                        </div>
+                    @endif
+                    @if(isset($invoice['company']['address']) && $invoice['company']['address'])
+                        <div class="info-value" style="color: #6b7280; margin-top: 5px;">
+                            {{ $invoice['company']['address'] }}
+                        </div>
+                    @endif
                 </div>
             </div>
             <div class="column">
@@ -198,9 +225,21 @@
                     <div class="info-value" style="font-weight: bold; margin-bottom: 5px;">
                         {{ $invoice['client']['name'] ?? 'Client Name' }}
                     </div>
-                    <div class="info-value" style="color: #6b7280;">
-                        {{ $invoice['client']['email'] ?? 'client@email.com' }}
-                    </div>
+                    @if(isset($invoice['client']['email']) && $invoice['client']['email'])
+                        <div class="info-value" style="color: #6b7280;">
+                            {{ $invoice['client']['email'] }}
+                        </div>
+                    @endif
+                    @if(isset($invoice['client']['phone']) && $invoice['client']['phone'])
+                        <div class="info-value" style="color: #6b7280;">
+                            {{ $invoice['client']['phone'] }}
+                        </div>
+                    @endif
+                    @if(isset($invoice['client']['address']) && $invoice['client']['address'])
+                        <div class="info-value" style="color: #6b7280; margin-top: 5px;">
+                            {{ $invoice['client']['address'] }}
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -261,7 +300,7 @@
             </div>
             <div class="total-row">
                 <span class="total-label">VAT (16%):</span>
-                <span class="total-value">KES {{ number_format($invoice['tax'] ?? 0, 2) }}</span>
+                <span class="total-value">KES {{ number_format($invoice['vat_amount'] ?? $invoice['tax'] ?? 0, 2) }}</span>
             </div>
             @if(isset($invoice['platform_fee']) && $invoice['platform_fee'] > 0)
                 <div class="total-row">
@@ -271,7 +310,7 @@
             @endif
             <div class="total-row">
                 <span class="total-label">Total:</span>
-                <span class="total-value">KES {{ number_format($invoice['total'] ?? 0, 2) }}</span>
+                <span class="total-value">KES {{ number_format($invoice['grand_total'] ?? $invoice['total'] ?? 0, 2) }}</span>
             </div>
         </div>
 
@@ -287,8 +326,10 @@
         <div class="footer">
             <div>Thank you for your business!</div>
             <div style="margin-top: 5px;">This is a computer-generated invoice. No signature required.</div>
+            @if(isset($invoice['company']['name']))
+                <div style="margin-top: 5px;">{{ $invoice['company']['name'] }}</div>
+            @endif
         </div>
     </div>
 </body>
 </html>
-

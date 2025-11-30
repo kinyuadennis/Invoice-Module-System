@@ -3,16 +3,15 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class StoreClientRequest extends FormRequest
+class StoreCompanyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->company_id !== null;
+        return Auth::check() && Auth::user()->company_id === null;
     }
 
     /**
@@ -22,18 +21,15 @@ class StoreClientRequest extends FormRequest
      */
     public function rules(): array
     {
-        $companyId = $this->user()->company_id;
-
         return [
             'name' => 'required|string|max:255',
-            'email' => [
-                'nullable',
-                'email',
-                Rule::unique('clients', 'email')->where('company_id', $companyId),
-            ],
+            'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
             'kra_pin' => 'nullable|string|max:20',
+            'invoice_prefix' => 'nullable|string|max:10|alpha',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'settings' => 'nullable|array',
         ];
     }
 }

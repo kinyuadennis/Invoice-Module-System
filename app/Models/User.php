@@ -4,26 +4,56 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use Notifiable;
+    use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role'];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'company_id',
+    ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-    // User can have multiple clients (if applicable)
-    public function clients()
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+    /**
+     * The company this user belongs to.
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Clients created by this user (scoped to company).
+     */
+    public function clients(): HasMany
     {
         return $this->hasMany(Client::class);
     }
 
-    // User can create many invoices
-    public function invoices()
+    /**
+     * Invoices created by this user (scoped to company).
+     */
+    public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
     }

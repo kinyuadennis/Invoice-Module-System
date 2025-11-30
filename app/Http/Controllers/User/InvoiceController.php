@@ -24,8 +24,15 @@ class InvoiceController extends Controller
 
     public function index(Request $request)
     {
-        // Scope to current user's invoices
-        $query = Invoice::where('user_id', Auth::id())
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return redirect()->route('dashboard')
+                ->with('error', 'You must belong to a company to view invoices.');
+        }
+
+        // Scope to current user's company invoices
+        $query = Invoice::where('company_id', $companyId)
             ->with('client')
             ->latest();
 
@@ -33,7 +40,7 @@ class InvoiceController extends Controller
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
+                $q->where('invoice_reference', 'like', "%{$search}%")
                     ->orWhereHas('client', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%");
@@ -56,16 +63,16 @@ class InvoiceController extends Controller
                     $query->whereDate('created_at', $now->toDateString());
                     break;
                 case 'week':
-                    $query->whereBetween('created_at', [$now->startOfWeek(), $now->endOfWeek()]);
+                    $query->whereBetween('created_at', [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()]);
                     break;
                 case 'month':
-                    $query->whereBetween('created_at', [$now->startOfMonth(), $now->endOfMonth()]);
+                    $query->whereBetween('created_at', [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()]);
                     break;
                 case 'quarter':
-                    $query->whereBetween('created_at', [$now->startOfQuarter(), $now->endOfQuarter()]);
+                    $query->whereBetween('created_at', [$now->copy()->startOfQuarter(), $now->copy()->endOfQuarter()]);
                     break;
                 case 'year':
-                    $query->whereBetween('created_at', [$now->startOfYear(), $now->endOfYear()]);
+                    $query->whereBetween('created_at', [$now->copy()->startOfYear(), $now->copy()->endOfYear()]);
                     break;
             }
         }
@@ -76,14 +83,21 @@ class InvoiceController extends Controller
 
         return view('user.invoices.index', [
             'invoices' => $invoices,
-            'stats' => $this->invoiceService->getInvoiceStats(Auth::id()),
+            'stats' => $this->invoiceService->getInvoiceStats($companyId),
             'filters' => $request->only(['search', 'status', 'dateRange']),
         ]);
     }
 
     public function create()
     {
-        $clients = Client::where('user_id', Auth::id())
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return redirect()->route('dashboard')
+                ->with('error', 'You must belong to a company to create invoices.');
+        }
+
+        $clients = Client::where('company_id', $companyId)
             ->select('id', 'name', 'email', 'phone', 'address')
             ->get();
 
@@ -127,9 +141,16 @@ class InvoiceController extends Controller
 
     public function show($id)
     {
-        // Ensure user can only view their own invoices
-        $invoice = Invoice::where('user_id', Auth::id())
-            ->with(['client', 'invoiceItems', 'payments'])
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return redirect()->route('dashboard')
+                ->with('error', 'You must belong to a company to view invoices.');
+        }
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)
+            ->with(['client', 'invoiceItems', 'payments', 'company'])
             ->findOrFail($id);
 
         return view('user.invoices.show', [
@@ -139,12 +160,21 @@ class InvoiceController extends Controller
 
     public function edit($id)
     {
-        // Ensure user can only edit their own invoices
-        $invoice = Invoice::where('user_id', Auth::id())
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return redirect()->route('dashboard')
+                ->with('error', 'You must belong to a company to edit invoices.');
+        }
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)
             ->with(['client', 'invoiceItems'])
             ->findOrFail($id);
 
-        $clients = Client::select('id', 'name', 'email', 'phone', 'address')->get();
+        $clients = Client::where('company_id', $companyId)
+            ->select('id', 'name', 'email', 'phone', 'address')
+            ->get();
 
         return view('user.invoices.edit', [
             'invoice' => $this->invoiceService->formatInvoiceForEdit($invoice),
@@ -154,8 +184,15 @@ class InvoiceController extends Controller
 
     public function update(UpdateInvoiceRequest $request, $id)
     {
-        // Ensure user can only update their own invoices
-        $invoice = Invoice::where('user_id', Auth::id())->findOrFail($id);
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return redirect()->route('dashboard')
+                ->with('error', 'You must belong to a company to update invoices.');
+        }
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)->findOrFail($id);
 
         $invoice->update($request->validated());
 
@@ -165,8 +202,15 @@ class InvoiceController extends Controller
 
     public function destroy($id)
     {
-        // Ensure user can only delete their own invoices
-        $invoice = Invoice::where('user_id', Auth::id())->findOrFail($id);
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return redirect()->route('dashboard')
+                ->with('error', 'You must belong to a company to delete invoices.');
+        }
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)->findOrFail($id);
 
         // Only allow deletion of draft invoices
         if ($invoice->status !== 'draft') {
@@ -186,8 +230,15 @@ class InvoiceController extends Controller
      */
     public function generatePdf($id)
     {
-        $invoice = Invoice::where('user_id', Auth::id())
-            ->with(['client', 'invoiceItems', 'platformFees', 'user'])
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            abort(403, 'You must belong to a company to generate PDFs.');
+        }
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)
+            ->with(['client', 'invoiceItems', 'platformFees', 'user', 'company'])
             ->findOrFail($id);
 
         // Format invoice data for PDF
@@ -198,6 +249,8 @@ class InvoiceController extends Controller
         if ($platformFee) {
             $formattedInvoice['platform_fee'] = (float) $platformFee->fee_amount;
         }
+
+        // Company data is already included in formatInvoiceForShow via the trait
 
         // Generate PDF using DomPDF
         $pdf = Pdf::loadView('invoices.pdf', [
@@ -220,7 +273,14 @@ class InvoiceController extends Controller
      */
     public function sendEmail($id)
     {
-        $invoice = Invoice::where('user_id', Auth::id())
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return response()->json(['error' => 'You must belong to a company.'], 403);
+        }
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)
             ->with(['client', 'invoiceItems'])
             ->findOrFail($id);
 
@@ -237,7 +297,14 @@ class InvoiceController extends Controller
      */
     public function sendWhatsApp($id)
     {
-        $invoice = Invoice::where('user_id', Auth::id())
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return response()->json(['error' => 'You must belong to a company.'], 403);
+        }
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)
             ->with(['client', 'invoiceItems'])
             ->findOrFail($id);
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreInvoiceRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class StoreInvoiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->company_id !== null;
     }
 
     /**
@@ -21,11 +22,21 @@ class StoreInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $companyId = $this->user()->company_id;
+
         return [
-            'client_id' => 'required|exists:clients,id',
+            'client_id' => [
+                'required',
+                Rule::exists('clients', 'id')->where('company_id', $companyId),
+            ],
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
-            'invoice_reference' => 'nullable|string|max:50|unique:invoices,invoice_reference',
+            'invoice_reference' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('invoices', 'invoice_reference')->where('company_id', $companyId),
+            ],
             'status' => 'required|in:draft,sent,paid,overdue,cancelled',
             'payment_method' => 'nullable|in:mpesa,bank_transfer,cash',
             'payment_details' => 'nullable|string|max:500',
@@ -35,6 +46,8 @@ class StoreInvoiceRequest extends FormRequest
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.total_price' => 'required|numeric|min:0',
+            'items.*.vat_included' => 'nullable|boolean',
+            'items.*.vat_rate' => 'nullable|numeric|min:0|max:100',
         ];
     }
 }

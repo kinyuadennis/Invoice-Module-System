@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PlatformFee extends Model
 {
     protected $fillable = [
+        'company_id',
         'invoice_id',
         'fee_amount',
         'fee_rate',
@@ -19,9 +21,17 @@ class PlatformFee extends Model
     ];
 
     /**
-     * The invoice this platform fee is associated with.
+     * The company this platform fee belongs to.
      */
-    public function invoice()
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * The invoice this platform fee belongs to.
+     */
+    public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
     }

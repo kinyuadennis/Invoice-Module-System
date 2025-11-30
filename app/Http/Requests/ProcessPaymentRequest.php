@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProcessPaymentRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class ProcessPaymentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->company_id !== null;
     }
 
     /**
@@ -21,10 +22,17 @@ class ProcessPaymentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $companyId = $this->user()->company_id;
+
         return [
-            'invoice_id' => 'required|exists:invoices,id',
+            'invoice_id' => [
+                'required',
+                Rule::exists('invoices', 'id')->where('company_id', $companyId),
+            ],
             'amount' => 'required|numeric|min:0.01',
-            'payment_method' => 'nullable|string|max:255',
+            'payment_method' => 'required|in:mpesa,bank_transfer,cash',
+            'payment_date' => 'required|date',
+            'mpesa_reference' => 'nullable|string|max:255',
         ];
     }
 }

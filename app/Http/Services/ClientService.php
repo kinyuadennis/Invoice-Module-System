@@ -6,32 +6,49 @@ use App\Models\Client;
 
 class ClientService
 {
-    public function getAllClients()
+    /**
+     * Get all clients for a company
+     */
+    public function getAllClients(int $companyId)
     {
-        return Client::all();
+        return Client::where('company_id', $companyId)->get();
     }
 
-    public function getClientById($id)
+    /**
+     * Get client by ID (scoped to company)
+     */
+    public function getClientById(int $id, int $companyId)
     {
-        return Client::findOrFail($id);
+        return Client::where('company_id', $companyId)->findOrFail($id);
     }
 
-    public function createClient(array $data)
+    /**
+     * Create a new client
+     */
+    public function createClient(array $data, int $companyId)
     {
+        $data['company_id'] = $companyId;
+
         return Client::create($data);
     }
 
-    public function updateClient($id, array $data)
+    /**
+     * Update a client (scoped to company)
+     */
+    public function updateClient(int $id, array $data, int $companyId)
     {
-        $client = Client::findOrFail($id);
+        $client = Client::where('company_id', $companyId)->findOrFail($id);
         $client->update($data);
 
         return $client;
     }
 
-    public function deleteClient($id)
+    /**
+     * Delete a client (scoped to company)
+     */
+    public function deleteClient(int $id, int $companyId): void
     {
-        $client = Client::findOrFail($id);
+        $client = Client::where('company_id', $companyId)->findOrFail($id);
         $client->delete();
     }
 }

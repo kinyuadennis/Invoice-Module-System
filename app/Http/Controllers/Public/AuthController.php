@@ -36,6 +36,11 @@ class AuthController extends Controller
 
         Auth::login($user);
 
+        // Redirect to company setup if user doesn't have a company
+        if (! $user->company_id) {
+            return redirect()->route('company.setup');
+        }
+
         return redirect()->route('verification.notice');
     }
 
@@ -54,8 +59,15 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
+            $user = Auth::user();
+
+            // Redirect to company setup if user doesn't have a company
+            if (! $user->company_id) {
+                return redirect()->route('company.setup');
+            }
+
             // Redirect based on user role
-            if (Auth::user()->role === 'admin') {
+            if ($user->role === 'admin') {
                 return redirect()->intended(route('admin.dashboard'));
             }
 
