@@ -188,6 +188,10 @@ function invoiceWizard(clients, services) {
                 this.formData.client_id = e.detail.id;
             });
             
+            window.addEventListener('details-changed', (e) => {
+                Object.assign(this.formData, e.detail);
+            });
+            
             window.addEventListener('items-updated', (e) => {
                 this.formData.items = e.detail.map((item, index) => ({
                     description: item.description,
@@ -202,8 +206,23 @@ function invoiceWizard(clients, services) {
                 this.formData.payment_details = e.detail.details || '';
             });
             
+            // Listen for step changes and broadcast to children
+            this.$watch('currentStep', (step) => {
+                window.dispatchEvent(new CustomEvent('step-changed', { detail: { step } }));
+            });
+            
+            // Handle wizard data requests from children
+            window.addEventListener('request-wizard-data', () => {
+                window.dispatchEvent(new CustomEvent('wizard-data-sync', { 
+                    detail: { formData: this.formData, currentStep: this.currentStep } 
+                }));
+            });
+            
             // Store form data globally for actions component
             window.wizardFormData = this.formData;
+            
+            // Broadcast initial step
+            window.dispatchEvent(new CustomEvent('step-changed', { detail: { step: this.currentStep } }));
         },
         
         generateInvoiceReference() {
@@ -290,6 +309,8 @@ function invoiceWizard(clients, services) {
         previousStep() {
             if (this.currentStep > 1) {
                 this.currentStep--;
+                // Broadcast step change
+                window.dispatchEvent(new CustomEvent('step-changed', { detail: { step: this.currentStep } }));
             }
         },
         

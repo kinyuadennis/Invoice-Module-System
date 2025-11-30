@@ -47,11 +47,28 @@ class InvoiceService
             $data['issue_date'] = now()->toDateString();
         }
 
-        // Start creating invoice entry
+        // Calculate totals BEFORE creating invoice (required fields)
+        $items = $request->input('items', []);
+        $subtotal = 0;
+        
+        foreach ($items as $item) {
+            $itemTotal = $item['total_price'] ?? (($item['quantity'] ?? 1) * ($item['unit_price'] ?? $item['rate'] ?? 0));
+            $subtotal += $itemTotal;
+        }
+        
+        $tax = $subtotal * 0.16; // 16% VAT (Kenyan standard)
+        $total = $subtotal + $tax;
+        
+        // Add calculated totals to invoice data
+        $data['subtotal'] = $subtotal;
+        $data['tax'] = $tax;
+        $data['total'] = $total;
+
+        // Start creating invoice entry with all required fields
         $invoice = Invoice::create($data);
 
         // Add invoice items
-        foreach ($request->input('items') as $item) {
+        foreach ($items as $item) {
             $invoice->invoiceItems()->create([
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
@@ -60,7 +77,8 @@ class InvoiceService
             ]);
         }
 
-        // Calculate totals and update invoice
+        // Refresh invoice to ensure items are loaded, then update totals (in case of any discrepancies)
+        $invoice->refresh();
         $this->updateTotals($invoice);
 
         // Auto-generate platform fee

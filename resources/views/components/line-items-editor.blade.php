@@ -128,16 +128,21 @@ function lineItemsEditor(services) {
         currentStep: 3,
         
         init() {
-            // Get current step from parent
-            const wizard = this.$el.closest('[x-data*="invoiceWizard"]');
-            if (wizard && wizard._x_dataStack && wizard._x_dataStack[0]) {
-                this.currentStep = wizard._x_dataStack[0].currentStep || 3;
-                // Watch for step changes
-                this.$watch('$parent.currentStep', (val) => {
-                    if (val !== undefined) {
-                        this.currentStep = val;
+            // Get current step from wrapper div (provided by wizard)
+            const wrapper = this.$el.closest('[x-data*="currentStep"]');
+            if (wrapper && wrapper._x_dataStack && wrapper._x_dataStack[0]) {
+                this.currentStep = wrapper._x_dataStack[0].currentStep || 3;
+                // Watch for step changes by polling the wrapper
+                const checkStep = () => {
+                    if (wrapper._x_dataStack && wrapper._x_dataStack[0]) {
+                        const newStep = wrapper._x_dataStack[0].currentStep;
+                        if (newStep !== this.currentStep) {
+                            this.currentStep = newStep;
+                        }
                     }
-                });
+                };
+                // Check every 100ms for step changes
+                setInterval(checkStep, 100);
             }
             // Listen for service selection
             this.$watch('$store.wizard.selectedService', (service) => {

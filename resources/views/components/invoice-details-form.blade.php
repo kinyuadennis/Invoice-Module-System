@@ -8,6 +8,7 @@
             <input 
                 type="date" 
                 x-model="formData.issue_date"
+                @input="$dispatch('details-changed', formData)"
                 :value="formData.issue_date || '{{ $issueDate ?? date('Y-m-d') }}'"
                 :required="currentStep === 2"
                 class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
@@ -21,6 +22,7 @@
             <input 
                 type="date" 
                 x-model="formData.due_date"
+                @input="$dispatch('details-changed', formData)"
                 :value="formData.due_date || '{{ $dueDate }}'"
                 :min="formData.issue_date"
                 :required="currentStep === 2"
@@ -39,6 +41,7 @@
         <input 
             type="text" 
             x-model="formData.invoice_reference"
+            @input="$dispatch('details-changed', formData)"
             :value="formData.invoice_reference || '{{ $reference ?? '' }}'"
             placeholder="INV-2024-0001"
             class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
@@ -52,6 +55,7 @@
         <label class="block text-sm font-semibold text-gray-900 mb-2">Notes</label>
         <textarea 
             x-model="formData.notes"
+            @input="$dispatch('details-changed', formData)"
             rows="4"
             class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
             placeholder="Any additional notes or terms..."

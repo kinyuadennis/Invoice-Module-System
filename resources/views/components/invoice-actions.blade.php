@@ -82,45 +82,149 @@ function invoiceActions() {
         processing: false,
         message: '',
         messageType: 'success',
+        invoiceId: null,
         
         async saveDraft() {
             this.processing = true;
             this.message = '';
             
-            // Get form data from wizard
-            const formData = this.getFormData();
-            formData.status = 'draft';
-            
             try {
+                // Get wizard instance
+                const wizard = document.querySelector('[x-data*="invoiceWizard"]');
+                if (!wizard || !wizard._x_dataStack || !wizard._x_dataStack[0]) {
+                    this.showMessage('Unable to access form data. Please refresh and try again.', 'error');
+                    this.processing = false;
+                    return;
+                }
+                
+                const wizardData = wizard._x_dataStack[0];
+                
+                // Prepare FormData (Laravel expects form data, not JSON)
+                const formData = new FormData();
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                formData.append('client_id', wizardData.formData.client_id || '');
+                formData.append('issue_date', wizardData.formData.issue_date || '');
+                formData.append('due_date', wizardData.formData.due_date || '');
+                formData.append('invoice_reference', wizardData.formData.invoice_reference || '');
+                formData.append('notes', wizardData.formData.notes || '');
+                formData.append('payment_method', wizardData.formData.payment_method || '');
+                formData.append('payment_details', wizardData.formData.payment_details || '');
+                formData.append('status', 'draft');
+                
+                // Add items
+                if (wizardData.formData.items && wizardData.formData.items.length > 0) {
+                    wizardData.formData.items.forEach((item, index) => {
+                        formData.append(`items[${index}][description]`, item.description || '');
+                        formData.append(`items[${index}][quantity]`, item.quantity || 1);
+                        formData.append(`items[${index}][unit_price]`, item.unit_price || 0);
+                        formData.append(`items[${index}][total_price]`, item.total_price || 0);
+                    });
+                }
+                
                 const response = await fetch('{{ route("user.invoices.store") }}', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                     },
-                    body: JSON.stringify(formData)
+                    body: formData,
+                    redirect: 'follow'
                 });
                 
-                const data = await response.json();
+                // Check response type
+                const contentType = response.headers.get('content-type');
+                let data = null;
                 
-                if (response.ok) {
-                    this.showMessage('Invoice saved as draft successfully!', 'success');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    // HTML response (redirect) - treat as success
+                    if (response.ok || response.status === 200 || response.status === 302) {
+                        this.showMessage('Invoice saved as draft successfully!', 'success');
+                        setTimeout(() => {
+                            window.location.href = '{{ route("user.invoices.index") }}';
+                        }, 1500);
+                        return;
+                    }
+                }
+                
+                if (response.ok || response.status === 200) {
+                    this.showMessage(data?.message || 'Invoice saved as draft successfully!', 'success');
                     setTimeout(() => {
-                        window.location.href = data.redirect || '{{ route("user.invoices.index") }}';
+                        window.location.href = data?.redirect || '{{ route("user.invoices.index") }}';
                     }, 1500);
                 } else {
-                    this.showMessage(data.message || 'Failed to save invoice', 'error');
+                    // Handle validation errors
+                    let errorMsg = 'Failed to save invoice';
+                    if (data?.errors) {
+                        errorMsg = Object.values(data.errors).flat().join(', ');
+                    } else if (data?.message) {
+                        errorMsg = data.message;
+                    }
+                    this.showMessage(errorMsg, 'error');
                 }
             } catch (error) {
-                this.showMessage('Network error. Please try again.', 'error');
+                console.error('Save draft error:', error);
+                this.showMessage('An error occurred: ' + (error.message || 'Please try again'), 'error');
             } finally {
                 this.processing = false;
             }
         },
         
         async generatePdf() {
-            // This will be implemented after invoice is created
-            this.showMessage('PDF generation will be available after saving the invoice', 'info');
+            this.processing = true;
+            this.message = '';
+            
+            try {
+                // First, save the invoice if not already saved
+                const wizard = document.querySelector('[x-data*="invoiceWizard"]');
+                if (!wizard || !wizard._x_dataStack || !wizard._x_dataStack[0]) {
+                    this.showMessage('Please save the invoice first', 'error');
+                    this.processing = false;
+                    return;
+                }
+                
+                const wizardData = wizard._x_dataStack[0];
+                
+                // Check if we have an invoice ID (from a previous save)
+                if (!this.invoiceId) {
+                    // Save as draft first, then generate PDF
+                    this.showMessage('Saving invoice first...', 'info');
+                    await this.saveDraft();
+                    // After save, the page will redirect, so PDF generation will happen on the invoice show page
+                    return;
+                }
+                
+                // Generate PDF for existing invoice
+                const response = await fetch(`/app/invoices/${this.invoiceId}/pdf`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                });
+                
+                if (response.ok) {
+                    // Download the PDF
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `invoice-${this.invoiceId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    this.showMessage('PDF generated successfully!', 'success');
+                } else {
+                    this.showMessage('Failed to generate PDF', 'error');
+                }
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                this.showMessage('Error generating PDF: ' + (error.message || 'Please try again'), 'error');
+            } finally {
+                this.processing = false;
+            }
         },
         
         async sendEmail() {

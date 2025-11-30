@@ -24,8 +24,15 @@ trait FormatsInvoiceData
             'due_date' => $invoice->due_date
                 ? Carbon::parse($invoice->due_date)->toDateString()
                 : null,
-            'issue_date' => $invoice->created_at->toDateString(),
-            'date' => $invoice->created_at->toDateString(),
+            'issue_date' => $invoice->issue_date
+                ? Carbon::parse($invoice->issue_date)->toDateString()
+                : $invoice->created_at->toDateString(),
+            'date' => $invoice->issue_date
+                ? Carbon::parse($invoice->issue_date)->toDateString()
+                : $invoice->created_at->toDateString(),
+            'invoice_reference' => $invoice->invoice_reference ?? null,
+            'payment_method' => $invoice->payment_method ?? null,
+            'notes' => $invoice->notes ?? null,
             'client_id' => $invoice->client_id,
             'client' => [
                 'id' => optional($invoice->client)->id ?? null,

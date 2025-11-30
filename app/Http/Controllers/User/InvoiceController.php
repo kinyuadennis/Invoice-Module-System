@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Services\InvoiceService;
 use App\Models\Client;
 use App\Models\Invoice;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -110,6 +111,16 @@ class InvoiceController extends Controller
     {
         $invoice = $this->invoiceService->createInvoice($request);
 
+        // If AJAX request, return JSON
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice created successfully.',
+                'invoice_id' => $invoice->id,
+                'redirect' => route('user.invoices.show', $invoice->id),
+            ]);
+        }
+
         return redirect()->route('user.invoices.show', $invoice->id)
             ->with('success', 'Invoice created successfully.');
     }
@@ -176,15 +187,32 @@ class InvoiceController extends Controller
     public function generatePdf($id)
     {
         $invoice = Invoice::where('user_id', Auth::id())
-            ->with(['client', 'invoiceItems', 'platformFees'])
+            ->with(['client', 'invoiceItems', 'platformFees', 'user'])
             ->findOrFail($id);
 
-        // TODO: Implement PDF generation using DomPDF or similar
-        // For now, return a placeholder response
-        return response()->json([
-            'message' => 'PDF generation will be implemented soon',
-            'invoice_id' => $invoice->id,
+        // Format invoice data for PDF
+        $formattedInvoice = $this->invoiceService->formatInvoiceForShow($invoice);
+
+        // Add platform fee if exists
+        $platformFee = $invoice->platformFees->first();
+        if ($platformFee) {
+            $formattedInvoice['platform_fee'] = (float) $platformFee->fee_amount;
+        }
+
+        // Generate PDF using DomPDF
+        $pdf = Pdf::loadView('invoices.pdf', [
+            'invoice' => $formattedInvoice,
         ]);
+
+        // Set PDF options
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption('enable-local-file-access', true);
+
+        // Generate filename
+        $filename = 'invoice-'.($formattedInvoice['invoice_number'] ?? $invoice->id).'.pdf';
+
+        // Return PDF download
+        return $pdf->download($filename);
     }
 
     /**
