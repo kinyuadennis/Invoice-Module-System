@@ -101,19 +101,8 @@ class InvoiceController extends Controller
             ->select('id', 'name', 'email', 'phone', 'address')
             ->get();
 
-        // Service library with suggested prices (KES)
-        $services = [
-            'Web Development Services' => 50000,
-            'Mobile App Development' => 75000,
-            'Digital Marketing Campaign' => 30000,
-            'Consulting Services' => 25000,
-            'Graphic Design Services' => 20000,
-            'Content Writing Services' => 15000,
-            'SEO Optimization' => 35000,
-            'Cloud Infrastructure Setup' => 60000,
-            'Software Maintenance' => 40000,
-            'Data Analytics Services' => 45000,
-        ];
+        // Get service library from invoice items (company-specific)
+        $services = $this->invoiceService->getServiceLibrary($companyId);
 
         return view('user.invoices.create', [
             'clients' => $clients,
@@ -176,9 +165,13 @@ class InvoiceController extends Controller
             ->select('id', 'name', 'email', 'phone', 'address')
             ->get();
 
+        // Get service library from invoice items (company-specific)
+        $services = $this->invoiceService->getServiceLibrary($companyId);
+
         return view('user.invoices.edit', [
             'invoice' => $this->invoiceService->formatInvoiceForEdit($invoice),
             'clients' => $clients,
+            'services' => $services,
         ]);
     }
 
@@ -194,7 +187,8 @@ class InvoiceController extends Controller
         // Ensure invoice belongs to user's company
         $invoice = Invoice::where('company_id', $companyId)->findOrFail($id);
 
-        $invoice->update($request->validated());
+        // Update invoice using service
+        $this->invoiceService->updateInvoice($invoice, $request);
 
         return redirect()->route('user.invoices.show', $invoice->id)
             ->with('success', 'Invoice updated successfully.');
@@ -316,3 +310,4 @@ class InvoiceController extends Controller
         ]);
     }
 }
+ 

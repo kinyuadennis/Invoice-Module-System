@@ -74,4 +74,12 @@ class Company extends Model
     {
         return $this->hasMany(PlatformFee::class);
     }
+
+    /**
+     * All services belonging to this company.
+     */
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
 }

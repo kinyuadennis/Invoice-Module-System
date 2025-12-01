@@ -5,8 +5,10 @@ namespace App\Http\Services;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Models\Service;
 use App\Traits\FormatsInvoiceData;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceService
 {
@@ -90,17 +92,23 @@ class InvoiceService
         // Start creating invoice entry with all required fields
         $invoice = Invoice::create($data);
 
-        // Add invoice items with company_id
+        // Add invoice items with company_id and track services
         foreach ($items as $item) {
+            $description = $item['description'];
+            $unitPrice = $item['unit_price'] ?? $item['rate'] ?? 0;
+
             $invoice->invoiceItems()->create([
                 'company_id' => $companyId,
-                'description' => $item['description'],
+                'description' => $description,
                 'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'] ?? $item['rate'] ?? 0,
+                'unit_price' => $unitPrice,
                 'vat_included' => $item['vat_included'] ?? false,
                 'vat_rate' => $item['vat_rate'] ?? 16.00,
-                'total_price' => $item['total_price'] ?? (($item['quantity'] ?? 1) * ($item['unit_price'] ?? $item['rate'] ?? 0)),
+                'total_price' => $item['total_price'] ?? (($item['quantity'] ?? 1) * $unitPrice),
             ]);
+
+            // Track service usage
+            $this->trackServiceUsage($companyId, $description, $unitPrice);
         }
 
         // Refresh invoice to ensure items are loaded, then update totals (in case of any discrepancies)
@@ -111,6 +119,90 @@ class InvoiceService
         $this->platformFeeService->generateFeeForInvoice($invoice);
 
         return $invoice;
+    }
+
+    /**
+     * Update an existing invoice
+     */
+    public function updateInvoice(Invoice $invoice, Request $request): Invoice
+    {
+        $companyId = $invoice->company_id;
+
+        // Validate client belongs to same company
+        if ($request->has('client_id')) {
+            $client = Client::where('id', $request->input('client_id'))
+                ->where('company_id', $companyId)
+                ->firstOrFail();
+        }
+
+        // Update invoice data
+        $data = $request->only([
+            'client_id',
+            'issue_date',
+            'due_date',
+            'status',
+            'payment_method',
+            'payment_details',
+            'notes',
+        ]);
+
+        // Update items if provided
+        if ($request->has('items')) {
+            // Delete existing items
+            $invoice->invoiceItems()->delete();
+
+            // Calculate totals
+            $items = $request->input('items', []);
+            $subtotal = 0;
+
+            foreach ($items as $item) {
+                $itemTotal = $item['total_price'] ?? (($item['quantity'] ?? 1) * ($item['unit_price'] ?? $item['rate'] ?? 0));
+                $subtotal += $itemTotal;
+            }
+
+            $vatAmount = $subtotal * 0.16;
+            $totalBeforeFee = $subtotal + $vatAmount;
+            $platformFee = $totalBeforeFee * 0.008;
+            $grandTotal = $totalBeforeFee + $platformFee;
+
+            $data['subtotal'] = $subtotal;
+            $data['tax'] = $vatAmount;
+            $data['vat_amount'] = $vatAmount;
+            $data['platform_fee'] = $platformFee;
+            $data['total'] = $totalBeforeFee;
+            $data['grand_total'] = $grandTotal;
+
+            // Create new items and track services
+            foreach ($items as $item) {
+                $description = $item['description'];
+                $unitPrice = $item['unit_price'] ?? $item['rate'] ?? 0;
+
+                $invoice->invoiceItems()->create([
+                    'company_id' => $companyId,
+                    'description' => $description,
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $unitPrice,
+                    'vat_included' => $item['vat_included'] ?? false,
+                    'vat_rate' => $item['vat_rate'] ?? 16.00,
+                    'total_price' => $item['total_price'] ?? (($item['quantity'] ?? 1) * $unitPrice),
+                ]);
+
+                // Track service usage
+                $this->trackServiceUsage($companyId, $description, $unitPrice);
+            }
+        }
+
+        $invoice->update($data);
+
+        // Update totals
+        $this->updateTotals($invoice);
+
+        // Update platform fee
+        if ($invoice->platformFees()->exists()) {
+            $this->platformFeeService->generateFeeForInvoice($invoice);
+        }
+
+        return $invoice->fresh();
     }
 
     /**
@@ -246,5 +338,95 @@ class InvoiceService
         }
 
         return sprintf('%s-%04d', $prefix, $sequence);
+    }
+
+    /**
+     * Track service usage from invoice items
+     */
+    private function trackServiceUsage(int $companyId, string $description, float $unitPrice): void
+    {
+        $service = Service::firstOrCreate(
+            [
+                'company_id' => $companyId,
+                'name' => $description,
+            ],
+            [
+                'default_price' => $unitPrice,
+                'usage_count' => 0,
+            ]
+        );
+
+        // Update usage count and average price
+        $service->increment('usage_count');
+
+        // Calculate average price from all invoice items with this description
+        $averagePrice = DB::table('invoice_items')
+            ->where('company_id', $companyId)
+            ->where('description', $description)
+            ->avg('unit_price');
+
+        if ($averagePrice) {
+            $service->update(['default_price' => round((float) $averagePrice, 2)]);
+        }
+    }
+
+    /**
+     * Get service library for a company (services used in invoices)
+     */
+    public function getServiceLibrary(int $companyId): array
+    {
+        // Get services from database (tracked services)
+        $trackedServices = Service::where('company_id', $companyId)
+            ->orderBy('usage_count', 'desc')
+            ->orderBy('name', 'asc')
+            ->get()
+            ->mapWithKeys(function ($service) {
+                return [$service->name => (float) $service->default_price];
+            })
+            ->toArray();
+
+        // If no tracked services, extract from invoice items
+        if (empty($trackedServices)) {
+            $trackedServices = $this->extractServicesFromInvoiceItems($companyId);
+        }
+
+        return $trackedServices;
+    }
+
+    /**
+     * Extract services from existing invoice items
+     */
+    private function extractServicesFromInvoiceItems(int $companyId): array
+    {
+        $services = DB::table('invoice_items')
+            ->where('company_id', $companyId)
+            ->select('description', DB::raw('AVG(unit_price) as avg_price'), DB::raw('COUNT(*) as usage_count'))
+            ->groupBy('description')
+            ->orderBy('usage_count', 'desc')
+            ->orderBy('description', 'asc')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->description => round((float) $item->avg_price, 2)];
+            })
+            ->toArray();
+
+        // Store extracted services in database for future use
+        foreach ($services as $name => $price) {
+            Service::updateOrCreate(
+                [
+                    'company_id' => $companyId,
+                    'name' => $name,
+                ],
+                [
+                    'default_price' => $price,
+                    'usage_count' => DB::table('invoice_items')
+                        ->where('company_id', $companyId)
+                        ->where('description', $name)
+                        ->count(),
+                ]
+            );
+        }
+
+        return $services;
     }
 }
