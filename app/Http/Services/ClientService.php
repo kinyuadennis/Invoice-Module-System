@@ -51,4 +51,56 @@ class ClientService
         $client = Client::where('company_id', $companyId)->findOrFail($id);
         $client->delete();
     }
+
+    /**
+     * Admin methods - no company scoping required
+     */
+
+    /**
+     * Get all clients for admin (all companies)
+     */
+    public function getAllClientsForAdmin()
+    {
+        return Client::with('company')->get();
+    }
+
+    /**
+     * Get client by ID for admin (no company scoping)
+     */
+    public function getClientByIdForAdmin(int $id)
+    {
+        return Client::with('company')->findOrFail($id);
+    }
+
+    /**
+     * Create a new client for admin (requires company_id in data)
+     */
+    public function createClientForAdmin(array $data)
+    {
+        if (! isset($data['company_id'])) {
+            throw new \InvalidArgumentException('company_id is required for admin client creation');
+        }
+
+        return Client::create($data);
+    }
+
+    /**
+     * Update a client for admin (no company scoping)
+     */
+    public function updateClientForAdmin(int $id, array $data)
+    {
+        $client = Client::findOrFail($id);
+        $client->update($data);
+
+        return $client;
+    }
+
+    /**
+     * Delete a client for admin (no company scoping)
+     */
+    public function deleteClientForAdmin(int $id): void
+    {
+        $client = Client::findOrFail($id);
+        $client->delete();
+    }
 }

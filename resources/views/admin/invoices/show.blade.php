@@ -12,12 +12,8 @@
     <x-card>
         <div class="grid grid-cols-2 gap-6 mb-6">
             <div>
-                <p class="text-sm font-medium text-gray-500">Client</p>
-                <p class="mt-1 text-sm text-gray-900">{{ $invoice['client']['name'] ?? 'Unknown' }}</p>
-            </div>
-            <div>
-                <p class="text-sm font-medium text-gray-500">Created By</p>
-                <p class="mt-1 text-sm text-gray-900">{{ $invoice['user']['name'] ?? 'Unknown' }}</p>
+                <p class="text-sm font-medium text-gray-500">Invoice Number</p>
+                <p class="mt-1 text-sm font-semibold text-gray-900">{{ $invoice['invoice_reference'] ?? $invoice['invoice_number'] ?? 'N/A' }}</p>
             </div>
             <div>
                 <p class="text-sm font-medium text-gray-500">Status</p>
@@ -34,8 +30,26 @@
                 </p>
             </div>
             <div>
+                <p class="text-sm font-medium text-gray-500">Client</p>
+                <p class="mt-1 text-sm text-gray-900">{{ $invoice['client']['name'] ?? 'Unknown' }}</p>
+            </div>
+            @if(isset($invoice['company']) && $invoice['company'])
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Company</p>
+                    <p class="mt-1 text-sm text-gray-900">
+                        <a href="{{ route('admin.companies.show', $invoice['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900">
+                            {{ $invoice['company']['name'] }}
+                        </a>
+                    </p>
+                </div>
+            @endif
+            <div>
+                <p class="text-sm font-medium text-gray-500">Created By</p>
+                <p class="mt-1 text-sm text-gray-900">{{ $invoice['user']['name'] ?? 'Unknown' }}</p>
+            </div>
+            <div>
                 <p class="text-sm font-medium text-gray-500">Total</p>
-                <p class="mt-1 text-sm font-semibold text-gray-900">${{ number_format($invoice['total'] ?? 0, 2) }}</p>
+                <p class="mt-1 text-sm font-semibold text-gray-900">KES {{ number_format($invoice['grand_total'] ?? $invoice['total'] ?? 0, 2) }}</p>
             </div>
         </div>
     </x-card>

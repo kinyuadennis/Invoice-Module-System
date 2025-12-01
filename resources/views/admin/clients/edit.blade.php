@@ -13,9 +13,11 @@
             @csrf
             @method('PUT')
 
+            <x-select name="company_id" label="Company" :options="array_merge([['value' => '', 'label' => 'Select Company']], $companies->map(fn($c) => ['value' => $c->id, 'label' => $c->name])->toArray())" value="{{ old('company_id', $client['company_id'] ?? '') }}" required />
             <x-input type="text" name="name" label="Client Name" value="{{ old('name', $client['name'] ?? '') }}" required autofocus />
-            <x-input type="email" name="email" label="Email Address" value="{{ old('email', $client['email'] ?? '') }}" required />
+            <x-input type="email" name="email" label="Email Address" value="{{ old('email', $client['email'] ?? '') }}" />
             <x-input type="tel" name="phone" label="Phone Number" value="{{ old('phone', $client['phone'] ?? '') }}" />
+            <x-input type="text" name="kra_pin" label="KRA PIN" value="{{ old('kra_pin', $client['kra_pin'] ?? '') }}" />
 
             <div>
                 <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>

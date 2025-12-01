@@ -7,6 +7,7 @@ use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Http\Services\ClientService;
 use App\Models\Client;
+use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
@@ -17,10 +18,16 @@ class ClientController extends Controller
         $this->clientService = $clientService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $clients = Client::withCount('invoices')
-            ->latest()
+        $query = Client::with('company')->withCount('invoices');
+
+        // Company filter
+        if ($request->has('company_id') && $request->company_id) {
+            $query->where('company_id', $request->company_id);
+        }
+
+        $clients = $query->latest()
             ->paginate(15)
             ->through(function ($client) {
                 return [
@@ -30,11 +37,19 @@ class ClientController extends Controller
                     'phone' => $client->phone,
                     'address' => $client->address,
                     'invoices_count' => $client->invoices_count,
+                    'company' => $client->company ? [
+                        'id' => $client->company->id,
+                        'name' => $client->company->name,
+                    ] : null,
                 ];
             });
 
+        $companies = \App\Models\Company::orderBy('name')->get(['id', 'name']);
+
         return view('admin.clients.index', [
             'clients' => $clients,
+            'companies' => $companies,
+            'filters' => $request->only(['company_id']),
         ]);
     }
 
@@ -45,7 +60,12 @@ class ClientController extends Controller
 
     public function store(StoreClientRequest $request)
     {
-        $client = $this->clientService->createClient($request->validated());
+        $validated = $request->validated();
+        if (! isset($validated['company_id'])) {
+            return back()->withErrors(['company_id' => 'Company is required.'])->withInput();
+        }
+
+        $client = $this->clientService->createClientForAdmin($validated);
 
         return redirect()->route('admin.clients.index')
             ->with('success', 'Client created successfully.');
@@ -53,7 +73,7 @@ class ClientController extends Controller
 
     public function show($id)
     {
-        $client = Client::with('invoices')->findOrFail($id);
+        $client = Client::with(['invoices', 'company'])->findOrFail($id);
 
         return view('admin.clients.show', [
             'client' => [
@@ -62,14 +82,20 @@ class ClientController extends Controller
                 'email' => $client->email,
                 'phone' => $client->phone,
                 'address' => $client->address,
+                'kra_pin' => $client->kra_pin,
                 'invoices' => $client->invoices,
+                'company' => $client->company ? [
+                    'id' => $client->company->id,
+                    'name' => $client->company->name,
+                ] : null,
             ],
         ]);
     }
 
     public function edit($id)
     {
-        $client = Client::findOrFail($id);
+        $client = Client::with('company')->findOrFail($id);
+        $companies = \App\Models\Company::orderBy('name')->get(['id', 'name']);
 
         return view('admin.clients.edit', [
             'client' => [
@@ -78,13 +104,16 @@ class ClientController extends Controller
                 'email' => $client->email,
                 'phone' => $client->phone,
                 'address' => $client->address,
+                'kra_pin' => $client->kra_pin,
+                'company_id' => $client->company_id,
             ],
+            'companies' => $companies,
         ]);
     }
 
     public function update(UpdateClientRequest $request, $id)
     {
-        $client = $this->clientService->updateClient($id, $request->validated());
+        $client = $this->clientService->updateClientForAdmin($id, $request->validated());
 
         return redirect()->route('admin.clients.index')
             ->with('success', 'Client updated successfully.');
@@ -101,7 +130,7 @@ class ClientController extends Controller
             ]);
         }
 
-        $this->clientService->deleteClient($id);
+        $this->clientService->deleteClientForAdmin($id);
 
         return redirect()->route('admin.clients.index')
             ->with('success', 'Client deleted successfully.');

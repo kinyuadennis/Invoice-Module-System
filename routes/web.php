@@ -82,6 +82,7 @@ Route::middleware('auth')->group(function () {
     // Admin area (prefix: /admin)
     Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, '__invoke'])->name('dashboard');
+        Route::resource('companies', \App\Http\Controllers\Admin\CompanyController::class)->except(['create', 'store']);
         Route::resource('clients', ClientController::class);
         Route::get('/invoices', [AdminInvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/{id}', [AdminInvoiceController::class, 'show'])->name('invoices.show');

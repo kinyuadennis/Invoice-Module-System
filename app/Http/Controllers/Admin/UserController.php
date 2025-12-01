@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Services\UserService;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -16,9 +17,16 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()
+        $query = User::with('company');
+
+        // Company filter
+        if ($request->has('company_id') && $request->company_id) {
+            $query->where('company_id', $request->company_id);
+        }
+
+        $users = $query->latest()
             ->paginate(15)
             ->through(function ($user) {
                 return [
@@ -28,11 +36,19 @@ class UserController extends Controller
                     'role' => $user->role,
                     'email_verified_at' => $user->email_verified_at,
                     'created_at' => $user->created_at,
+                    'company' => $user->company ? [
+                        'id' => $user->company->id,
+                        'name' => $user->company->name,
+                    ] : null,
                 ];
             });
 
+        $companies = \App\Models\Company::orderBy('name')->get(['id', 'name']);
+
         return view('admin.users.index', [
             'users' => $users,
+            'companies' => $companies,
+            'filters' => $request->only(['company_id']),
         ]);
     }
 

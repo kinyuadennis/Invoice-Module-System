@@ -11,7 +11,7 @@
 
     <!-- Filters -->
     <x-card>
-        <form method="GET" action="{{ route('admin.invoices.index') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <form method="GET" action="{{ route('admin.invoices.index') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <x-input type="text" name="search" label="Search" value="{{ request('search') }}" placeholder="Invoice #, client, user..." />
             <x-select name="status" label="Status" :options="[
                 ['value' => '', 'label' => 'All Statuses'],
@@ -20,6 +20,7 @@
                 ['value' => 'paid', 'label' => 'Paid'],
                 ['value' => 'overdue', 'label' => 'Overdue'],
             ]" value="{{ request('status') }}" />
+            <x-select name="company_id" label="Company" :options="array_merge([['value' => '', 'label' => 'All Companies']], $companies->map(fn($c) => ['value' => $c->id, 'label' => $c->name])->toArray())" value="{{ request('company_id') }}" />
             <div class="flex items-end">
                 <x-button type="submit" variant="primary" class="w-full">Filter</x-button>
             </div>
@@ -33,6 +34,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
@@ -43,10 +45,19 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <a href="{{ route('admin.invoices.show', $invoice['id']) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-                                {{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}
+                                {{ $invoice['invoice_reference'] ?? $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}
                             </a>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $invoice['client']['name'] ?? 'Unknown' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            @if($invoice['company'])
+                                <a href="{{ route('admin.companies.show', $invoice['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900">
+                                    {{ $invoice['company']['name'] }}
+                                </a>
+                            @else
+                                <span class="text-gray-400">No Company</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $invoice['user']['name'] ?? 'Unknown' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
@@ -60,7 +71,7 @@
                             <x-badge :variant="$statusVariant">{{ ucfirst($invoice['status'] ?? 'draft') }}</x-badge>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                            ${{ number_format($invoice['total'] ?? 0, 2) }}
+                            KES {{ number_format($invoice['grand_total'] ?? $invoice['total'] ?? 0, 2) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <a href="{{ route('admin.invoices.show', $invoice['id']) }}" class="text-indigo-600 hover:text-indigo-900">View</a>

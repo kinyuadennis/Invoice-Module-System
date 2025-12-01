@@ -12,9 +12,15 @@
         <form method="POST" action="{{ route('admin.clients.store') }}" class="space-y-6">
             @csrf
 
+            @php
+                $companies = \App\Models\Company::orderBy('name')->get(['id', 'name']);
+            @endphp
+
+            <x-select name="company_id" label="Company" :options="array_merge([['value' => '', 'label' => 'Select Company']], $companies->map(fn($c) => ['value' => $c->id, 'label' => $c->name])->toArray())" value="{{ old('company_id') }}" required />
             <x-input type="text" name="name" label="Client Name" value="{{ old('name') }}" required autofocus />
-            <x-input type="email" name="email" label="Email Address" value="{{ old('email') }}" required />
+            <x-input type="email" name="email" label="Email Address" value="{{ old('email') }}" />
             <x-input type="tel" name="phone" label="Phone Number" value="{{ old('phone') }}" />
+            <x-input type="text" name="kra_pin" label="KRA PIN" value="{{ old('kra_pin') }}" />
 
             <div>
                 <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>

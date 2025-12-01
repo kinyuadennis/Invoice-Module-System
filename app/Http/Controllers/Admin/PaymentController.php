@@ -13,8 +13,14 @@ class PaymentController extends Controller
      */
     public function index(Request $request)
     {
-        $payments = Payment::with(['invoice.client', 'invoice.user'])
-            ->latest()
+        $query = Payment::with(['invoice.client', 'invoice.user', 'invoice.company', 'company']);
+
+        // Company filter
+        if ($request->has('company_id') && $request->company_id) {
+            $query->where('company_id', $request->company_id);
+        }
+
+        $payments = $query->latest()
             ->paginate(15)
             ->through(function ($payment) {
                 return [
@@ -25,6 +31,7 @@ class PaymentController extends Controller
                     'invoice_id' => $payment->invoice_id,
                     'invoice' => [
                         'id' => $payment->invoice->id ?? null,
+                        'invoice_reference' => $payment->invoice->invoice_reference ?? null,
                         'invoice_number' => $payment->invoice->invoice_number ?? null,
                         'client' => [
                             'name' => $payment->invoice->client->name ?? 'Unknown',
@@ -32,12 +39,20 @@ class PaymentController extends Controller
                         'user' => [
                             'name' => $payment->invoice->user->name ?? 'Unknown',
                         ],
+                        'company' => $payment->invoice->company ? [
+                            'id' => $payment->invoice->company->id,
+                            'name' => $payment->invoice->company->name,
+                        ] : null,
                     ],
                 ];
             });
 
+        $companies = \App\Models\Company::orderBy('name')->get(['id', 'name']);
+
         return view('admin.payments.index', [
             'payments' => $payments,
+            'companies' => $companies,
+            'filters' => $request->only(['company_id']),
         ]);
     }
 

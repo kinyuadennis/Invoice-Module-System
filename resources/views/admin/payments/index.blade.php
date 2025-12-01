@@ -9,6 +9,16 @@
         <p class="mt-1 text-sm text-gray-600">View all payment transactions</p>
     </div>
 
+    <!-- Filters -->
+    <x-card>
+        <form method="GET" action="{{ route('admin.payments.index') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <x-select name="company_id" label="Company" :options="array_merge([['value' => '', 'label' => 'All Companies']], $companies->map(fn($c) => ['value' => $c->id, 'label' => $c->name])->toArray())" value="{{ request('company_id') }}" />
+            <div class="flex items-end">
+                <x-button type="submit" variant="primary" class="w-full">Filter</x-button>
+            </div>
+        </form>
+    </x-card>
+
     @if(isset($payments) && $payments->count() > 0)
         <x-card padding="none">
             <x-table>
@@ -17,6 +27,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                     </tr>
@@ -28,17 +39,26 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <a href="{{ route('admin.invoices.show', $payment['invoice_id'] ?? 0) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-                                {{ $payment['invoice']['invoice_number'] ?? 'N/A' }}
+                                {{ $payment['invoice']['invoice_reference'] ?? $payment['invoice']['invoice_number'] ?? 'N/A' }}
                             </a>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $payment['invoice']['client']['name'] ?? 'Unknown' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            @if($payment['invoice']['company'])
+                                <a href="{{ route('admin.companies.show', $payment['invoice']['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900">
+                                    {{ $payment['invoice']['company']['name'] }}
+                                </a>
+                            @else
+                                <span class="text-gray-400">No Company</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $payment['invoice']['user']['name'] ?? 'Unknown' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                            ${{ number_format($payment['amount'] ?? 0, 2) }}
+                            KES {{ number_format($payment['amount'] ?? 0, 2) }}
                         </td>
                     </tr>
                 @endforeach

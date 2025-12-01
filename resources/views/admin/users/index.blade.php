@@ -9,6 +9,16 @@
         <p class="mt-1 text-sm text-gray-600">Manage all system users</p>
     </div>
 
+    <!-- Filters -->
+    <x-card>
+        <form method="GET" action="{{ route('admin.users.index') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <x-select name="company_id" label="Company" :options="array_merge([['value' => '', 'label' => 'All Companies']], $companies->map(fn($c) => ['value' => $c->id, 'label' => $c->name])->toArray())" value="{{ request('company_id') }}" />
+            <div class="flex items-end">
+                <x-button type="submit" variant="primary" class="w-full">Filter</x-button>
+            </div>
+        </form>
+    </x-card>
+
     @if(isset($users) && $users->count() > 0)
         <x-card padding="none">
             <x-table>
@@ -16,6 +26,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -25,6 +36,15 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $user['name'] ?? 'Unknown' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $user['email'] ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            @if($user['company'])
+                                <a href="{{ route('admin.companies.show', $user['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900">
+                                    {{ $user['company']['name'] }}
+                                </a>
+                            @else
+                                <span class="text-gray-400">No Company</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <x-badge :variant="$user['role'] === 'admin' ? 'primary' : 'default'">{{ ucfirst($user['role'] ?? 'user') }}</x-badge>
                         </td>
