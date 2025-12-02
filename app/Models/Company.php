@@ -20,6 +20,10 @@ class Company extends Model
         'address',
         'kra_pin',
         'invoice_prefix',
+        'invoice_suffix',
+        'invoice_padding',
+        'invoice_format',
+        'invoice_template',
         'settings',
     ];
 

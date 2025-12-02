@@ -1,12 +1,12 @@
 <div x-data="paymentMethodSelector()" class="space-y-4">
-    <label class="block text-sm font-semibold text-gray-900 mb-3">Preferred Payment Method</label>
+    <label class="block text-sm font-semibold text-slate-900 mb-3">Preferred Payment Method</label>
     
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <!-- M-Pesa -->
         <button
             type="button"
             @click="selectMethod('mpesa')"
-            :class="selectedMethod === 'mpesa' ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' : 'border-gray-200 hover:border-gray-300'"
+            :class="selectedMethod === 'mpesa' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-slate-200 hover:border-slate-300'"
             class="p-4 border-2 rounded-lg transition-all text-left"
         >
             <div class="flex items-center gap-3">
@@ -14,12 +14,12 @@
                     <span class="text-2xl">📱</span>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">M-Pesa</p>
-                    <p class="text-xs text-gray-600">Mobile Money</p>
+                    <p class="font-semibold text-slate-900">M-Pesa</p>
+                    <p class="text-xs text-slate-600">Mobile Money</p>
                 </div>
                 <svg 
-                    x-show="selectedMethod === 'mpesa"
-                    class="w-5 h-5 text-emerald-600 ml-auto" 
+                    x-show="selectedMethod === 'mpesa'"
+                    class="w-5 h-5 text-blue-600 ml-auto" 
                     fill="currentColor" 
                     viewBox="0 0 20 20"
                 >
@@ -32,7 +32,7 @@
         <button
             type="button"
             @click="selectMethod('bank_transfer')"
-            :class="selectedMethod === 'bank_transfer' ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' : 'border-gray-200 hover:border-gray-300'"
+            :class="selectedMethod === 'bank_transfer' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-slate-200 hover:border-slate-300'"
             class="p-4 border-2 rounded-lg transition-all text-left"
         >
             <div class="flex items-center gap-3">
@@ -40,12 +40,12 @@
                     <span class="text-2xl">🏦</span>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">Bank Transfer</p>
-                    <p class="text-xs text-gray-600">Direct Deposit</p>
+                    <p class="font-semibold text-slate-900">Bank Transfer</p>
+                    <p class="text-xs text-slate-600">Direct Deposit</p>
                 </div>
                 <svg 
                     x-show="selectedMethod === 'bank_transfer'"
-                    class="w-5 h-5 text-emerald-600 ml-auto" 
+                    class="w-5 h-5 text-blue-600 ml-auto" 
                     fill="currentColor" 
                     viewBox="0 0 20 20"
                 >
@@ -58,7 +58,7 @@
         <button
             type="button"
             @click="selectMethod('cash')"
-            :class="selectedMethod === 'cash' ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' : 'border-gray-200 hover:border-gray-300'"
+            :class="selectedMethod === 'cash' ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-slate-200 hover:border-slate-300'"
             class="p-4 border-2 rounded-lg transition-all text-left"
         >
             <div class="flex items-center gap-3">
@@ -66,12 +66,12 @@
                     <span class="text-2xl">💵</span>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">Cash</p>
-                    <p class="text-xs text-gray-600">Physical Payment</p>
+                    <p class="font-semibold text-slate-900">Cash</p>
+                    <p class="text-xs text-slate-600">Physical Payment</p>
                 </div>
                 <svg 
                     x-show="selectedMethod === 'cash'"
-                    class="w-5 h-5 text-emerald-600 ml-auto" 
+                    class="w-5 h-5 text-blue-600 ml-auto" 
                     fill="currentColor" 
                     viewBox="0 0 20 20"
                 >
@@ -83,22 +83,22 @@
 
     <!-- Additional Fields Based on Selection -->
     <div x-show="selectedMethod === 'mpesa'" x-transition class="mt-4">
-        <label class="block text-sm font-semibold text-gray-900 mb-2">M-Pesa Number (Optional)</label>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">M-Pesa Number (Optional)</label>
         <input 
             type="text" 
             x-model="paymentDetails"
             placeholder="+254 700 000 000"
-            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         >
     </div>
 
     <div x-show="selectedMethod === 'bank_transfer'" x-transition class="mt-4">
-        <label class="block text-sm font-semibold text-gray-900 mb-2">Bank Account Details (Optional)</label>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">Bank Account Details (Optional)</label>
         <textarea 
             x-model="paymentDetails"
             rows="2"
             placeholder="Bank name, account number, etc."
-            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         ></textarea>
     </div>
 </div>

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Services\InvoiceService;
 use App\Models\Client;
+use App\Models\Company;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -104,9 +105,13 @@ class InvoiceController extends Controller
         // Get service library from invoice items (company-specific)
         $services = $this->invoiceService->getServiceLibrary($companyId);
 
+        // Get company for invoice format settings
+        $company = Company::findOrFail($companyId);
+
         return view('user.invoices.create', [
             'clients' => $clients,
             'services' => $services,
+            'company' => $company,
         ]);
     }
 
@@ -246,8 +251,16 @@ class InvoiceController extends Controller
 
         // Company data is already included in formatInvoiceForShow via the trait
 
-        // Generate PDF using DomPDF
-        $pdf = Pdf::loadView('invoices.pdf', [
+        // Get template from company settings
+        $company = $invoice->company;
+        $templateName = $company->invoice_template ?? 'modern_clean';
+        $templates = config('invoice-templates.templates');
+
+        // Get template view path
+        $templateView = $templates[$templateName]['view'] ?? 'invoices.templates.modern-clean';
+
+        // Generate PDF using selected template
+        $pdf = Pdf::loadView($templateView, [
             'invoice' => $formattedInvoice,
         ]);
 
@@ -310,4 +323,3 @@ class InvoiceController extends Controller
         ]);
     }
 }
- 

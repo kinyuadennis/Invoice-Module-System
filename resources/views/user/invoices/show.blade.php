@@ -99,9 +99,9 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ $item['quantity'] ?? 0 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">${{ number_format($item['rate'] ?? 0, 2) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['rate'] ?? 0, 2) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                                ${{ number_format(($item['quantity'] ?? 0) * ($item['rate'] ?? 0), 2) }}
+                                KES {{ number_format(($item['quantity'] ?? 0) * ($item['rate'] ?? 0), 2) }}
                             </td>
                         </tr>
                     @endforeach
@@ -117,23 +117,23 @@
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between text-gray-600">
                         <span>Subtotal</span>
-                        <span class="font-medium text-gray-900">${{ number_format($invoice['subtotal'] ?? 0, 2) }}</span>
+                        <span class="font-medium text-gray-900">KES {{ number_format($invoice['subtotal'] ?? 0, 2) }}</span>
                     </div>
                     @if(($invoice['tax_rate'] ?? 0) > 0)
                         <div class="flex justify-between text-gray-600">
                             <span>Tax ({{ $invoice['tax_rate'] ?? 0 }}%)</span>
-                            <span class="font-medium text-gray-900">${{ number_format($invoice['tax'] ?? 0, 2) }}</span>
+                            <span class="font-medium text-gray-900">KES {{ number_format($invoice['tax'] ?? 0, 2) }}</span>
                         </div>
                     @endif
                     @if(($invoice['platform_fee'] ?? 0) > 0)
                         <div class="flex justify-between text-gray-600">
                             <span>Platform Fee</span>
-                            <span class="font-medium text-gray-900">${{ number_format($invoice['platform_fee'] ?? 0, 2) }}</span>
+                            <span class="font-medium text-gray-900">KES {{ number_format($invoice['platform_fee'] ?? 0, 2) }}</span>
                         </div>
                     @endif
                     <div class="flex justify-between pt-2 border-t border-gray-200 text-base font-semibold text-gray-900">
                         <span>Total</span>
-                        <span class="text-indigo-600">${{ number_format($invoice['total'] ?? 0, 2) }}</span>
+                        <span class="text-indigo-600">KES {{ number_format($invoice['total'] ?? 0, 2) }}</span>
                     </div>
                 </div>
             </x-card>
@@ -154,7 +154,7 @@
                         @foreach($invoice['payments'] as $payment)
                             <div class="flex items-center justify-between text-sm">
                                 <div>
-                                    <p class="font-medium text-gray-900">${{ number_format($payment['amount'] ?? 0, 2) }}</p>
+                                    <p class="font-medium text-gray-900">KES {{ number_format($payment['amount'] ?? 0, 2) }}</p>
                                     <p class="text-gray-600">{{ $payment['payment_date'] ? \Carbon\Carbon::parse($payment['payment_date'])->format('M d, Y') : 'N/A' }}</p>
                                 </div>
                                 <x-badge variant="success">Paid</x-badge>

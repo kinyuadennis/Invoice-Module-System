@@ -5,34 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Home') - {{ config('app.name', 'InvoiceHub') }}</title>
+    
+    <!-- Inter Font - Modern, professional typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-50">
+<body class="bg-slate-50">
     <!-- Sticky Navigation -->
-    <nav class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="{{ route('home') }}" class="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors">InvoiceHub</a>
-                </div>
-                <div class="flex items-center space-x-1 sm:space-x-4">
-                    <a href="{{ route('home') }}" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">🏠 Home</a>
-                    <a href="#features" class="hidden sm:block text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Features</a>
-                    <a href="{{ route('pricing') }}" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Pricing</a>
-                    @auth
-                        @if(auth()->user()->role === 'admin')
-                            <a href="{{ route('admin.dashboard') }}" class="text-indigo-600 hover:text-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Admin</a>
-                        @else
-                            <a href="{{ route('user.dashboard') }}" class="text-indigo-600 hover:text-indigo-700 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
-                        @endif
-                    @else
-                        <a href="{{ route('login') }}" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Login</a>
-                        <a href="{{ route('register') }}" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">Sign Up</a>
-                    @endauth
-                </div>
-            </div>
-        </div>
-    </nav>
+    <x-navigation.nav-sticky
+        :links="[
+            ['text' => 'Home', 'href' => route('home')],
+            ['text' => 'Features', 'href' => '#features'],
+            ['text' => 'Pricing', 'href' => route('pricing')],
+            ['text' => 'About', 'href' => route('about')],
+        ]"
+        ctaText="Sign Up"
+        :ctaHref="route('register')"
+    />
 
     <!-- Flash messages -->
     @if(session('success'))
@@ -49,32 +41,49 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-16">
+    <footer class="bg-white border-t border-slate-200 mt-16">
         <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- InvoiceHub Info -->
                 <div class="col-span-1 md:col-span-2">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">InvoiceHub</h3>
-                    <p class="text-sm text-gray-600 max-w-md">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">InvoiceHub</h3>
+                    <p class="text-sm text-slate-600 max-w-md mb-4">
                         Professional invoice management software for Kenyan businesses. Create, send, and track invoices effortlessly.
                     </p>
+                    <div class="flex items-center gap-4 text-xs text-slate-500">
+                        <span>Made in Kenya for Kenyan Businesses</span>
+                    </div>
                 </div>
+                
+                <!-- Product Links -->
                 <div>
-                    <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Product</h4>
+                    <h4 class="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Product</h4>
                     <ul class="space-y-2">
-                        <li><a href="{{ route('about') }}" class="text-sm text-gray-600 hover:text-indigo-600">Features</a></li>
-                        <li><a href="{{ route('pricing') }}" class="text-sm text-gray-600 hover:text-indigo-600">Pricing</a></li>
+                        <li><a href="#features" class="text-sm text-slate-600 hover:text-blue-600 transition-colors">Features</a></li>
+                        <li><a href="{{ route('pricing') }}" class="text-sm text-slate-600 hover:text-blue-600 transition-colors">Pricing</a></li>
+                        <li><a href="#integrations" class="text-sm text-slate-600 hover:text-blue-600 transition-colors">Integrations</a></li>
                     </ul>
                 </div>
+                
+                <!-- Company Links -->
                 <div>
-                    <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Company</h4>
+                    <h4 class="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Company</h4>
                     <ul class="space-y-2">
-                        <li><a href="{{ route('about') }}" class="text-sm text-gray-600 hover:text-indigo-600">About</a></li>
-                        <li><a href="{{ route('login') }}" class="text-sm text-gray-600 hover:text-indigo-600">Login</a></li>
+                        <li><a href="{{ route('about') }}" class="text-sm text-slate-600 hover:text-blue-600 transition-colors">About</a></li>
+                        <li><a href="{{ route('login') }}" class="text-sm text-slate-600 hover:text-blue-600 transition-colors">Login</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="mt-8 pt-8 border-t border-gray-200">
-                <p class="text-center text-sm text-gray-600">
+            
+            <!-- Security Badges -->
+            <div class="mt-8 pt-8 border-t border-slate-200">
+                <div class="flex flex-wrap items-center justify-center gap-6 mb-6">
+                    <x-trust.trust-badge text="KRA eTIMS Compliant" icon="shield-check" size="sm" />
+                    <x-trust.trust-badge text="Bank-Level Security" icon="lock-closed" size="sm" />
+                    <x-trust.trust-badge text="GDPR Ready" icon="shield-check" size="sm" />
+                </div>
+                
+                <p class="text-center text-sm text-slate-600">
                     &copy; {{ date('Y') }} InvoiceHub. All rights reserved.
                 </p>
             </div>

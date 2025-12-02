@@ -8,15 +8,15 @@
     style="display: none;"
 >
     <!-- Overlay -->
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="open = false"></div>
+    <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" @click="open = false"></div>
 
     <!-- Modal -->
     <div class="flex min-h-full items-center justify-center p-4">
         <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6" @click.stop>
             <!-- Header -->
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-900">Add New Client</h3>
-                <button @click="open = false" class="text-gray-400 hover:text-gray-600">
+                <h3 class="text-lg font-bold text-slate-900">Add New Client</h3>
+                <button @click="open = false" class="text-slate-400 hover:text-slate-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -27,45 +27,45 @@
             <form @submit.prevent="createClient" novalidate>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-900 mb-1">Name *</label>
+                        <label class="block text-sm font-semibold text-slate-900 mb-1">Name *</label>
                         <input 
                             type="text" 
                             x-model="form.name"
                             required
-                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             placeholder="Client name"
                         >
                         <p x-show="errors.name" class="mt-1 text-sm text-red-600" x-text="errors.name"></p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-900 mb-1">Email</label>
+                        <label class="block text-sm font-semibold text-slate-900 mb-1">Email</label>
                         <input 
                             type="email" 
                             x-model="form.email"
-                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             placeholder="client@example.com"
                         >
                         <p x-show="errors.email" class="mt-1 text-sm text-red-600" x-text="errors.email"></p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-900 mb-1">Phone</label>
+                        <label class="block text-sm font-semibold text-slate-900 mb-1">Phone</label>
                         <input 
                             type="text" 
                             x-model="form.phone"
-                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             placeholder="+254 700 000 000"
                         >
                         <p x-show="errors.phone" class="mt-1 text-sm text-red-600" x-text="errors.phone"></p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-900 mb-1">Address</label>
+                        <label class="block text-sm font-semibold text-slate-900 mb-1">Address</label>
                         <textarea 
                             x-model="form.address"
                             rows="2"
-                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                             placeholder="Client address"
                         ></textarea>
                         <p x-show="errors.address" class="mt-1 text-sm text-red-600" x-text="errors.address"></p>
@@ -77,14 +77,14 @@
                     <button 
                         type="button"
                         @click="open = false"
-                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                        class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-semibold"
                     >
                         Cancel
                     </button>
                     <button 
                         type="submit"
                         :disabled="processing"
-                        class="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50"
+                        class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold disabled:opacity-50"
                     >
                         <span x-show="!processing">Create Client</span>
                         <span x-show="processing">Creating...</span>

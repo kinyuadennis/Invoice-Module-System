@@ -145,6 +145,17 @@
                     </div>
                 </x-card>
 
+                <!-- Invoice Customization Link -->
+                <x-card>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Invoice Settings</h2>
+                    <p class="text-sm text-gray-600 mb-4">Customize your invoice numbering format and visual templates.</p>
+                    <a href="{{ route('user.company.invoice-customization') }}">
+                        <x-button variant="outline" class="w-full">
+                            Customize Invoices →
+                        </x-button>
+                    </a>
+                </x-card>
+
                 <!-- Actions -->
                 <div>
                     <x-button type="submit" variant="primary" class="w-full">

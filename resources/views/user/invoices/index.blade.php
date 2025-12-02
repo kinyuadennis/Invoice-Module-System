@@ -115,7 +115,7 @@
                             {{ $invoice['due_date'] ? \Carbon\Carbon::parse($invoice['due_date'])->format('M d, Y') : 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                            ${{ number_format($invoice['total'] ?? 0, 2) }}
+                            KES {{ number_format($invoice['total'] ?? 0, 2) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">

@@ -9,24 +9,24 @@
     <!-- Line Items List -->
     <div class="space-y-4">
         <template x-for="(item, index) in items" :key="index">
-            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <div class="border border-slate-200 rounded-lg p-4 bg-white">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-12 items-end">
                     <!-- Description -->
                     <div class="md:col-span-5">
-                        <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">Description *</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-1" x-show="index === 0">Description *</label>
                             <input 
                                 type="text" 
                                 x-model="item.description"
                                 :name="currentStep === 3 ? `items[${index}][description]` : ''"
                                 placeholder="Item description"
-                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                                class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                 :required="currentStep === 3"
                             >
                     </div>
 
                     <!-- Quantity -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">Quantity *</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-1" x-show="index === 0">Quantity *</label>
                             <input 
                                 type="number" 
                                 x-model.number="item.quantity"
@@ -34,14 +34,14 @@
                                 @input="updateItemTotal(index)"
                                 min="1"
                                 step="1"
-                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                                class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                 :required="currentStep === 3"
                             >
                     </div>
 
                     <!-- Unit Price -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">Unit Price (KES) *</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-1" x-show="index === 0">Unit Price (KES) *</label>
                             <input 
                                 type="number" 
                                 x-model.number="item.unit_price"
@@ -50,14 +50,14 @@
                                 min="0"
                                 step="0.01"
                                 placeholder="0.00"
-                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                                class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                 :required="currentStep === 3"
                             >
                     </div>
 
                     <!-- VAT Toggle -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">VAT (16%)</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-1" x-show="index === 0">VAT (16%)</label>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input 
                                 type="checkbox" 
@@ -65,15 +65,15 @@
                                 @change="updateItemTotal(index)"
                                 class="sr-only peer"
                             >
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                            <span class="ml-3 text-sm text-gray-700" x-text="item.vat_included ? 'Included' : 'Excluded'"></span>
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                            <span class="ml-3 text-sm text-slate-700" x-text="item.vat_included ? 'Included' : 'Excluded'"></span>
                         </label>
                     </div>
 
                     <!-- Total -->
                     <div class="md:col-span-1 text-right">
-                        <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">Total</label>
-                        <p class="text-base font-semibold text-gray-900 mt-2 md:mt-0" x-text="formatCurrency(item.total_price)"></p>
+                        <label class="block text-sm font-medium text-slate-700 mb-1" x-show="index === 0">Total</label>
+                        <p class="text-base font-semibold text-slate-900 mt-2 md:mt-0" x-text="formatCurrency(item.total_price)"></p>
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@
     <button
         type="button"
         @click="addCustomItem()"
-        class="w-full flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+        class="w-full flex items-center justify-center px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors"
     >
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -199,15 +199,18 @@ function lineItemsEditor(services) {
         
         updateItemTotal(index) {
             const item = this.items[index];
-            const subtotal = (item.quantity || 0) * (item.unit_price || 0);
+            const baseSubtotal = (item.quantity || 0) * (item.unit_price || 0);
             
             if (item.vat_included) {
-                // VAT is included in the price
-                item.total_price = subtotal;
+                // VAT is included in the unit_price entered
+                // The entered price is the total including VAT
+                // So total_price = what user entered (already includes VAT)
+                item.total_price = baseSubtotal;
             } else {
-                // VAT needs to be added
-                const vat = subtotal * (this.vatRate / 100);
-                item.total_price = subtotal + vat;
+                // VAT is excluded - need to add VAT on top
+                // Calculate VAT and add to base price
+                const vat = baseSubtotal * (this.vatRate / 100);
+                item.total_price = baseSubtotal + vat;
             }
             
             this.$dispatch('items-updated', this.items);

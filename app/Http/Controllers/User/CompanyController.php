@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -107,5 +108,92 @@ class CompanyController extends Controller
         $company->update($data);
 
         return back()->with('success', 'Company settings updated successfully!');
+    }
+
+    /**
+     * Show invoice customization page
+     */
+    public function invoiceCustomization()
+    {
+        $user = Auth::user();
+
+        if (! $user->company_id) {
+            return redirect()->route('company.setup');
+        }
+
+        $company = Company::findOrFail($user->company_id);
+        $templates = config('invoice-templates.templates');
+        $formatPatterns = config('invoice-templates.format_patterns');
+
+        return view('company.invoice-customization', [
+            'company' => $company,
+            'templates' => $templates,
+            'formatPatterns' => $formatPatterns,
+        ]);
+    }
+
+    /**
+     * Update invoice format settings
+     */
+    public function updateInvoiceFormat(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $user->company_id) {
+            return redirect()->route('company.setup');
+        }
+
+        $company = Company::findOrFail($user->company_id);
+
+        if ($company->owner_user_id !== $user->id) {
+            return back()->with('error', 'Only the company owner can update settings.');
+        }
+
+        $request->validate([
+            'invoice_prefix' => 'nullable|string|max:20',
+            'invoice_suffix' => 'nullable|string|max:20',
+            'invoice_padding' => 'required|integer|min:1|max:10',
+            'invoice_format' => 'required|string|in:{PREFIX}-{NUMBER},{PREFIX}-{YEAR}-{NUMBER},{YEAR}/{NUMBER},{PREFIX}/{NUMBER}/{SUFFIX},{NUMBER}',
+        ]);
+
+        $company->update($request->only([
+            'invoice_prefix',
+            'invoice_suffix',
+            'invoice_padding',
+            'invoice_format',
+        ]));
+
+        return back()->with('success', 'Invoice format updated successfully!');
+    }
+
+    /**
+     * Update invoice template
+     */
+    public function updateInvoiceTemplate(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $user->company_id) {
+            return redirect()->route('company.setup');
+        }
+
+        $company = Company::findOrFail($user->company_id);
+
+        if ($company->owner_user_id !== $user->id) {
+            return back()->with('error', 'Only the company owner can update settings.');
+        }
+
+        $templates = config('invoice-templates.templates');
+        $validTemplates = array_keys($templates);
+
+        $request->validate([
+            'invoice_template' => ['required', 'string', 'in:'.implode(',', $validTemplates)],
+        ]);
+
+        $company->update([
+            'invoice_template' => $request->invoice_template,
+        ]);
+
+        return back()->with('success', 'Invoice template updated successfully!');
     }
 }

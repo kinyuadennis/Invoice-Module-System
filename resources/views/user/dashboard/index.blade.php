@@ -50,7 +50,7 @@
                 <div class="ml-5 w-0 flex-1">
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                        <dd class="text-lg font-semibold text-gray-900">${{ number_format($stats['totalRevenue'] ?? 0, 2) }}</dd>
+                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($stats['totalRevenue'] ?? 0, 2) }}</dd>
                     </dl>
                 </div>
             </div>
@@ -66,7 +66,7 @@
                 <div class="ml-5 w-0 flex-1">
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Outstanding</dt>
-                        <dd class="text-lg font-semibold text-gray-900">${{ number_format($stats['outstanding'] ?? 0, 2) }}</dd>
+                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($stats['outstanding'] ?? 0, 2) }}</dd>
                     </dl>
                 </div>
             </div>
@@ -108,14 +108,14 @@
     <!-- Alerts -->
     @if(($stats['overdueCount'] ?? 0) > 0)
         <x-alert type="warning">
-            You have {{ $stats['overdueCount'] }} overdue invoice(s) totaling ${{ number_format($stats['overdueAmount'] ?? 0, 2) }}.
+            You have {{ $stats['overdueCount'] }} overdue invoice(s) totaling KES {{ number_format($stats['overdueAmount'] ?? 0, 2) }}.
             <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="font-medium underline">View them</a>
         </x-alert>
     @endif
 
     @if(($stats['outstanding'] ?? 0) > 0)
         <x-alert type="info">
-            You have ${{ number_format($stats['outstanding'], 2) }} in outstanding invoices.
+            You have KES {{ number_format($stats['outstanding'], 2) }} in outstanding invoices.
         </x-alert>
     @endif
 
@@ -166,7 +166,7 @@
                             {{ $invoice['due_date'] ? \Carbon\Carbon::parse($invoice['due_date'])->format('M d, Y') : 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                            ${{ number_format($invoice['total'] ?? 0, 2) }}
+                            KES {{ number_format($invoice['total'] ?? 0, 2) }}
                         </td>
                     </tr>
                 @endforeach

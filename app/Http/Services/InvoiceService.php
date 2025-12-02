@@ -321,23 +321,42 @@ class InvoiceService
     }
 
     /**
-     * Generate unique invoice reference using company prefix
+     * Generate unique invoice reference using company format settings
      */
     private function generateInvoiceReference(Company $company): string
     {
+        // Get format settings with defaults
         $prefix = $company->invoice_prefix ?? 'INV';
+        $suffix = $company->invoice_suffix ?? '';
+        $padding = $company->invoice_padding ?? 4;
+        $format = $company->invoice_format ?? '{PREFIX}-{NUMBER}';
+
+        // Get last invoice number
         $lastInvoice = Invoice::where('company_id', $company->id)
             ->whereNotNull('invoice_reference')
             ->orderBy('id', 'desc')
             ->first();
 
-        if ($lastInvoice && preg_match('/'.preg_quote($prefix, '/').'-(\d+)/', $lastInvoice->invoice_reference, $matches)) {
-            $sequence = (int) $matches[1] + 1;
-        } else {
-            $sequence = 1;
+        // Extract sequence number from last invoice
+        $sequence = 1;
+        if ($lastInvoice && $lastInvoice->invoice_reference) {
+            // Try to extract number from various formats
+            if (preg_match('/(\d+)/', $lastInvoice->invoice_reference, $matches)) {
+                $sequence = (int) $matches[1] + 1;
+            }
         }
 
-        return sprintf('%s-%04d', $prefix, $sequence);
+        // Pad the number
+        $paddedNumber = str_pad($sequence, $padding, '0', STR_PAD_LEFT);
+
+        // Build reference based on format pattern
+        $reference = $format;
+        $reference = str_replace('{PREFIX}', $prefix, $reference);
+        $reference = str_replace('{NUMBER}', $paddedNumber, $reference);
+        $reference = str_replace('{YEAR}', date('Y'), $reference);
+        $reference = str_replace('{SUFFIX}', $suffix, $reference);
+
+        return $reference;
     }
 
     /**

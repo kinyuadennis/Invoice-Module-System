@@ -77,6 +77,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::get('/company/settings', [CompanyController::class, 'settings'])->name('company.settings');
         Route::put('/company', [CompanyController::class, 'update'])->name('company.update');
+        Route::get('/company/invoice-customization', [CompanyController::class, 'invoiceCustomization'])->name('company.invoice-customization');
+        Route::post('/company/invoice-format', [CompanyController::class, 'updateInvoiceFormat'])->name('company.update-invoice-format');
+        Route::post('/company/invoice-template', [CompanyController::class, 'updateInvoiceTemplate'])->name('company.update-invoice-template');
     });
 
     // Admin area (prefix: /admin)

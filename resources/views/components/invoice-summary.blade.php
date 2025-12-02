@@ -1,39 +1,39 @@
-<div x-data="invoiceSummary()" class="bg-gray-50 rounded-lg p-6 space-y-4">
-    <h3 class="text-lg font-bold text-gray-900 mb-4">Invoice Summary</h3>
+<div x-data="invoiceSummary()" class="bg-slate-50 rounded-lg p-6 space-y-4">
+    <h3 class="text-lg font-bold text-slate-900 mb-4">Invoice Summary</h3>
     
     <!-- Subtotal -->
     <div class="flex justify-between text-sm">
-        <span class="text-gray-600">Subtotal</span>
-        <span class="font-semibold text-gray-900" x-text="formatCurrency(subtotal)"></span>
+        <span class="text-slate-600">Subtotal</span>
+        <span class="font-semibold text-slate-900" x-text="formatCurrency(subtotal)"></span>
     </div>
 
     <!-- VAT -->
     <div class="flex justify-between text-sm">
-        <span class="text-gray-600">VAT (16%)</span>
-        <span class="font-semibold text-gray-900" x-text="formatCurrency(vat)"></span>
+        <span class="text-slate-600">VAT (16%)</span>
+        <span class="font-semibold text-slate-900" x-text="formatCurrency(vat)"></span>
     </div>
 
     <!-- Total Before Fee -->
-    <div class="flex justify-between text-sm pt-2 border-t border-gray-200">
-        <span class="text-gray-600">Total (Before Platform Fee)</span>
-        <span class="font-semibold text-gray-900" x-text="formatCurrency(totalBeforeFee)"></span>
+    <div class="flex justify-between text-sm pt-2 border-t border-slate-200">
+        <span class="text-slate-600">Total (Before Platform Fee)</span>
+        <span class="font-semibold text-slate-900" x-text="formatCurrency(totalBeforeFee)"></span>
     </div>
 
     <!-- Platform Fee -->
     <div class="flex justify-between text-sm">
         <div class="flex items-center gap-1">
-            <span class="text-gray-600">Platform Fee (0.8%)</span>
-            <svg class="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="Platform fee supports service maintenance and payment processing">
+            <span class="text-slate-600">Platform Fee (0.8%)</span>
+            <svg class="w-4 h-4 text-slate-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="Platform fee supports service maintenance and payment processing">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
         </div>
-        <span class="font-semibold text-gray-900" x-text="formatCurrency(platformFee)"></span>
+        <span class="font-semibold text-slate-900" x-text="formatCurrency(platformFee)"></span>
     </div>
 
     <!-- Grand Total -->
-    <div class="flex justify-between pt-4 border-t-2 border-gray-300">
-        <span class="text-lg font-bold text-gray-900">Grand Total</span>
-        <span class="text-2xl font-bold text-emerald-600" x-text="formatCurrency(grandTotal)"></span>
+    <div class="flex justify-between pt-4 border-t-2 border-slate-300">
+        <span class="text-lg font-bold text-slate-900">Grand Total</span>
+        <span class="text-2xl font-bold text-blue-600" x-text="formatCurrency(grandTotal)"></span>
     </div>
 </div>
 
@@ -61,17 +61,39 @@ function invoiceSummary() {
         },
         
         calculateTotals() {
-            // Calculate subtotal (sum of all line items)
-            this.subtotal = this.items.reduce((sum, item) => {
-                return sum + (item.total_price || 0);
-            }, 0);
+            // Calculate base subtotal and VAT separately based on each item's VAT status
+            let baseSubtotal = 0;
+            let totalVat = 0;
             
-            // Calculate VAT (16% of subtotal)
-            // Note: If VAT is included in items, we need to extract it
-            // For simplicity, we'll calculate VAT on subtotal
-            this.vat = this.subtotal * this.vatRate;
+            this.items.forEach((item) => {
+                const itemTotal = item.total_price || 0;
+                
+                if (item.vat_included) {
+                    // VAT is included in total_price
+                    // Extract base price: total_price / (1 + vatRate)
+                    const basePrice = itemTotal / (1 + this.vatRate);
+                    const itemVat = itemTotal - basePrice;
+                    
+                    baseSubtotal += basePrice;
+                    totalVat += itemVat;
+                } else {
+                    // VAT is excluded - total_price = base + VAT (already calculated in line-items-editor)
+                    // Extract base: total_price / (1 + vatRate)
+                    const basePrice = itemTotal / (1 + this.vatRate);
+                    const itemVat = itemTotal - basePrice;
+                    
+                    baseSubtotal += basePrice;
+                    totalVat += itemVat;
+                }
+            });
             
-            // Total before platform fee
+            // Subtotal is the sum of base prices (before VAT)
+            this.subtotal = baseSubtotal;
+            
+            // VAT is the calculated VAT amount
+            this.vat = totalVat;
+            
+            // Total before platform fee (base + VAT)
             this.totalBeforeFee = this.subtotal + this.vat;
             
             // Platform fee (0.8% of total before fee)

@@ -1,4 +1,4 @@
-@props(['clients', 'services'])
+@props(['clients', 'services', 'company' => null])
 
 <div 
     x-data="invoiceWizard({{ json_encode($clients) }}, {{ json_encode($services) }})"
@@ -6,8 +6,8 @@
 >
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Create Invoice</h1>
-        <p class="mt-1 text-sm text-gray-600">Follow the steps below to create your invoice</p>
+        <h1 class="text-3xl font-bold text-slate-900">Create Invoice</h1>
+        <p class="mt-1 text-sm text-slate-600">Follow the steps below to create your invoice</p>
     </div>
 
     <!-- Step Indicator -->
@@ -19,9 +19,9 @@
                     <div class="flex flex-col items-center flex-1">
                         <div 
                             :class="{
-                                'bg-emerald-600 border-emerald-600 text-white': i < currentStep,
-                                'bg-emerald-600 border-emerald-600 text-white ring-4 ring-emerald-100': i === currentStep,
-                                'bg-white border-gray-300 text-gray-400': i > currentStep
+                                'bg-blue-500 border-blue-500 text-white': i < currentStep,
+                                'bg-blue-500 border-blue-500 text-white ring-4 ring-blue-100': i === currentStep,
+                                'bg-white border-slate-300 text-slate-400': i > currentStep
                             }"
                             class="flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300"
                         >
@@ -36,7 +36,7 @@
                         </div>
                         <!-- Step Label (hidden on mobile) -->
                         <span 
-                            :class="i <= currentStep ? 'text-emerald-600' : 'text-gray-400'"
+                            :class="i <= currentStep ? 'text-blue-600' : 'text-slate-400'"
                             class="mt-2 text-xs font-medium hidden sm:block"
                         >
                             Step <span x-text="i"></span>
@@ -46,7 +46,7 @@
                     <!-- Connector Line -->
                     <template x-if="i < 6">
                         <div 
-                            :class="i < currentStep ? 'bg-emerald-600' : 'bg-gray-300'"
+                            :class="i < currentStep ? 'bg-blue-500' : 'bg-slate-300'"
                             class="flex-1 h-0.5 mx-2 transition-colors duration-300"
                         ></div>
                     </template>
@@ -73,28 +73,28 @@
         <input type="hidden" name="status" x-model="formData.status">
 
         <!-- Step Content -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8 min-h-[400px]">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 md:p-8 min-h-[400px]">
             <!-- Step 1: Client Selection -->
             <div x-show="currentStep === 1" x-transition>
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 1: Select Client</h2>
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 1: Select Client</h2>
                 <x-client-selector :clients="$clients" />
             </div>
 
             <!-- Step 2: Invoice Details -->
             <div x-show="currentStep === 2" x-transition>
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 2: Invoice Details</h2>
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 2: Invoice Details</h2>
                 <div x-data="{ 
                     get formData() { return $el.closest('[x-data*=\"invoiceWizard\"]')._x_dataStack[0].formData; },
                     get currentStep() { return $el.closest('[x-data*=\"invoiceWizard\"]')._x_dataStack[0].currentStep; },
                     get validationErrors() { return $el.closest('[x-data*=\"invoiceWizard\"]')._x_dataStack[0].validationErrors; }
                 }">
-                    <x-invoice-details-form />
+                    <x-invoice-details-form :company="$company" />
                 </div>
             </div>
 
             <!-- Step 3: Line Items -->
             <div x-show="currentStep === 3" x-transition>
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 3: Add Line Items</h2>
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 3: Add Line Items</h2>
                 <div x-data="{ 
                     get currentStep() { return $el.closest('[x-data*=\"invoiceWizard\"]')._x_dataStack[0].currentStep; }
                 }">
@@ -104,19 +104,19 @@
 
             <!-- Step 4: Summary -->
             <div x-show="currentStep === 4" x-transition>
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 4: Review Summary</h2>
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 4: Review Summary</h2>
                 <x-invoice-summary />
             </div>
 
             <!-- Step 5: Payment Method -->
             <div x-show="currentStep === 5" x-transition>
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 5: Payment Method</h2>
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 5: Payment Method</h2>
                 <x-payment-method-selector />
             </div>
 
             <!-- Step 6: Save & Send -->
             <div x-show="currentStep === 6" x-transition>
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 6: Save & Send</h2>
+                <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 6: Save & Send</h2>
                 <x-invoice-actions />
             </div>
         </div>
@@ -127,7 +127,7 @@
                 type="button"
                 @click="previousStep()"
                 x-show="currentStep > 1"
-                class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-semibold"
+                class="px-6 py-3 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors font-semibold"
             >
                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -142,7 +142,7 @@
                 @click="nextStep()"
                 x-show="currentStep < 6"
                 :disabled="processing"
-                class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <span x-show="!processing">Next</span>
                 <span x-show="processing">Validating...</span>
