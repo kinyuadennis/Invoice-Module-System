@@ -83,11 +83,7 @@
             <!-- Step 2: Invoice Details -->
             <div x-show="currentStep === 2" x-transition>
                 <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 2: Invoice Details</h2>
-                <div x-data="{ 
-                    get formData() { return $el.closest('[x-data*=\"invoiceWizard\"]')._x_dataStack[0].formData; },
-                    get currentStep() { return $el.closest('[x-data*=\"invoiceWizard\"]')._x_dataStack[0].currentStep; },
-                    get validationErrors() { return $el.closest('[x-data*=\"invoiceWizard\"]')._x_dataStack[0].validationErrors; }
-                }">
+                <div x-data="{ get formData() { return $el.closest('[x-data*=\'invoiceWizard\']')._x_dataStack[0].formData; }, get currentStep() { return $el.closest('[x-data*=\'invoiceWizard\']')._x_dataStack[0].currentStep; }, get validationErrors() { return $el.closest('[x-data*=\'invoiceWizard\']')._x_dataStack[0].validationErrors; } }">
                     <x-invoice-details-form :company="$company" />
                 </div>
             </div>
@@ -95,9 +91,7 @@
             <!-- Step 3: Line Items -->
             <div x-show="currentStep === 3" x-transition>
                 <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 3: Add Line Items</h2>
-                <div x-data="{ 
-                    get currentStep() { return $el.closest('[x-data*=\"invoiceWizard\"]')._x_dataStack[0].currentStep; }
-                }">
+                <div x-data="{ get currentStep() { return $el.closest('[x-data*=\'invoiceWizard\']')._x_dataStack[0].currentStep; } }">
                     <x-line-items-editor :services="$services" />
                 </div>
             </div>

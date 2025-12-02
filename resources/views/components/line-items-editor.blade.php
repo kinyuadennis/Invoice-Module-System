@@ -17,7 +17,7 @@
                             <input 
                                 type="text" 
                                 x-model="item.description"
-                                :name="currentStep === 3 ? `items[${index}][description]` : ''"
+                                :name="currentStep === 3 ? 'items[' + index + '][description]' : ''"
                                 placeholder="Item description"
                                 class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                                 :required="currentStep === 3"
@@ -30,7 +30,7 @@
                             <input 
                                 type="number" 
                                 x-model.number="item.quantity"
-                                :name="currentStep === 3 ? `items[${index}][quantity]` : ''"
+                                :name="currentStep === 3 ? 'items[' + index + '][quantity]' : ''"
                                 @input="updateItemTotal(index)"
                                 min="1"
                                 step="1"
@@ -45,7 +45,7 @@
                             <input 
                                 type="number" 
                                 x-model.number="item.unit_price"
-                                :name="currentStep === 3 ? `items[${index}][unit_price]` : ''"
+                                :name="currentStep === 3 ? 'items[' + index + '][unit_price]' : ''"
                                 @input="updateItemTotal(index)"
                                 min="0"
                                 step="0.01"
@@ -144,13 +144,6 @@ function lineItemsEditor(services) {
                 // Check every 100ms for step changes
                 setInterval(checkStep, 100);
             }
-            // Listen for service selection
-            this.$watch('$store.wizard.selectedService', (service) => {
-                if (service) {
-                    this.addService(service);
-                }
-            });
-            
             // Listen for custom item addition
             window.addEventListener('service-selected', (e) => {
                 this.addService(e.detail);
