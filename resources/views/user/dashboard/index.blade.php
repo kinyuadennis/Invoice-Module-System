@@ -4,24 +4,6 @@
 
 @section('content')
 <div class="space-y-6">
-    <!-- Email Verification Notice -->
-    @if(!auth()->user()->hasVerifiedEmail())
-        <x-alert type="warning">
-            <div class="flex items-center justify-between">
-                <div>
-                    <strong>Please verify your email address.</strong> We've sent a verification link to {{ auth()->user()->email }}.
-                    If you didn't receive the email, we can send another.
-                </div>
-                <div class="ml-4 flex-shrink-0">
-                    <form method="POST" action="{{ route('verification.send') }}" class="inline">
-                        @csrf
-                        <x-button type="submit" variant="outline" size="sm">Resend Email</x-button>
-                    </form>
-                </div>
-            </div>
-        </x-alert>
-    @endif
-
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>

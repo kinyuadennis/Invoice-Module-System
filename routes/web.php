@@ -14,8 +14,6 @@ use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\InvoiceController;
 use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\User\ProfileController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public routes (no prefix)
@@ -40,31 +38,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'reset'])->middleware('throttle:5,1')->name('password.update');
 });
 
+// Email verification (accessible without auth - uses session for pending users)
+Route::get('/email/verify', [AuthController::class, 'showVerificationNotice'])->name('verification.notice');
+Route::get('/email/verify/{token}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
+Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])->name('verification.send');
+
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-    // Email verification
-    Route::get('/email/verify', function () {
-        return view('auth.verify-email');
-    })->name('verification.notice');
-
-    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-        $request->fulfill();
-
-        // Redirect based on role
-        if ($request->user()->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return redirect()->route('user.dashboard');
-    })->middleware('signed')->name('verification.verify');
-
-    Route::post('/email/verification-notification', function (Request $request) {
-        $request->user()->sendEmailVerificationNotification();
-
-        return back()->with('message', 'Verification link sent!');
-    })->middleware('throttle:6,1')->name('verification.send');
 
     // Company setup (must be before other routes to catch users without companies)
     Route::get('/company/setup', [CompanyController::class, 'setup'])->name('company.setup');

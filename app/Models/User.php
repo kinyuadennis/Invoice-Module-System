@@ -57,4 +57,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Invoice::class);
     }
+
+    /**
+     * Email verifications for this user.
+     */
+    public function emailVerifications(): HasMany
+    {
+        return $this->hasMany(EmailVerification::class);
+    }
 }
