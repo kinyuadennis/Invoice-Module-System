@@ -66,13 +66,6 @@
             </div>
         </x-card>
     @endif
-    @else
-        <x-card>
-            <div class="text-center py-12">
-                <p class="text-sm text-gray-500">No clients found</p>
-            </div>
-        </x-card>
-    @endif
 </div>
 @endsection
 

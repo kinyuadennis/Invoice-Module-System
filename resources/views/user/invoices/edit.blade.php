@@ -3,6 +3,36 @@
 @section('title', 'Edit Invoice')
 
 @section('content')
+@php
+    // Prepare items array for JavaScript
+    $itemsForJs = old('items', null);
+    
+    if (empty($itemsForJs) && isset($invoice) && !empty($invoice['items'] ?? null)) {
+        $invoiceItems = $invoice['items'];
+        
+        // Convert Collection to array if needed
+        if (is_object($invoiceItems) && method_exists($invoiceItems, 'toArray')) {
+            $invoiceItems = $invoiceItems->toArray();
+        }
+        
+        // Map items to the format expected by the form
+        $itemsForJs = [];
+        if (is_array($invoiceItems)) {
+            foreach ($invoiceItems as $item) {
+                $itemsForJs[] = [
+                    'description' => $item['description'] ?? '',
+                    'quantity' => (int) ($item['quantity'] ?? 1),
+                    'rate' => (float) ($item['unit_price'] ?? ($item['rate'] ?? 0)),
+                ];
+            }
+        }
+    }
+    
+    // Default if no items
+    if (empty($itemsForJs) || !is_array($itemsForJs)) {
+        $itemsForJs = [['description' => '', 'quantity' => 1, 'rate' => 0]];
+    }
+@endphp
 <div class="space-y-6" x-data="invoiceForm()">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Edit Invoice</h1>
@@ -76,7 +106,7 @@
                             <input 
                                 type="text" 
                                 x-model="item.description"
-                                :name="`items[${index}][description]`"
+                                :name="'items[' + index + '][description]'"
                                 placeholder="Item description"
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                 required
@@ -87,7 +117,7 @@
                             <input 
                                 type="number" 
                                 x-model.number="item.quantity"
-                                :name="`items[${index}][quantity]`"
+                                :name="'items[' + index + '][quantity]'"
                                 min="1"
                                 step="1"
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -99,7 +129,7 @@
                             <input 
                                 type="number" 
                                 x-model.number="item.rate"
-                                :name="`items[${index}][rate]`"
+                                :name="'items[' + index + '][rate]'"
                                 min="0"
                                 step="0.01"
                                 placeholder="0.00"
@@ -117,7 +147,7 @@
                                 variant="ghost" 
                                 size="sm" 
                                 @click="removeItem(index)"
-                                :disabled="items.length === 1"
+                                x-bind:disabled="items.length === 1"
                             >
                                 <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -167,9 +197,13 @@
 
 <script>
 function invoiceForm() {
+    @php
+        $itemsJson = json_encode($itemsForJs ?? [['description' => '', 'quantity' => 1, 'rate' => 0]]);
+        $taxRate = old('tax_rate', $invoice['tax_rate'] ?? 16);
+    @endphp
     return {
-        items: @json(old('items', $invoice['items'] ?? [['description' => '', 'quantity' => 1, 'rate' => 0]])),
-        taxRate: {{ old('tax_rate', $invoice['tax_rate'] ?? 8) }},
+        items: {!! $itemsJson !!},
+        taxRate: {{ $taxRate }},
         
         addItem() {
             this.items.push({ description: '', quantity: 1, rate: 0 });
