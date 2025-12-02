@@ -15,10 +15,10 @@
             <div class="flex items-center justify-between py-3 border-b border-gray-200">
                 <div>
                     <p class="text-sm font-medium text-gray-900">Fee Rate</p>
-                    <p class="text-sm text-gray-600">Currently set to {{ $platformFeeSettings['rate'] ?? 0.8 }}% of invoice total</p>
+                    <p class="text-sm text-gray-600">Currently set to {{ $platformFeeSettings['rate'] ?? 3 }}% of invoice total</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-lg font-semibold text-gray-900">{{ $platformFeeSettings['rate'] ?? 0.8 }}%</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ $platformFeeSettings['rate'] ?? 3 }}%</p>
                 </div>
             </div>
             <div class="flex items-center justify-between py-3 border-b border-gray-200">

@@ -19,53 +19,6 @@
     <!-- Social Proof Bar -->
     <x-trust.social-proof-bar />
 
-    <!-- FEATURE HIGHLIGHTS (4× Grid) -->
-    <section id="features" class="py-16 lg:py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-                    Everything You Need to Get Paid Faster
-                </h2>
-                <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-                    Built for Kenyan businesses with M-Pesa integration, KRA compliance, and everything you need to manage invoices professionally.
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-                <x-feature-card
-                    icon="<svg class='h-8 w-8 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' /></svg>"
-                    title="Instant Invoice Creation"
-                    description="Create professional invoices in under 60 seconds"
-                />
-                <x-feature-card
-                    icon="<svg class='h-8 w-8 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' /></svg>"
-                    title="Client & Payment Tracking"
-                    description="Manage clients and track payments automatically"
-                />
-                <x-feature-card
-                    icon="<svg class='h-8 w-8 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' /></svg>"
-                    title="Multi-Channel Delivery"
-                    description="Send via email, WhatsApp, or download PDF"
-                />
-                <x-feature-card
-                    icon="<svg class='h-8 w-8 text-blue-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' /></svg>"
-                    title="VAT-Compliant"
-                    description="Auto-calculates 16% VAT and platform fees"
-                />
-            </div>
-            
-            <!-- CTA after features -->
-            <div class="text-center mt-12">
-                <a 
-                    href="{{ route('register') }}"
-                    class="inline-flex items-center justify-center px-8 py-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-105"
-                >
-                    Create Your First Invoice
-                </a>
-            </div>
-        </div>
-    </section>
-
     <!-- PRODUCT PREVIEW SECTION -->
     <section class="py-16 lg:py-24 bg-slate-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -127,12 +80,12 @@
                             <span class="font-medium text-slate-900">KES 8,000</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-600">Platform Fee (0.8%)</span>
-                            <span class="font-medium text-slate-900">KES 464</span>
+                            <span class="text-slate-600">Platform Fee (3%)</span>
+                            <span class="font-medium text-slate-900">KES 1,740</span>
                         </div>
                         <div class="pt-3 border-t-2 border-slate-200 flex justify-between">
                             <span class="font-bold text-slate-900">Total</span>
-                            <span class="font-black text-lg text-blue-600">KES 58,464</span>
+                            <span class="font-black text-lg text-blue-600">KES 59,740</span>
                         </div>
                     </div>
                 </div>
@@ -140,56 +93,166 @@
         </div>
     </section>
 
-    <!-- HOW IT WORKS (3 Steps) -->
-    <section class="py-16 lg:py-24 bg-white">
+    <!-- HOW IT WORKS (Enhanced Business-Focused) -->
+    <section id="invoicing-workflow" class="py-16 lg:py-24 bg-white scroll-mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-                    How It Works
+                    How InvoiceHub Works for Your Business
                 </h2>
                 <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-                    Get started in minutes. No credit card required.
+                    A complete invoicing solution designed for Kenyan businesses. Get professional invoices, track payments, and stay compliant—all in one place.
                 </p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-                <!-- Step 1 -->
-                <div class="text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 text-blue-600 rounded-full text-2xl font-bold mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-8">
+                <!-- Step 1: Setup & Branding -->
+                <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                    <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-500 text-white rounded-full text-xl font-bold mb-4">
                         1
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-2">Sign Up & Set Up</h3>
-                    <p class="text-slate-600">Create your free account and add company details</p>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Setup & Branding</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 text-left">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Create your company profile</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Upload your company logo</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Add KRA PIN & business details</span>
+                        </li>
+                    </ul>
                 </div>
                 
-                <!-- Step 2 -->
-                <div class="text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 text-blue-600 rounded-full text-2xl font-bold mb-4">
+                <!-- Step 2: Customize Your Invoices -->
+                <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                    <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-500 text-white rounded-full text-xl font-bold mb-4">
                         2
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-2">Add Clients</h3>
-                    <p class="text-slate-600">Import or add clients manually—one-time setup</p>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Customize Your Invoices</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 text-left">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Choose from 4 professional templates</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Set custom invoice number format</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Add prefix, suffix & padding</span>
+                        </li>
+                    </ul>
                 </div>
                 
-                <!-- Step 3 -->
-                <div class="text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 text-blue-600 rounded-full text-2xl font-bold mb-4">
+                <!-- Step 3: Manage Clients -->
+                <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                    <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-500 text-white rounded-full text-xl font-bold mb-4">
                         3
                     </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-2">Generate & Send</h3>
-                    <p class="text-slate-600">Create invoices in seconds and send via preferred channel</p>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Manage Clients</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 text-left">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Add clients with contact details</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Build your client database</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Quick-select for future invoices</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Step 4: Create & Send -->
+                <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                    <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-500 text-white rounded-full text-xl font-bold mb-4">
+                        4
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Create & Send</h3>
+                    <ul class="text-sm text-slate-600 space-y-2 text-left">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>6-step guided invoice wizard</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Auto-calculate 16% VAT & fees</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Send via Email, WhatsApp & PDF</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Additional Business Benefits -->
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-blue-50 rounded-lg border border-blue-100">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-lg mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <h4 class="font-bold text-slate-900 mb-2">KRA eTIMS Compliant</h4>
+                    <p class="text-sm text-slate-600">Fully compliant with Kenyan tax regulations. All invoices meet KRA requirements automatically.</p>
+                </div>
+                
+                <div class="text-center p-6 bg-blue-50 rounded-lg border border-blue-100">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-lg mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h4 class="font-bold text-slate-900 mb-2">Payment Tracking</h4>
+                    <p class="text-sm text-slate-600">Track all payments, see what's outstanding, and get alerts for overdue invoices.</p>
+                </div>
+                
+                <div class="text-center p-6 bg-blue-50 rounded-lg border border-blue-100">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-lg mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <h4 class="font-bold text-slate-900 mb-2">Business Insights</h4>
+                    <p class="text-sm text-slate-600">Dashboard shows revenue, outstanding amounts, and business performance at a glance.</p>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- PRICING -->
-    <x-pricing-showcase
-        :plans="$plans ?? []"
-        :showYearly="true"
-        :showComparison="true"
-        :showROI="false"
-    />
 
     <!-- TESTIMONIALS -->
     <x-testimonials.testimonials-grid
@@ -261,20 +324,4 @@
         </div>
     </section>
 
-    <!-- FINAL CTA -->
-    <section class="bg-gradient-to-br from-slate-900 to-slate-800 py-16 lg:py-24">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl md:text-4xl font-black text-white mb-4">Ready to Get Paid Faster?</h2>
-            <p class="text-xl text-slate-300 mb-8">Join 500+ Kenyan businesses using InvoiceHub</p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-8 py-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-105">
-                    Start Free Today
-                </a>
-                <a href="#features" class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-all duration-200">
-                    Learn More
-                </a>
-            </div>
-            <p class="mt-6 text-sm text-slate-400">No credit card required • Free forever • Pay only when you get paid</p>
-        </div>
-    </section>
 @endsection

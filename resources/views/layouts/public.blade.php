@@ -18,8 +18,7 @@
     <x-navigation.nav-sticky
         :links="[
             ['text' => 'Home', 'href' => route('home')],
-            ['text' => 'Features', 'href' => '#features'],
-            ['text' => 'Pricing', 'href' => route('pricing')],
+            ['text' => 'Invoicing Workflow', 'href' => route('home') . '#invoicing-workflow'],
             ['text' => 'About', 'href' => route('about')],
         ]"
         ctaText="Sign Up"
@@ -59,8 +58,6 @@
                 <div>
                     <h4 class="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Product</h4>
                     <ul class="space-y-2">
-                        <li><a href="#features" class="text-sm text-slate-600 hover:text-blue-600 transition-colors">Features</a></li>
-                        <li><a href="{{ route('pricing') }}" class="text-sm text-slate-600 hover:text-blue-600 transition-colors">Pricing</a></li>
                         <li><a href="#integrations" class="text-sm text-slate-600 hover:text-blue-600 transition-colors">Integrations</a></li>
                     </ul>
                 </div>

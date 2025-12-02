@@ -22,7 +22,7 @@
     <!-- Platform Fee -->
     <div class="flex justify-between text-sm">
         <div class="flex items-center gap-1">
-            <span class="text-slate-600">Platform Fee (0.8%)</span>
+            <span class="text-slate-600">Platform Fee (3%)</span>
             <svg class="w-4 h-4 text-slate-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="Platform fee supports service maintenance and payment processing">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
@@ -46,7 +46,7 @@ function invoiceSummary() {
         totalBeforeFee: 0,
         platformFee: 0,
         grandTotal: 0,
-        platformFeeRate: 0.008, // 0.8%
+        platformFeeRate: 0.03, // 3%
         vatRate: 0.16, // 16%
         
         init() {
@@ -96,7 +96,7 @@ function invoiceSummary() {
             // Total before platform fee (base + VAT)
             this.totalBeforeFee = this.subtotal + this.vat;
             
-            // Platform fee (0.8% of total before fee)
+            // Platform fee (3% of total before fee)
             this.platformFee = this.totalBeforeFee * this.platformFeeRate;
             
             // Grand total

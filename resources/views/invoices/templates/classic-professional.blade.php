@@ -174,7 +174,7 @@
             </div>
             @if(isset($invoice['platform_fee']) && $invoice['platform_fee'] > 0)
                 <div class="total-row">
-                    <span>Platform Fee (0.8%):</span>
+                    <span>Platform Fee (3%):</span>
                     <span>KES {{ number_format($invoice['platform_fee'], 2) }}</span>
                 </div>
             @endif

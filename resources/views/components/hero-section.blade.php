@@ -32,7 +32,7 @@
 
                 <!-- Trust signals -->
                 <p class="text-sm text-indigo-200">
-                    ✓ Free to create • ✓ 0.8% platform fee • ✓ No monthly fees
+                    ✓ Free to create • ✓ 3% platform fee • ✓ No monthly fees
                 </p>
             </div>
 
@@ -67,7 +67,7 @@
                             <span>KSh 10,800</span>
                         </div>
                         <div class="flex justify-between text-sm text-gray-600">
-                            <span>Platform Fee (0.8%)</span>
+                            <span>Platform Fee (3%)</span>
                             <span>KSh 86</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">

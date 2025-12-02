@@ -226,7 +226,7 @@
                     </div>
                     <div class="flex justify-between text-sm items-center">
                         <div class="flex items-center gap-2">
-                            <span class="text-gray-600">Platform Fee (0.8%)</span>
+                            <span class="text-gray-600">Platform Fee (3%)</span>
                             <span 
                                 class="text-xs text-indigo-600 cursor-help"
                                 title="Platform fee supports service maintenance"
@@ -316,8 +316,8 @@ function invoicePreview() {
             // Calculate total before platform fee
             const totalBeforeFee = this.totals.subtotal + this.totals.tax;
             
-            // Calculate platform fee (0.8%)
-            this.totals.platform_fee = totalBeforeFee * 0.008;
+            // Calculate platform fee (3%)
+            this.totals.platform_fee = totalBeforeFee * 0.03;
             
             // Calculate final total
             this.totals.total = totalBeforeFee + this.totals.platform_fee;

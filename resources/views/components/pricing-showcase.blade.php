@@ -49,7 +49,7 @@
         @endif
 
         <p class="text-center text-sm text-slate-500 mt-8">
-            All plans include 0.8% platform fee on successful payments. No hidden fees.
+            All plans include 3% platform fee on successful payments. No hidden fees.
         </p>
     </div>
 </section>

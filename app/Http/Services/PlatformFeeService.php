@@ -8,16 +8,16 @@ use App\Models\PlatformFee;
 class PlatformFeeService
 {
     /**
-     * Platform fee rate (0.8%)
+     * Platform fee rate (3%)
      */
-    private const FEE_RATE = 0.008;
+    private const FEE_RATE = 0.03;
 
     /**
      * Calculate and create a platform fee for a given invoice.
      */
     public function generateFeeForInvoice(Invoice $invoice): PlatformFee
     {
-        // Calculate 0.8% fee on invoice grand_total (subtotal + VAT)
+        // Calculate 3% fee on invoice grand_total (subtotal + VAT)
         $feeAmount = ($invoice->subtotal + $invoice->vat_amount) * self::FEE_RATE;
 
         // Check if fee already exists

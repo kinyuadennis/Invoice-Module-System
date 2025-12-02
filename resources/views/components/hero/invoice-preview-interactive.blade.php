@@ -7,8 +7,8 @@
         ],
         'subtotal' => 50000,
         'vat' => 8000,
-        'platform_fee' => 464,
-        'total' => 58464,
+        'platform_fee' => 1740,
+        'total' => 59740,
     ],
     'editable' => false,
     'showMpesa' => true,
@@ -74,7 +74,7 @@
             <span class="font-medium text-slate-900">KES {{ number_format($invoice['vat'] ?? 0, 2) }}</span>
         </div>
         <div class="flex justify-between text-sm">
-            <span class="text-slate-600">Platform Fee (0.8%)</span>
+            <span class="text-slate-600">Platform Fee (3%)</span>
             <span class="font-medium text-slate-900">KES {{ number_format($invoice['platform_fee'] ?? 0, 2) }}</span>
         </div>
         <div class="flex justify-between pt-2 border-t-2 border-slate-200">

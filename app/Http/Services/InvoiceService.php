@@ -78,7 +78,7 @@ class InvoiceService
 
         $vatAmount = $subtotal * 0.16; // 16% VAT (Kenyan standard)
         $totalBeforeFee = $subtotal + $vatAmount;
-        $platformFee = $totalBeforeFee * 0.008; // 0.8% platform fee
+        $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
         $grandTotal = $totalBeforeFee + $platformFee;
 
         // Add calculated totals to invoice data
@@ -216,7 +216,7 @@ class InvoiceService
 
         $vatAmount = $subtotal * 0.16; // 16% VAT (Kenyan standard)
         $totalBeforeFee = $subtotal + $vatAmount;
-        $platformFee = $totalBeforeFee * 0.008; // 0.8% platform fee
+        $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
         $grandTotal = $totalBeforeFee + $platformFee;
 
         $invoice->subtotal = $subtotal;
