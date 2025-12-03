@@ -5,10 +5,12 @@
 @section('content')
     <!-- HERO SECTION -->
     <x-hero.hero-split
-        title="Stop Chasing Payments. Get Paid in 7 Days, Not 30."
+        title="{{ $heroHeading ?? 'Professional invoicing for Kenyan businesses — compliant, simple, reliable.' }}"
         subtitle="Send professional invoices, accept M-Pesa payments, track everything. KRA eTIMS compliant. Trusted by 500+ Kenyan businesses."
         ctaPrimary="Start Free"
+        ctaPrimaryHref="{{ route('register') }}"
         ctaSecondary="Explore Features"
+        ctaSecondaryHref="#invoicing-workflow"
         :stats="$stats ?? ['businesses' => 500, 'invoices' => '12,000+', 'days' => '7']"
         :trustBadges="['No credit card required', 'Free forever', 'KRA compliant']"
         background="slate"
@@ -94,7 +96,7 @@
     </section>
 
     <!-- HOW IT WORKS (Enhanced Business-Focused) -->
-    <section id="invoicing-workflow" class="py-16 lg:py-24 bg-white scroll-mt-20">
+    <section id="invoicing-workflow" class="py-16 lg:py-24 bg-white scroll-mt-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">

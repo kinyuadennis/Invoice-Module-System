@@ -244,6 +244,17 @@ class HomeController extends Controller
             ],
         ];
 
+        // Hero heading variants for A/B testing
+        $heroHeadingVariants = [
+            'variant1' => 'Professional invoicing for Kenyan businesses — compliant, simple, reliable.',
+            'variant2' => 'Create invoices, collect payments, stay KRA-compliant — in minutes.',
+            'variant3' => 'Invoices that get paid faster — simple setup, custom templates, MPesa-ready.',
+        ];
+        
+        // Get variant from query parameter or default to variant1
+        $heroVariant = request()->get('hero', 'variant1');
+        $heroHeading = $heroHeadingVariants[$heroVariant] ?? $heroHeadingVariants['variant1'];
+
         return view('public.home', [
             'recentInvoices' => $recentInvoices,
             'allClients' => $allClients,
@@ -252,6 +263,7 @@ class HomeController extends Controller
             'features' => $features,
             'plans' => $plans,
             'testimonials' => $testimonials,
+            'heroHeading' => $heroHeading,
         ]);
     }
 

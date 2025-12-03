@@ -12,7 +12,7 @@
 
 @php
     $ctaPrimaryHref = $ctaPrimaryHref ?? route('register');
-    $ctaSecondaryHref = $ctaSecondaryHref ?? '#features';
+    $ctaSecondaryHref = $ctaSecondaryHref ?? '#invoicing-workflow';
     
     $backgroundClasses = [
         'gradient' => 'bg-gradient-to-br from-slate-900 to-slate-800',
