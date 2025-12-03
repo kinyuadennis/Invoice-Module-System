@@ -85,6 +85,17 @@ Route::middleware('auth')->group(function () {
 
     // Admin area (prefix: /admin)
     Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
+        // Simple /admin route redirects to dashboard
+        Route::get('/', function () {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if (! $user) {
+                return redirect()->route('login')->with('error', 'Please log in to access the admin area.');
+            }
+            if ($user->role !== 'admin') {
+                abort(403, "Unauthorized. Your role is: " . ($user->role ?? 'not set') . ". Required role: admin");
+            }
+            return redirect()->route('admin.dashboard');
+        })->name('index');
         Route::get('/dashboard', [AdminDashboardController::class, '__invoke'])->name('dashboard');
         Route::resource('companies', \App\Http\Controllers\Admin\CompanyController::class)->except(['create', 'store']);
         Route::resource('clients', ClientController::class);
