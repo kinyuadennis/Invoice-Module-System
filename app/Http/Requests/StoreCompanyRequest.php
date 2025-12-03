@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\KraPin;
+use App\Rules\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,9 +27,9 @@ class StoreCompanyRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', new PhoneNumber, 'max:20'],
             'address' => 'nullable|string|max:500',
-            'kra_pin' => 'nullable|string|max:20',
+            'kra_pin' => ['nullable', new KraPin, 'max:11'],
             'invoice_prefix' => 'nullable|string|max:10|alpha',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'settings' => 'nullable|array',

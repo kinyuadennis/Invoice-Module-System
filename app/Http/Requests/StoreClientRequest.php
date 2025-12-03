@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\KraPin;
+use App\Rules\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,9 +33,9 @@ class StoreClientRequest extends FormRequest
                 'email',
                 Rule::unique('clients', 'email')->where('company_id', $companyId),
             ],
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', new PhoneNumber, 'max:20'],
             'address' => 'nullable|string|max:500',
-            'kra_pin' => 'nullable|string|max:20',
+            'kra_pin' => ['nullable', new KraPin, 'max:11'],
         ];
     }
 }

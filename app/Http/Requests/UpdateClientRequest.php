@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\KraPin;
+use App\Rules\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -34,9 +36,9 @@ class UpdateClientRequest extends FormRequest
                     ->where('company_id', $companyId)
                     ->ignore($clientId),
             ],
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', new PhoneNumber, 'max:20'],
             'address' => 'nullable|string|max:500',
-            'kra_pin' => 'nullable|string|max:20',
+            'kra_pin' => ['nullable', new KraPin, 'max:11'],
         ];
     }
 }

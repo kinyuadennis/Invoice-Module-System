@@ -45,6 +45,17 @@ class CompanyController extends Controller
         $data['owner_user_id'] = $user->id;
         $data['invoice_prefix'] = $data['invoice_prefix'] ?? 'INV';
 
+        // Normalize phone number to E.164 format
+        if (isset($data['phone']) && ! empty($data['phone'])) {
+            $phoneService = app(\App\Services\PhoneNumberService::class);
+            $data['phone'] = $phoneService->normalize($data['phone']);
+        }
+
+        // Normalize KRA PIN to uppercase
+        if (isset($data['kra_pin']) && ! empty($data['kra_pin'])) {
+            $data['kra_pin'] = strtoupper($data['kra_pin']);
+        }
+
         // Handle logo upload
         if ($request->hasFile('logo')) {
             $data['logo'] = $request->file('logo')->store('companies/logos', 'public');
@@ -117,6 +128,17 @@ class CompanyController extends Controller
         }
 
         $data = $request->validated();
+
+        // Normalize phone number to E.164 format
+        if (isset($data['phone']) && ! empty($data['phone'])) {
+            $phoneService = app(\App\Services\PhoneNumberService::class);
+            $data['phone'] = $phoneService->normalize($data['phone']);
+        }
+
+        // Normalize KRA PIN to uppercase
+        if (isset($data['kra_pin']) && ! empty($data['kra_pin'])) {
+            $data['kra_pin'] = strtoupper($data['kra_pin']);
+        }
 
         // Handle prefix change separately using InvoicePrefixService
         $prefixService = app(InvoicePrefixService::class);

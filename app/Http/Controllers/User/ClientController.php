@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreClientRequest;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,13 +24,23 @@ class ClientController extends Controller
             ], 403);
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255|unique:clients,email',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'kra_pin' => 'nullable|string|max:20',
-        ]);
+        // Use StoreClientRequest for validation
+        $storeRequest = new StoreClientRequest;
+        $storeRequest->merge($request->all());
+        $storeRequest->setUserResolver(fn () => Auth::user());
+
+        $validated = $storeRequest->validated();
+
+        // Normalize phone number to E.164 format
+        if (isset($validated['phone']) && ! empty($validated['phone'])) {
+            $phoneService = app(\App\Services\PhoneNumberService::class);
+            $validated['phone'] = $phoneService->normalize($validated['phone']);
+        }
+
+        // Normalize KRA PIN to uppercase
+        if (isset($validated['kra_pin']) && ! empty($validated['kra_pin'])) {
+            $validated['kra_pin'] = strtoupper($validated['kra_pin']);
+        }
 
         $validated['company_id'] = $companyId;
         $validated['user_id'] = Auth::id();
