@@ -54,11 +54,18 @@ Route::middleware('auth')->group(function () {
     // User area (prefix: /app)
     Route::prefix('app')->middleware(\App\Http\Middleware\EnsureUserHasCompany::class)->name('user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
+        
+        // Invoice routes - must be before resource route to avoid conflicts
+        Route::post('/invoices/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
+        Route::post('/invoices/autosave', [InvoiceController::class, 'autosave'])->name('invoices.autosave');
+        
         Route::resource('invoices', InvoiceController::class);
         Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
+        
         Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
+        Route::get('/clients/search', [\App\Http\Controllers\User\ClientController::class, 'search'])->name('clients.search');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
@@ -68,6 +75,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/company/invoice-customization', [CompanyController::class, 'invoiceCustomization'])->name('company.invoice-customization');
         Route::post('/company/invoice-format', [CompanyController::class, 'updateInvoiceFormat'])->name('company.update-invoice-format');
         Route::post('/company/invoice-template', [CompanyController::class, 'updateInvoiceTemplate'])->name('company.update-invoice-template');
+        
+        // Payment Methods
+        Route::post('/company/payment-methods', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'store'])->name('company.payment-methods.store');
+        Route::put('/company/payment-methods/{paymentMethod}', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'update'])->name('company.payment-methods.update');
+        Route::delete('/company/payment-methods/{paymentMethod}', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'destroy'])->name('company.payment-methods.destroy');
+        Route::post('/company/payment-methods/reorder', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'reorder'])->name('company.payment-methods.reorder');
     });
 
     // Admin area (prefix: /admin)

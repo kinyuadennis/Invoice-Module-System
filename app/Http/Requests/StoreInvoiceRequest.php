@@ -24,11 +24,14 @@ class StoreInvoiceRequest extends FormRequest
     {
         $companyId = $this->user()->company_id;
 
+        // Client is required for final invoices, but optional for drafts
+        $status = $this->input('status', 'draft');
+        $clientIdRule = $status === 'draft'
+            ? ['nullable', Rule::exists('clients', 'id')->where('company_id', $companyId)]
+            : ['required', Rule::exists('clients', 'id')->where('company_id', $companyId)];
+
         return [
-            'client_id' => [
-                'required',
-                Rule::exists('clients', 'id')->where('company_id', $companyId),
-            ],
+            'client_id' => $clientIdRule,
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
             'invoice_reference' => [

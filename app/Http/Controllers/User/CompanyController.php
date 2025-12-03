@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Services\InvoicePrefixService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -51,6 +52,10 @@ class CompanyController extends Controller
 
         $company = Company::create($data);
 
+        // Create initial invoice prefix
+        $prefixService = app(InvoicePrefixService::class);
+        $prefixService->createDefaultPrefix($company, $user->id);
+
         // Update user with company_id
         $user->update(['company_id' => $company->id]);
 
@@ -70,9 +75,26 @@ class CompanyController extends Controller
         }
 
         $company = Company::findOrFail($user->company_id);
+        $prefixService = app(InvoicePrefixService::class);
+
+        // Get prefix history
+        $prefixHistory = $prefixService->getPrefixHistory($company);
+        $activePrefix = $company->activeInvoicePrefix();
+
+        // Get payment methods with display name
+        $paymentMethods = $company->paymentMethods()->ordered()->get()->map(function ($method) {
+            return array_merge($method->toArray(), [
+                'display_name' => $method->display_name,
+                'account_identifier' => $method->account_identifier,
+                'clearing_time_description' => $method->clearing_time_description,
+            ]);
+        });
 
         return view('company.settings', [
             'company' => $company,
+            'prefixHistory' => $prefixHistory,
+            'activePrefix' => $activePrefix,
+            'paymentMethods' => $paymentMethods,
         ]);
     }
 
@@ -95,6 +117,22 @@ class CompanyController extends Controller
         }
 
         $data = $request->validated();
+
+        // Handle prefix change separately using InvoicePrefixService
+        $prefixService = app(InvoicePrefixService::class);
+        $newPrefix = $request->input('invoice_prefix');
+
+        if ($newPrefix !== null) {
+            $currentActivePrefix = $company->activeInvoicePrefix();
+
+            // Only change prefix if it's different from current active prefix
+            if (! $currentActivePrefix || $currentActivePrefix->prefix !== $newPrefix) {
+                $prefixService->changePrefix($company, $newPrefix, $user->id);
+            }
+
+            // Remove from data array to prevent direct update
+            unset($data['invoice_prefix']);
+        }
 
         // Handle logo upload
         if ($request->hasFile('logo')) {
@@ -150,18 +188,55 @@ class CompanyController extends Controller
         }
 
         $request->validate([
-            'invoice_prefix' => 'nullable|string|max:20',
+            'invoice_prefix' => ['nullable', 'string', 'max:50', function ($attribute, $value, $fail) {
+                if ($value && ! preg_match('/^[A-Za-z0-9\-_%]{1,50}$/', $value)) {
+                    $fail('The prefix must be alphanumeric with optional hyphens, underscores, and placeholders (like %YYYY%), max 50 characters.');
+                }
+            }],
             'invoice_suffix' => 'nullable|string|max:20',
-            'invoice_padding' => 'required|integer|min:1|max:10',
-            'invoice_format' => 'required|string|in:{PREFIX}-{NUMBER},{PREFIX}-{YEAR}-{NUMBER},{YEAR}/{NUMBER},{PREFIX}/{NUMBER}/{SUFFIX},{NUMBER}',
+            'invoice_padding' => 'nullable|integer|min:1|max:10',
+            'invoice_format' => 'nullable|string|in:{PREFIX}-{NUMBER},{PREFIX}-{YEAR}-{NUMBER},{YEAR}/{NUMBER},{PREFIX}/{NUMBER}/{SUFFIX},{NUMBER}',
         ]);
 
-        $company->update($request->only([
-            'invoice_prefix',
-            'invoice_suffix',
-            'invoice_padding',
-            'invoice_format',
-        ]));
+        $prefixService = app(InvoicePrefixService::class);
+        $newPrefix = $request->input('invoice_prefix', $company->invoice_prefix ?? 'INV');
+        $currentActivePrefix = $company->activeInvoicePrefix();
+
+        // Only change prefix if it's different from current active prefix
+        if (! $currentActivePrefix || $currentActivePrefix->prefix !== $newPrefix) {
+            $prefixService->changePrefix($company, $newPrefix, $user->id);
+        }
+
+        // Update other format settings (suffix, padding, format)
+        $updateData = [];
+        if ($request->has('invoice_suffix')) {
+            $updateData['invoice_suffix'] = $request->input('invoice_suffix');
+        }
+        if ($request->has('invoice_padding')) {
+            $updateData['invoice_padding'] = $request->input('invoice_padding');
+        }
+        if ($request->has('invoice_format')) {
+            $updateData['invoice_format'] = $request->input('invoice_format');
+        }
+
+        if (! empty($updateData)) {
+            $company->update($updateData);
+        }
+
+        // Refresh company to get updated data
+        $company->refresh();
+
+        // If AJAX request, return JSON with updated invoice number
+        if ($request->wantsJson() || $request->ajax()) {
+            $nextInvoiceNumber = $prefixService->getNextInvoiceNumberPreview($company);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice format updated successfully!',
+                'next_invoice_number' => $nextInvoiceNumber,
+                'active_prefix' => $company->activeInvoicePrefix()?->prefix ?? $newPrefix,
+            ]);
+        }
 
         return back()->with('success', 'Invoice format updated successfully!');
     }

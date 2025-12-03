@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\Service;
+use App\Services\InvoicePrefixService;
 use App\Traits\FormatsInvoiceData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,9 +17,12 @@ class InvoiceService
 
     protected PlatformFeeService $platformFeeService;
 
-    public function __construct(PlatformFeeService $platformFeeService)
+    protected InvoicePrefixService $prefixService;
+
+    public function __construct(PlatformFeeService $platformFeeService, InvoicePrefixService $prefixService)
     {
         $this->platformFeeService = $platformFeeService;
+        $this->prefixService = $prefixService;
     }
 
     /**
@@ -33,10 +37,14 @@ class InvoiceService
             throw new \RuntimeException('User must belong to a company to create invoices.');
         }
 
-        // Validate client belongs to same company
-        $client = Client::where('id', $request->input('client_id'))
-            ->where('company_id', $companyId)
-            ->firstOrFail();
+        // Validate client belongs to same company (if provided)
+        // Client is optional for drafts but required for final invoices
+        $clientId = $request->input('client_id');
+        if ($clientId) {
+            $client = Client::where('id', $clientId)
+                ->where('company_id', $companyId)
+                ->firstOrFail();
+        }
 
         // Validate and prepare data for invoice creation
         $data = $request->only([
@@ -45,9 +53,14 @@ class InvoiceService
             'due_date',
             'status',
             'invoice_reference',
+            'po_number',
             'payment_method',
             'payment_details',
             'notes',
+            'terms_and_conditions',
+            'vat_registered',
+            'discount',
+            'discount_type',
         ]);
 
         // Automatically set company_id and user_id from authenticated user
@@ -57,9 +70,16 @@ class InvoiceService
         // Get company for invoice prefix
         $company = Company::findOrFail($companyId);
 
-        // Generate invoice reference if not provided
+        // Generate invoice number using new prefix system if not provided
         if (empty($data['invoice_reference'])) {
-            $data['invoice_reference'] = $this->generateInvoiceReference($company);
+            $prefix = $this->prefixService->getActivePrefix($company);
+            $serialNumber = $this->prefixService->generateNextSerialNumber($company, $prefix);
+            $fullNumber = $this->prefixService->generateFullNumber($company, $prefix, $serialNumber);
+
+            $data['prefix_used'] = $prefix->prefix;
+            $data['serial_number'] = $serialNumber;
+            $data['full_number'] = $fullNumber;
+            $data['invoice_reference'] = $fullNumber; // Keep for backward compatibility
         }
 
         // Set issue_date to today if not provided
@@ -76,13 +96,33 @@ class InvoiceService
             $subtotal += $itemTotal;
         }
 
-        $vatAmount = $subtotal * 0.16; // 16% VAT (Kenyan standard)
-        $totalBeforeFee = $subtotal + $vatAmount;
+        // Apply discount
+        $discount = $request->input('discount', 0);
+        $discountType = $request->input('discount_type', 'fixed');
+        $discountAmount = 0;
+        if ($discount > 0) {
+            if ($discountType === 'percentage') {
+                $discountAmount = $subtotal * ($discount / 100);
+            } else {
+                $discountAmount = $discount;
+            }
+        }
+        $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
+
+        // Calculate VAT only if VAT registered
+        $vatRegistered = $request->input('vat_registered', false);
+        $vatAmount = 0;
+        if ($vatRegistered) {
+            $vatAmount = $subtotalAfterDiscount * 0.16; // 16% VAT (Kenyan standard)
+        }
+
+        $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
         $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
         $grandTotal = $totalBeforeFee + $platformFee;
 
         // Add calculated totals to invoice data
         $data['subtotal'] = $subtotal;
+        $data['discount'] = $discountAmount;
         $data['tax'] = $vatAmount; // Keep for backward compatibility
         $data['vat_amount'] = $vatAmount;
         $data['platform_fee'] = $platformFee;
@@ -135,7 +175,7 @@ class InvoiceService
                 ->firstOrFail();
         }
 
-        // Update invoice data
+        // Update invoice data (prefix fields are immutable and must never be updated)
         $data = $request->only([
             'client_id',
             'issue_date',
@@ -145,6 +185,9 @@ class InvoiceService
             'payment_details',
             'notes',
         ]);
+
+        // Explicitly prevent any prefix field updates
+        unset($data['prefix_used'], $data['serial_number'], $data['full_number'], $data['invoice_reference']);
 
         // Update items if provided
         if ($request->has('items')) {

@@ -99,7 +99,7 @@ class InvoiceController extends Controller
         }
 
         $clients = Client::where('company_id', $companyId)
-            ->select('id', 'name', 'email', 'phone', 'address')
+            ->select('id', 'name', 'email', 'phone', 'address', 'kra_pin')
             ->get();
 
         // Get service library from invoice items (company-specific)
@@ -108,10 +108,36 @@ class InvoiceController extends Controller
         // Get company for invoice format settings
         $company = Company::findOrFail($companyId);
 
+        // Get next invoice number preview
+        $prefixService = app(\App\Services\InvoicePrefixService::class);
+        $nextInvoiceNumber = $prefixService->getNextInvoiceNumberPreview($company);
+
+        // Check if user wants one-page builder (default) or wizard
+        $builderType = request()->get('builder', 'one-page'); // 'one-page' or 'wizard'
+
+        // If AJAX request, return JSON with invoice number
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'next_invoice_number' => $nextInvoiceNumber,
+                'active_prefix' => $company->activeInvoicePrefix()?->prefix ?? $company->invoice_prefix ?? 'INV',
+            ]);
+        }
+
+        if ($builderType === 'one-page') {
+            return view('user.invoices.create-one-page', [
+                'clients' => $clients,
+                'services' => $services,
+                'company' => $company,
+                'nextInvoiceNumber' => $nextInvoiceNumber,
+            ]);
+        }
+
         return view('user.invoices.create', [
             'clients' => $clients,
             'services' => $services,
             'company' => $company,
+            'nextInvoiceNumber' => $nextInvoiceNumber,
         ]);
     }
 
@@ -321,5 +347,331 @@ class InvoiceController extends Controller
             'success' => true,
             'message' => 'WhatsApp message queued for sending',
         ]);
+    }
+
+    /**
+     * Generate live preview of invoice (for one-page builder)
+     */
+    public function preview(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            if (! $companyId) {
+                return response()->json(['success' => false, 'error' => 'You must belong to a company.'], 403);
+            }
+
+            // Validate request data
+            $validated = $request->validate([
+                'client_id' => 'nullable|exists:clients,id',
+                'client' => 'nullable|array',
+                'issue_date' => 'nullable|date',
+                'due_date' => 'nullable|date',
+                'items' => 'required|array|min:1',
+                'items.*.description' => 'required|string',
+                'items.*.quantity' => 'required|numeric|min:0.01',
+                'items.*.unit_price' => 'required|numeric|min:0',
+                'vat_registered' => 'nullable|boolean',
+                'discount' => 'nullable|numeric|min:0',
+                'discount_type' => 'nullable|in:fixed,percentage',
+            ]);
+
+            // Get company
+            $company = Company::findOrFail($companyId);
+
+            // Calculate totals
+            $subtotal = 0;
+            foreach ($validated['items'] as $item) {
+                $subtotal += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
+            }
+
+            // Apply discount
+            $discount = $validated['discount'] ?? 0;
+            $discountType = $validated['discount_type'] ?? 'fixed';
+            $discountAmount = 0;
+            if ($discount > 0) {
+                if ($discountType === 'percentage') {
+                    $discountAmount = $subtotal * ($discount / 100);
+                } else {
+                    $discountAmount = $discount;
+                }
+            }
+            $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
+
+            // Calculate VAT
+            $vatAmount = 0;
+            if ($validated['vat_registered'] ?? false) {
+                $vatAmount = $subtotalAfterDiscount * 0.16; // 16% VAT
+            }
+
+            $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
+            $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
+            $grandTotal = $totalBeforeFee + $platformFee;
+
+            // Format invoice data for preview
+            $invoiceData = [
+                'id' => 'preview',
+                'invoice_number' => $request->input('invoice_number', 'INV-0001'),
+                'status' => 'draft',
+                'issue_date' => $validated['issue_date'] ?? now()->toDateString(),
+                'due_date' => $validated['due_date'] ?? null,
+                'subtotal' => $subtotal,
+                'discount' => $discountAmount,
+                'vat_amount' => $vatAmount,
+                'platform_fee' => $platformFee,
+                'total' => $totalBeforeFee,
+                'grand_total' => $grandTotal,
+                'client' => $validated['client'] ?? null,
+                'items' => array_map(function ($item) {
+                    return [
+                        'description' => $item['description'],
+                        'quantity' => $item['quantity'] ?? 1,
+                        'unit_price' => $item['unit_price'] ?? 0,
+                        'total' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
+                    ];
+                }, $validated['items']),
+                'company' => [
+                    'name' => $company->name,
+                    'email' => $company->email,
+                    'phone' => $company->phone,
+                    'address' => $company->address,
+                    'kra_pin' => $company->kra_pin,
+                    'logo' => $company->logo,
+                ],
+            ];
+
+            // Get template
+            $templateName = $company->invoice_template ?? 'modern_clean';
+            $templates = config('invoice-templates.templates');
+            $templateView = $templates[$templateName]['view'] ?? 'invoices.templates.modern-clean';
+
+            // Render preview HTML
+            $html = view($templateView, ['invoice' => $invoiceData])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'totals' => [
+                    'subtotal' => $subtotal,
+                    'discount' => $discountAmount,
+                    'vat_amount' => $vatAmount,
+                    'platform_fee' => $platformFee,
+                    'total' => $totalBeforeFee,
+                    'grand_total' => $grandTotal,
+                ],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'An error occurred while generating preview: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Autosave invoice draft
+     */
+    public function autosave(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $companyId = $user->company_id;
+
+            if (! $companyId) {
+                return response()->json(['success' => false, 'error' => 'You must belong to a company.'], 403);
+            }
+
+            $validated = $request->validate([
+                'draft_id' => 'nullable|exists:invoices,id',
+                'client_id' => 'nullable|exists:clients,id',
+                'issue_date' => 'nullable|date',
+                'due_date' => 'nullable|date',
+                'items' => 'nullable|array',
+                'notes' => 'nullable|string',
+                'terms_and_conditions' => 'nullable|string',
+                'po_number' => 'nullable|string|max:100',
+                'vat_registered' => 'nullable|boolean',
+                'discount' => 'nullable|numeric|min:0',
+                'discount_type' => 'nullable|in:fixed,percentage',
+            ]);
+
+            // If draft_id exists, update it; otherwise create new draft
+            if ($request->has('draft_id') && $request->draft_id) {
+                $invoice = Invoice::where('company_id', $companyId)
+                    ->where('id', $request->draft_id)
+                    ->where('status', 'draft')
+                    ->first();
+
+                if (! $invoice) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Draft not found or not editable.',
+                    ], 404);
+                }
+
+                // Update invoice (excluding prefix fields)
+                $updateData = array_intersect_key($validated, array_flip([
+                    'client_id', 'issue_date', 'due_date', 'notes', 'terms_and_conditions',
+                    'po_number', 'vat_registered', 'discount', 'discount_type',
+                ]));
+                $invoice->update($updateData);
+
+                // Update items if provided
+                if ($request->has('items') && is_array($request->items) && count($request->items) > 0) {
+                    $invoice->invoiceItems()->delete();
+                    foreach ($request->items as $item) {
+                        if (! empty($item['description'])) {
+                            $invoice->invoiceItems()->create([
+                                'company_id' => $companyId,
+                                'description' => $item['description'] ?? '',
+                                'quantity' => $item['quantity'] ?? 1,
+                                'unit_price' => $item['unit_price'] ?? 0,
+                                'vat_included' => $item['vat_included'] ?? false,
+                                'vat_rate' => $item['vat_rate'] ?? 16.00,
+                                'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
+                            ]);
+                        }
+                    }
+                    // Recalculate totals
+                    $this->invoiceService->updateTotals($invoice);
+                }
+            } else {
+                // Create new draft - client_id is optional for drafts, but items are required
+                if (empty($request->input('items')) || count($request->input('items', [])) === 0) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'At least one item is required to create a draft.',
+                    ], 422);
+                }
+
+                // If no client_id, we can still create a draft but need to handle it
+                if (empty($validated['client_id'])) {
+                    // Allow draft without client - will be required when finalizing
+                    $validated['client_id'] = null;
+                }
+
+                // Filter out empty items
+                $items = array_filter($request->input('items', []), function ($item) {
+                    return ! empty($item['description']) && trim($item['description']) !== '';
+                });
+
+                if (count($items) === 0) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'At least one valid item is required to create a draft.',
+                    ], 422);
+                }
+
+                // Get company
+                $company = Company::findOrFail($companyId);
+
+                // Prepare invoice data
+                $invoiceData = array_merge($validated, [
+                    'company_id' => $companyId,
+                    'user_id' => $user->id,
+                    'status' => 'draft',
+                ]);
+
+                // Ensure client_id is set (can be null for drafts)
+                if (! isset($invoiceData['client_id'])) {
+                    $invoiceData['client_id'] = null;
+                }
+
+                // Generate invoice number if not provided
+                if (empty($invoiceData['invoice_reference'])) {
+                    $prefixService = app(\App\Services\InvoicePrefixService::class);
+                    $prefix = $prefixService->getActivePrefix($company);
+                    $serialNumber = $prefixService->generateNextSerialNumber($company, $prefix);
+                    $fullNumber = $prefixService->generateFullNumber($company, $prefix, $serialNumber);
+
+                    $invoiceData['prefix_used'] = $prefix->prefix;
+                    $invoiceData['serial_number'] = $serialNumber;
+                    $invoiceData['full_number'] = $fullNumber;
+                    $invoiceData['invoice_reference'] = $fullNumber;
+                }
+
+                // Set default issue_date if not provided
+                if (empty($invoiceData['issue_date'])) {
+                    $invoiceData['issue_date'] = now()->toDateString();
+                }
+
+                // Calculate totals
+                $subtotal = 0;
+                foreach ($items as $item) {
+                    $itemTotal = ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
+                    $subtotal += $itemTotal;
+                }
+
+                // Apply discount
+                $discount = $validated['discount'] ?? 0;
+                $discountType = $validated['discount_type'] ?? 'fixed';
+                $discountAmount = 0;
+                if ($discount > 0) {
+                    if ($discountType === 'percentage') {
+                        $discountAmount = $subtotal * ($discount / 100);
+                    } else {
+                        $discountAmount = $discount;
+                    }
+                }
+                $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
+
+                // Calculate VAT
+                $vatAmount = 0;
+                if ($validated['vat_registered'] ?? false) {
+                    $vatAmount = $subtotalAfterDiscount * 0.16;
+                }
+
+                $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
+                $platformFee = $totalBeforeFee * 0.03;
+                $grandTotal = $totalBeforeFee + $platformFee;
+
+                $invoiceData['subtotal'] = $subtotal;
+                $invoiceData['discount'] = $discountAmount;
+                $invoiceData['tax'] = $vatAmount;
+                $invoiceData['vat_amount'] = $vatAmount;
+                $invoiceData['platform_fee'] = $platformFee;
+                $invoiceData['total'] = $totalBeforeFee;
+                $invoiceData['grand_total'] = $grandTotal;
+
+                // Create invoice
+                $invoice = Invoice::create($invoiceData);
+
+                // Add invoice items
+                foreach ($items as $item) {
+                    $invoice->invoiceItems()->create([
+                        'company_id' => $companyId,
+                        'description' => $item['description'],
+                        'quantity' => $item['quantity'] ?? 1,
+                        'unit_price' => $item['unit_price'] ?? 0,
+                        'vat_included' => $item['vat_included'] ?? false,
+                        'vat_rate' => $item['vat_rate'] ?? 16.00,
+                        'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'draft_id' => $invoice->id,
+                'message' => 'Draft saved successfully',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'An error occurred while saving the draft: '.$e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -16,7 +16,7 @@ trait FormatsInvoiceData
     {
         $data = [
             'id' => $invoice->id,
-            'invoice_number' => $this->formatInvoiceNumber($invoice->id),
+            'invoice_number' => $invoice->full_number ?? $invoice->invoice_reference ?? $this->formatInvoiceNumber($invoice->id),
             'status' => $invoice->status,
             'total' => (float) $invoice->total,
             'subtotal' => (float) $invoice->subtotal,
@@ -33,7 +33,10 @@ trait FormatsInvoiceData
             'date' => $invoice->issue_date
                 ? Carbon::parse($invoice->issue_date)->toDateString()
                 : $invoice->created_at->toDateString(),
-            'invoice_reference' => $invoice->invoice_reference ?? null,
+            'invoice_reference' => $invoice->full_number ?? $invoice->invoice_reference ?? null,
+            'full_number' => $invoice->full_number ?? null,
+            'prefix_used' => $invoice->prefix_used ?? null,
+            'serial_number' => $invoice->serial_number ?? null,
             'payment_method' => $invoice->payment_method ?? null,
             'notes' => $invoice->notes ?? null,
             'client_id' => $invoice->client_id,

@@ -35,7 +35,7 @@ class UpdateCompanyRequest extends FormRequest
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
             'kra_pin' => 'nullable|string|max:20',
-            'invoice_prefix' => 'nullable|string|max:10|alpha',
+            'invoice_prefix' => 'nullable|string|max:20|regex:/^[A-Za-z0-9\-_]+$/',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'settings' => 'nullable|array',
         ];

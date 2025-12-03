@@ -1,4 +1,4 @@
-@props(['clients', 'services', 'company' => null])
+@props(['clients', 'services', 'company' => null, 'nextInvoiceNumber' => null])
 
 <div 
     x-data="invoiceWizard({{ json_encode($clients) }}, {{ json_encode($services) }})"
@@ -83,6 +83,13 @@
             <!-- Step 2: Invoice Details -->
             <div x-show="currentStep === 2" x-transition>
                 <h2 class="text-2xl font-bold text-slate-900 mb-6">Step 2: Invoice Details</h2>
+                @if($nextInvoiceNumber)
+                    <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-sm font-medium text-blue-900 mb-1">Next Invoice Number</p>
+                        <p class="text-xl font-bold text-blue-600">{{ $nextInvoiceNumber }}</p>
+                        <p class="text-xs text-blue-700 mt-1">This number will be assigned when you create the invoice</p>
+                    </div>
+                @endif
                 <div x-data="{ get formData() { return $el.closest('[x-data*=\'invoiceWizard\']')._x_dataStack[0].formData; }, get currentStep() { return $el.closest('[x-data*=\'invoiceWizard\']')._x_dataStack[0].currentStep; }, get validationErrors() { return $el.closest('[x-data*=\'invoiceWizard\']')._x_dataStack[0].validationErrors; } }">
                     <x-invoice-details-form :company="$company" />
                 </div>

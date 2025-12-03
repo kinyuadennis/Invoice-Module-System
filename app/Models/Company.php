@@ -86,4 +86,39 @@ class Company extends Model
     {
         return $this->hasMany(Service::class);
     }
+
+    /**
+     * All invoice prefixes for this company.
+     */
+    public function invoicePrefixes(): HasMany
+    {
+        return $this->hasMany(InvoicePrefix::class);
+    }
+
+    /**
+     * Get the currently active invoice prefix for this company.
+     */
+    public function activeInvoicePrefix(): ?InvoicePrefix
+    {
+        return $this->invoicePrefixes()
+            ->active()
+            ->latest('started_at')
+            ->first();
+    }
+
+    /**
+     * All payment methods for this company.
+     */
+    public function paymentMethods(): HasMany
+    {
+        return $this->hasMany(CompanyPaymentMethod::class);
+    }
+
+    /**
+     * Get enabled payment methods for this company.
+     */
+    public function enabledPaymentMethods()
+    {
+        return $this->paymentMethods()->enabled()->ordered();
+    }
 }

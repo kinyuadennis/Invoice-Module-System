@@ -35,8 +35,21 @@ class AuthController extends Controller
             'role' => 'user',
         ]);
 
-        // Send verification email via queue
-        SendVerificationEmail::dispatch($user, $request->ip());
+        // Send verification email immediately (synchronously)
+        // This ensures emails are sent right away, especially in development
+        try {
+            (new SendVerificationEmail($user, $request->ip()))->handle();
+        } catch (\Exception $e) {
+            \Log::error('Failed to send verification email during registration', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Still redirect to verification page - user can resend
+            return redirect()->route('verification.notice')
+                ->with('error', 'Registration successful, but we encountered an issue sending the verification email. Please use the resend button below.');
+        }
 
         // Store user ID in session for verification page access
         $request->session()->put('pending_verification_user_id', $user->id);
@@ -257,8 +270,20 @@ class AuthController extends Controller
         Cache::put("{$hourlyKey}:next", now()->addHour(), now()->addHour());
         Cache::put("{$dailyKey}:next", now()->addDay(), now()->addDay());
 
-        // Dispatch job to send verification email
-        SendVerificationEmail::dispatch($user, $request->ip());
+        // Send verification email immediately (synchronously)
+        try {
+            (new SendVerificationEmail($user, $request->ip()))->handle();
+        } catch (\Exception $e) {
+            \Log::error('Failed to send verification email during resend', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors([
+                'email' => 'Failed to send verification email. Please check your email configuration or try again later.',
+            ]);
+        }
 
         return back()->with('status', 'Verification link sent!');
     }

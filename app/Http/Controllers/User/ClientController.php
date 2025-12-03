@@ -48,4 +48,49 @@ class ClientController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Search clients for autocomplete
+     */
+    public function search(Request $request)
+    {
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            return response()->json(['success' => false, 'error' => 'You must belong to a company.'], 403);
+        }
+
+        $query = $request->input('q', '');
+
+        $clientsQuery = Client::where('company_id', $companyId);
+
+        // If query is provided, filter; otherwise return all clients (limited)
+        if (! empty($query) && strlen($query) >= 1) {
+            $clientsQuery->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('email', 'like', "%{$query}%")
+                    ->orWhere('phone', 'like', "%{$query}%");
+            });
+        }
+
+        $clients = $clientsQuery
+            ->orderBy('name', 'asc')
+            ->limit(20)
+            ->get()
+            ->map(function ($client) {
+                return [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'email' => $client->email,
+                    'phone' => $client->phone,
+                    'address' => $client->address,
+                    'kra_pin' => $client->kra_pin,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'clients' => $clients,
+        ]);
+    }
 }

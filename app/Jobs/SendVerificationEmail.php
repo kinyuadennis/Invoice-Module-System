@@ -9,12 +9,23 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class SendVerificationEmail implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     */
+    public int $backoff = 60;
 
     /**
      * Create a new job instance.
@@ -47,11 +58,28 @@ class SendVerificationEmail implements ShouldQueue
         ]);
 
         // Send email
-        Mail::to($this->user->email)->send(
-            new EmailVerificationNotification($this->user, $token)
-        );
+        try {
+            Mail::to($this->user->email)->send(
+                new EmailVerificationNotification($this->user, $token)
+            );
 
-        // Increment attempts
-        $verification->increment('attempts');
+            Log::info('Verification email sent', [
+                'user_id' => $this->user->id,
+                'email' => $this->user->email,
+                'verification_id' => $verification->id,
+            ]);
+
+            // Increment attempts
+            $verification->increment('attempts');
+        } catch (\Exception $e) {
+            Log::error('Failed to send verification email', [
+                'user_id' => $this->user->id,
+                'email' => $this->user->email,
+                'error' => $e->getMessage(),
+                'verification_id' => $verification->id,
+            ]);
+
+            throw $e; // Re-throw to trigger retry mechanism
+        }
     }
 }

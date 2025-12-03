@@ -14,18 +14,67 @@ class Invoice extends Model
         'user_id',
         'status',
         'invoice_reference',
+        'prefix_used',
+        'serial_number',
+        'full_number',
+        'po_number',
         'issue_date',
         'due_date',
         'payment_method',
         'payment_details',
         'notes',
+        'terms_and_conditions',
+        'vat_registered',
         'subtotal',
+        'discount',
+        'discount_type',
         'tax',
         'vat_amount',
         'platform_fee',
         'total',
         'grand_total',
     ];
+
+    /**
+     * Prefix fields that should never be updated after creation.
+     */
+    protected $immutablePrefixFields = ['prefix_used', 'serial_number', 'full_number'];
+
+    protected function casts(): array
+    {
+        return [
+            'vat_registered' => 'boolean',
+            'issue_date' => 'date',
+            'due_date' => 'date',
+            'subtotal' => 'decimal:2',
+            'discount' => 'decimal:2',
+            'tax' => 'decimal:2',
+            'vat_amount' => 'decimal:2',
+            'platform_fee' => 'decimal:2',
+            'total' => 'decimal:2',
+            'grand_total' => 'decimal:2',
+        ];
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        // Prevent updating prefix fields after invoice is created
+        static::updating(function ($invoice) {
+            if ($invoice->exists) {
+                foreach ($invoice->immutablePrefixFields as $field) {
+                    if ($invoice->isDirty($field)) {
+                        // Restore original value - prefix fields are immutable
+                        $invoice->{$field} = $invoice->getOriginal($field);
+                    }
+                }
+            }
+        });
+    }
 
     /**
      * The company this invoice belongs to.

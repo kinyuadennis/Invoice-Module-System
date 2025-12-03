@@ -97,11 +97,20 @@
                                 type="text"
                                 name="invoice_prefix"
                                 label="Invoice Prefix"
-                                value="{{ old('invoice_prefix', $company->invoice_prefix) }}"
-                                maxlength="10"
+                                value="{{ old('invoice_prefix', $activePrefix->prefix ?? $company->invoice_prefix ?? 'INV') }}"
+                                maxlength="20"
                             />
                             <p class="mt-1 text-sm text-gray-500">
-                                Current format: {{ $company->invoice_prefix }}-0001
+                                @if($activePrefix)
+                                    Current active prefix: <strong>{{ $activePrefix->prefix }}</strong>
+                                    <br>
+                                    <span class="text-xs text-gray-400">Active since {{ $activePrefix->started_at->format('M d, Y') }}</span>
+                                @else
+                                    No active prefix set. Default will be used.
+                                @endif
+                            </p>
+                            <p class="mt-2 text-xs text-amber-600">
+                                ⚠️ Changing the prefix will only affect new invoices. Existing invoices will keep their original prefix.
                             </p>
                             @error('invoice_prefix')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -145,6 +154,33 @@
                     </div>
                 </x-card>
 
+                <!-- Prefix History -->
+                @if($prefixHistory && $prefixHistory->count() > 0)
+                    <x-card>
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Prefix History</h2>
+                        <div class="space-y-3">
+                            @foreach($prefixHistory as $prefix)
+                                <div class="flex items-center justify-between p-2 rounded {{ $prefix->isActive() ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50' }}">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $prefix->prefix }}</div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ $prefix->started_at->format('M d, Y') }}
+                                            @if($prefix->ended_at)
+                                                - {{ $prefix->ended_at->format('M d, Y') }}
+                                            @else
+                                                <span class="text-blue-600 font-semibold">(Active)</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @if($prefix->isActive())
+                                        <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">Active</span>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </x-card>
+                @endif
+
                 <!-- Invoice Customization Link -->
                 <x-card>
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Invoice Settings</h2>
@@ -165,6 +201,9 @@
             </div>
         </div>
     </form>
+
+    <!-- Payment Methods Section -->
+    <x-payment-methods-section :company="$company" :paymentMethods="$paymentMethods" />
 </div>
 @endsection
 
