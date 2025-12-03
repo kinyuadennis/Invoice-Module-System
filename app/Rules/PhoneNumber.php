@@ -28,7 +28,8 @@ class PhoneNumber implements ValidationRule
 
             // Check if the number is valid
             if (! $phoneUtil->isValidNumber($parsedNumber)) {
-                $fail('The :attribute must be a valid phone number. Example: +254712345678 or 0712345678');
+                // Provide more helpful error message
+                $fail('The :attribute must be a valid phone number. For Kenya, use format: +254712345678 or 0712345678 (10 digits starting with 0)');
             }
         } catch (NumberParseException $e) {
             $fail('The :attribute must be a valid phone number. Example: +254712345678 or 0712345678');

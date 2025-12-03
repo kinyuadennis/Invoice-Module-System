@@ -16,7 +16,11 @@ class HomeController extends Controller
 
     public function index()
     {
-        if (Auth::check()) {
+        // If user explicitly wants to view landing page (via Home link), always show it
+        if (request()->has('view') && request()->get('view') === 'landing') {
+            // Continue to show landing page regardless of auth status
+        } elseif (Auth::check()) {
+            // Auto-redirect authenticated users to their dashboard on direct access
             if (Auth::user()->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             }

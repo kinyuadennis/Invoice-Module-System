@@ -3,11 +3,11 @@
 <div 
     x-data="paymentMethodModal({{ $company->id }})"
     x-show="open"
-    @open-payment-method-modal.window="open = true; editingMethod = $event.detail || null; initForm()"
+    x-cloak
     @keydown.escape.window="open = false"
     class="fixed inset-0 z-50 overflow-y-auto"
-    x-cloak
     style="display: none;"
+    x-init="init()"
 >
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <!-- Background overlay -->
@@ -19,7 +19,7 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            @click="open = false"
+            @click.self="open = false"
             class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
         ></div>
 
@@ -32,7 +32,7 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full"
+            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full relative z-10"
             @click.stop
         >
             <form @submit.prevent="savePaymentMethod()">
@@ -321,10 +321,10 @@
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                     <button 
                         type="submit"
-                        :disabled="saving"
-                        class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                        :disabled="saving || !form.type"
+                        class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span x-show="!saving" x-text="editingMethod ? 'Update' : 'Create'"></span>
+                        <span x-show="!saving" x-text="editingMethod ? 'Update Payment Method' : 'Create Payment Method'"></span>
                         <span x-show="saving">Saving...</span>
                     </button>
                     <button 
@@ -347,6 +347,22 @@ function paymentMethodModal(companyId) {
         saving: false,
         editingMethod: null,
         companyId: companyId,
+        
+        init() {
+            // Listen for the open event from anywhere in the document
+            const self = this;
+            const handler = function(e) {
+                e.stopPropagation();
+                self.editingMethod = e.detail || null;
+                self.initForm();
+                // Use $nextTick to ensure Alpine processes the state change
+                self.$nextTick(() => {
+                    self.open = true;
+                });
+            };
+            // Use capture phase to catch event early
+            document.addEventListener('open-payment-method-modal', handler, true);
+        },
         form: {
             type: '',
             name: '',
@@ -424,6 +440,12 @@ function paymentMethodModal(companyId) {
         },
 
         async savePaymentMethod() {
+            // Validate required fields
+            if (!this.form.type) {
+                alert('Please select a payment method type.');
+                return;
+            }
+
             this.saving = true;
             try {
                 const url = this.editingMethod 
@@ -431,15 +453,49 @@ function paymentMethodModal(companyId) {
                     : '/app/company/payment-methods';
                 const method = this.editingMethod ? 'PUT' : 'POST';
 
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                if (!csrfToken) {
+                    alert('CSRF token not found. Please refresh the page.');
+                    this.saving = false;
+                    return;
+                }
+
                 const response = await fetch(url, {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
+                        'X-CSRF-TOKEN': csrfToken.content,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
                     body: JSON.stringify(this.form)
                 });
+
+                // Check if response is ok
+                if (!response.ok) {
+                    let errorMessage = `Server error: ${response.status} ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) {
+                            errorMessage = errorData.message;
+                        } else if (errorData.error) {
+                            errorMessage = errorData.error;
+                        } else if (errorData.errors) {
+                            // Handle validation errors
+                            const errors = Object.values(errorData.errors).flat().join(', ');
+                            errorMessage = `Validation errors: ${errors}`;
+                        }
+                    } catch (e) {
+                        // If response is not JSON, use status text
+                        const text = await response.text();
+                        if (text) {
+                            errorMessage = text.substring(0, 200);
+                        }
+                    }
+                    alert('Failed to save payment method: ' + errorMessage);
+                    this.saving = false;
+                    return;
+                }
 
                 const data = await response.json();
                 if (data.success) {
@@ -447,12 +503,12 @@ function paymentMethodModal(companyId) {
                     // Reload page to refresh payment methods list
                     window.location.reload();
                 } else {
-                    alert('Failed to save payment method: ' + (data.error || 'Unknown error'));
+                    alert('Failed to save payment method: ' + (data.error || data.message || 'Unknown error'));
+                    this.saving = false;
                 }
             } catch (error) {
                 console.error('Error saving payment method:', error);
-                alert('Failed to save payment method. Please try again.');
-            } finally {
+                alert('Failed to save payment method: ' + (error.message || 'Please check your connection and try again.'));
                 this.saving = false;
             }
         }

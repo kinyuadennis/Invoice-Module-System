@@ -1,6 +1,9 @@
 @props(['company', 'paymentMethods'])
 
-<div class="mt-6">
+<div 
+    x-data="paymentMethodsManager({{ json_encode($paymentMethods) }}, {{ $company->id }})"
+    class="mt-6"
+>
     <x-card>
         <div class="flex items-center justify-between mb-6">
             <div>
@@ -9,45 +12,60 @@
             </div>
             <button 
                 type="button"
-                @click="window.dispatchEvent(new CustomEvent('open-payment-method-modal'))"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                @click="document.dispatchEvent(new CustomEvent('open-payment-method-modal', { bubbles: true }))"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors cursor-pointer"
             >
                 + Add Payment Method
             </button>
         </div>
 
-        <div 
-            x-data="paymentMethodsManager({{ json_encode($paymentMethods) }}, {{ $company->id }})"
-            class="space-y-4"
-        >
+        <div class="space-y-4">
             <!-- Payment Methods List -->
             <div class="space-y-3" x-show="paymentMethods.length > 0">
                 <template x-for="(method, index) in paymentMethods" :key="method.id">
-                    <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4 flex-1">
-                                <div class="flex items-center gap-2">
-                                    <input 
-                                        type="checkbox"
-                                        x-model="method.is_enabled"
-                                        @change="updatePaymentMethod(method)"
-                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    >
-                                    <span class="font-medium" x-text="method.display_name || method.name || getTypeName(method.type)"></span>
+                    <div class="border border-gray-200 rounded-lg p-5 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex items-start gap-3 flex-1">
+                                <input 
+                                    type="checkbox"
+                                    x-model="method.is_enabled"
+                                    @change="updatePaymentMethod(method)"
+                                    class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                >
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-semibold text-gray-900" x-text="method.display_name || method.name || getTypeName(method.type)"></span>
+                                        <span 
+                                            x-show="method.is_enabled"
+                                            class="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full"
+                                        >
+                                            Active
+                                        </span>
+                                        <span 
+                                            x-show="!method.is_enabled"
+                                            class="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full"
+                                        >
+                                            Disabled
+                                        </span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-2" x-text="getMethodDetails(method)"></div>
+                                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                                        <span x-text="'Clears in: ' + getClearingTime(method.clearing_days)"></span>
+                                        <span x-show="method.type === 'bank_transfer' && method.bank_name" x-text="'Bank: ' + method.bank_name"></span>
+                                        <span x-show="method.type === 'mpesa' && method.mpesa_paybill" x-text="'Paybill: ' + method.mpesa_paybill"></span>
+                                    </div>
                                 </div>
-                                <div class="text-sm text-gray-500" x-text="getMethodDetails(method)"></div>
-                                <div class="text-xs text-gray-400" x-text="'Clears in: ' + getClearingTime(method.clearing_days)"></div>
                             </div>
                             <div class="flex items-center gap-2">
                                 <button 
                                     @click="editPaymentMethod(method)"
-                                    class="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-50"
+                                    class="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
                                 >
                                     Edit
                                 </button>
                                 <button 
                                     @click="deletePaymentMethod(method.id)"
-                                    class="px-3 py-1.5 text-sm text-red-600 hover:text-red-700 border border-red-200 rounded-lg hover:bg-red-50"
+                                    class="px-3 py-1.5 text-sm text-red-600 hover:text-red-700 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                                 >
                                     Delete
                                 </button>
@@ -142,7 +160,7 @@ function paymentMethodsManager(initialMethods, companyId) {
 
         editPaymentMethod(method) {
             this.editingMethod = method;
-            window.dispatchEvent(new CustomEvent('open-payment-method-modal', { detail: method }));
+            document.dispatchEvent(new CustomEvent('open-payment-method-modal', { detail: method, bubbles: true }));
         },
 
         async deletePaymentMethod(methodId) {

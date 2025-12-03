@@ -60,9 +60,7 @@
                                 label="Company Phone"
                                 value="{{ old('phone', $company->phone) }}"
                             />
-                            @error('phone')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">Format: +254712345678 or 0712345678</p>
                         </div>
 
                         <div>
@@ -87,9 +85,7 @@
                                 label="KRA PIN"
                                 value="{{ old('kra_pin', $company->kra_pin) }}"
                             />
-                            @error('kra_pin')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">Format: Letter + 9 digits + Letter (e.g., A012345678B)</p>
                         </div>
 
                         <div>
@@ -98,7 +94,7 @@
                                 name="invoice_prefix"
                                 label="Invoice Prefix"
                                 value="{{ old('invoice_prefix', $activePrefix->prefix ?? $company->invoice_prefix ?? 'INV') }}"
-                                maxlength="20"
+                                maxlength="50"
                             />
                             <p class="mt-1 text-sm text-gray-500">
                                 @if($activePrefix)
@@ -109,12 +105,12 @@
                                     No active prefix set. Default will be used.
                                 @endif
                             </p>
+                            <p class="mt-1 text-xs text-gray-500">
+                                You can use placeholders: %YYYY% (year), %MM% (month), %DD% (day), %YY% (2-digit year), %MMMM% (month name)
+                            </p>
                             <p class="mt-2 text-xs text-amber-600">
                                 ⚠️ Changing the prefix will only affect new invoices. Existing invoices will keep their original prefix.
                             </p>
-                            @error('invoice_prefix')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
                         </div>
                     </div>
                 </x-card>
