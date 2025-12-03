@@ -19,13 +19,13 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 40px;
+            padding: 30px;
         }
         .header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
             border-bottom: 2px solid #e5e7eb;
         }
         .logo-section {
@@ -53,7 +53,7 @@
             margin-bottom: 10px;
         }
         .section {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .section-title {
             font-size: 14px;
@@ -65,7 +65,7 @@
         .two-columns {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .column {
             flex: 1;
@@ -94,14 +94,14 @@
             background-color: #f3f4f6;
         }
         th {
-            padding: 12px;
+            padding: 10px;
             text-align: left;
             font-weight: bold;
             color: #374151;
             border-bottom: 2px solid #e5e7eb;
         }
         td {
-            padding: 12px;
+            padding: 10px;
             border-bottom: 1px solid #e5e7eb;
         }
         .text-right {
@@ -111,7 +111,7 @@
             text-align: center;
         }
         .totals {
-            margin-top: 20px;
+            margin-top: 15px;
             margin-left: auto;
             width: 300px;
         }
@@ -218,6 +218,13 @@
                         </div>
                     @endif
                 </div>
+                <!-- Notes moved here, right below company details -->
+                @if(isset($invoice['notes']) && $invoice['notes'])
+                    <div class="section" style="margin-top: 15px; margin-bottom: 0;">
+                        <div class="section-title" style="font-size: 12px; margin-bottom: 5px;">Notes</div>
+                        <div style="color: #6b7280; white-space: pre-wrap; font-size: 11px; line-height: 1.4;">{{ $invoice['notes'] }}</div>
+                    </div>
+                @endif
             </div>
             <div class="column">
                 <div class="section-title">Bill To</div>
@@ -245,8 +252,8 @@
         </div>
 
         <!-- Invoice Details -->
-        <div class="section">
-            <div class="two-columns">
+        <div class="section" style="margin-bottom: 15px;">
+            <div class="two-columns" style="margin-bottom: 15px;">
                 <div class="column">
                     <div class="info-row">
                         <span class="info-label">Issue Date:</span>
@@ -269,7 +276,7 @@
         </div>
 
         <!-- Line Items -->
-        <div class="section">
+        <div class="section" style="margin-bottom: 15px;">
             <table>
                 <thead>
                     <tr>
@@ -314,16 +321,8 @@
             </div>
         </div>
 
-        <!-- Notes -->
-        @if(isset($invoice['notes']) && $invoice['notes'])
-            <div class="section">
-                <div class="section-title">Notes</div>
-                <div style="color: #6b7280; white-space: pre-wrap;">{{ $invoice['notes'] }}</div>
-            </div>
-        @endif
-
         <!-- Footer -->
-        <div class="footer">
+        <div class="footer" style="margin-top: 30px;">
             <div>Thank you for your business!</div>
             <div style="margin-top: 5px;">This is a computer-generated invoice. No signature required.</div>
             @if(isset($invoice['company']['name']))

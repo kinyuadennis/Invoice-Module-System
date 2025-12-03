@@ -1,8 +1,8 @@
 <div 
     x-data="clientCreateModal()"
     x-show="open"
-    @open-client-modal.window="open = true"
-    @close-modal.window="open = false"
+    @open-create-client-modal.window="open = true"
+    @close-create-client-modal.window="open = false"
     x-cloak
     class="fixed inset-0 z-50 overflow-y-auto"
     style="display: none;"
@@ -12,7 +12,7 @@
 
     <!-- Modal -->
     <div class="flex min-h-full items-center justify-center p-4">
-        <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6" @click.stop>
+        <div class="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6" @click.stop>
             <!-- Header -->
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-bold text-slate-900">Add New Client</h3>
@@ -25,6 +25,11 @@
 
             <!-- Form -->
             <form @submit.prevent="createClient" novalidate>
+                <!-- General Error Message -->
+                <div x-show="errors.general" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg" x-cloak>
+                    <p class="text-sm text-red-600" x-text="errors.general"></p>
+                </div>
+                
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-900 mb-1">Name *</label>
@@ -70,6 +75,19 @@
                         ></textarea>
                         <p x-show="errors.address" class="mt-1 text-sm text-red-600" x-text="errors.address"></p>
                     </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-900 mb-1">KRA PIN</label>
+                        <input 
+                            type="text" 
+                            x-model="form.kra_pin"
+                            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            placeholder="A012345678B"
+                            maxlength="11"
+                        >
+                        <p class="mt-1 text-xs text-gray-500">Format: Letter + 9 digits + Letter (e.g., A012345678B)</p>
+                        <p x-show="errors.kra_pin" class="mt-1 text-sm text-red-600" x-text="errors.kra_pin"></p>
+                    </div>
                 </div>
 
                 <!-- Actions -->
@@ -83,8 +101,8 @@
                     </button>
                     <button 
                         type="submit"
-                        :disabled="processing"
-                        class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold disabled:opacity-50"
+                        :disabled="processing || !form.name || form.name.trim() === ''"
+                        class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span x-show="!processing">Create Client</span>
                         <span x-show="processing">Creating...</span>
@@ -104,9 +122,19 @@ function clientCreateModal() {
             name: '',
             email: '',
             phone: '',
-            address: ''
+            address: '',
+            kra_pin: ''
         },
         errors: {},
+        
+        init() {
+            // Watch for modal opening to reset form
+            this.$watch('open', (value) => {
+                if (value) {
+                    this.resetForm();
+                }
+            });
+        },
         
         async createClient() {
             this.processing = true;
@@ -117,7 +145,8 @@ function clientCreateModal() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(this.form)
                 });
@@ -125,22 +154,42 @@ function clientCreateModal() {
                 const data = await response.json();
                 
                 if (!response.ok) {
-                    if (data.errors) {
-                        this.errors = data.errors;
+                    // Try to parse error response
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        errorData = { message: 'Failed to create client. Please try again.' };
+                    }
+                    
+                    if (errorData.errors) {
+                        // Handle Laravel validation errors
+                        this.errors = {};
+                        Object.keys(errorData.errors).forEach(key => {
+                            this.errors[key] = Array.isArray(errorData.errors[key]) 
+                                ? errorData.errors[key][0] 
+                                : errorData.errors[key];
+                        });
                     } else {
-                        this.errors = { general: data.message || 'Failed to create client' };
+                        this.errors = { general: errorData.message || 'Failed to create client. Please try again.' };
                     }
                     this.processing = false;
                     return;
                 }
                 
-                // Success - emit event with new client
-                this.$dispatch('client-created', data.client);
-                this.open = false;
-                this.resetForm();
+                if (data.success && data.client) {
+                    // Success - emit event with new client
+                    window.dispatchEvent(new CustomEvent('client-created', { detail: data.client }));
+                    
+                    // Close modal
+                    this.open = false;
+                    this.resetForm();
+                } else {
+                    this.errors = { general: data.message || 'Failed to create client' };
+                }
             } catch (error) {
-                this.errors = { general: 'Network error. Please try again.' };
-            } finally {
+                console.error('Error creating client:', error);
+                this.errors = { general: 'Network error. Please check your connection and try again.' };
                 this.processing = false;
             }
         },
@@ -150,7 +199,8 @@ function clientCreateModal() {
                 name: '',
                 email: '',
                 phone: '',
-                address: ''
+                address: '',
+                kra_pin: ''
             };
             this.errors = {};
         }

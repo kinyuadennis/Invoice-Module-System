@@ -72,7 +72,7 @@
                                 </div>
                             </template>
                             <div 
-                                @click.stop="showCreateClientModal = true; showClientDropdown = false"
+                                @click.stop="$dispatch('open-create-client-modal'); showClientDropdown = false"
                                 class="px-4 py-2 hover:bg-blue-50 cursor-pointer text-blue-600 font-medium border-t border-gray-200"
                             >
                                 + Create New Client
@@ -445,6 +445,11 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
         autosaveStatus: 'idle', // 'idle', 'saving', 'saved'
         draftId: null,
         autosaveInterval: null,
+        
+        getCsrfToken() {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            return meta ? meta.content : null;
+        },
 
         init() {
             this.updatePreview();
@@ -480,10 +485,16 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
         async searchClients() {
             // Show all clients if search is empty, otherwise filter
             try {
+                const csrfToken = this.getCsrfToken();
+                if (!csrfToken) {
+                    console.error('CSRF token not found');
+                    return;
+                }
+                
                 const searchQuery = this.clientSearch.length >= 2 ? this.clientSearch : '';
                 const response = await fetch(`{{ route('user.clients.search') }}?q=${encodeURIComponent(searchQuery)}`, {
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRF-TOKEN': csrfToken
                     }
                 });
                 const data = await response.json();
@@ -576,11 +587,17 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
             }
 
             try {
+                const csrfToken = this.getCsrfToken();
+                if (!csrfToken) {
+                    console.error('CSRF token not found');
+                    return;
+                }
+                
                 const response = await fetch('{{ route("user.invoices.preview") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
@@ -625,15 +642,24 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
                 return;
             }
 
+            // Get CSRF token with null check
+            const csrfToken = this.getCsrfToken();
+            if (!csrfToken) {
+                console.error('CSRF token not found. Cannot autosave.');
+                return;
+            }
+
             this.autosaveStatus = 'saving';
             try {
                 const response = await fetch('{{ route("user.invoices.autosave") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         draft_id: this.draftId,
                         client_id: this.formData.client_id,
@@ -650,6 +676,15 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
                 });
 
                 if (!response.ok) {
+                    // Handle CSRF token mismatch specifically
+                    if (response.status === 419) {
+                        console.error('CSRF token mismatch. Page may need to be refreshed.');
+                        // Optionally refresh the page or show a message
+                        // window.location.reload();
+                        this.autosaveStatus = 'idle';
+                        return;
+                    }
+                    
                     const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
                     console.error('Autosave error:', errorData);
                     this.autosaveStatus = 'idle';
@@ -711,7 +746,10 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
                 const csrf = document.createElement('input');
                 csrf.type = 'hidden';
                 csrf.name = '_token';
-                csrf.value = document.querySelector('meta[name="csrf-token"]').content;
+                const csrfToken = this.getCsrfToken();
+                if (csrfToken) {
+                    csrf.value = csrfToken;
+                }
                 form.appendChild(csrf);
 
                 // Add all form data

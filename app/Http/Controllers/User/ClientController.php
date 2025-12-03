@@ -24,12 +24,18 @@ class ClientController extends Controller
             ], 403);
         }
 
-        // Use StoreClientRequest for validation
-        $storeRequest = new StoreClientRequest;
-        $storeRequest->merge($request->all());
-        $storeRequest->setUserResolver(fn () => Auth::user());
-
-        $validated = $storeRequest->validated();
+        // Validate using StoreClientRequest rules directly
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => [
+                'nullable',
+                'email',
+                \Illuminate\Validation\Rule::unique('clients', 'email')->where('company_id', $companyId),
+            ],
+            'phone' => ['nullable', new \App\Rules\PhoneNumber, 'max:20'],
+            'address' => 'nullable|string|max:500',
+            'kra_pin' => ['nullable', new \App\Rules\KraPin, 'max:11'],
+        ]);
 
         // Normalize phone number to E.164 format
         if (isset($validated['phone']) && ! empty($validated['phone'])) {
