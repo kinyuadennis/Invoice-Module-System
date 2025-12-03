@@ -16,16 +16,27 @@ class HomeController extends Controller
 
     public function index()
     {
-        // If user explicitly wants to view landing page (via Home link), always show it
+        // Always show landing page when Home link is clicked (has view=landing parameter)
+        // This takes priority over any auth redirects
         if (request()->has('view') && request()->get('view') === 'landing') {
-            // Continue to show landing page regardless of auth status
+            // Always show landing page when explicitly requested via Home link
+            // Continue to load landing page data below
         } elseif (Auth::check()) {
-            // Auto-redirect authenticated users to their dashboard on direct access
-            if (Auth::user()->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            }
+            // Check if coming from internal navigation (referer from same domain)
+            $referer = request()->header('Referer');
+            $refererHost = $referer ? parse_url($referer, PHP_URL_HOST) : null;
+            $currentHost = request()->getHost();
+            $isInternalNavigation = $refererHost && $refererHost === $currentHost;
+            
+            // Only auto-redirect on direct access (typing URL directly, no referer, no view param)
+            if (! $isInternalNavigation) {
+                if (Auth::user()->role === 'admin') {
+                    return redirect()->route('admin.dashboard');
+                }
 
-            return redirect()->route('user.dashboard');
+                return redirect()->route('user.dashboard');
+            }
+            // If internal navigation, continue to show landing page
         }
 
         // Load 6 recent invoices for social proof (mix of paid, sent, overdue)
