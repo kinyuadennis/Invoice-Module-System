@@ -152,7 +152,7 @@
 
                 <!-- Prefix History -->
                 @if($prefixHistory && $prefixHistory->count() > 0)
-                    <x-card>
+                <x-card>
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Prefix History</h2>
                         <div class="space-y-3">
                             @foreach($prefixHistory as $prefix)
@@ -174,7 +174,7 @@
                                 </div>
                             @endforeach
                         </div>
-                    </x-card>
+                </x-card>
                 @endif
 
                 <!-- Invoice Customization Link - Removed, now accessible from Invoice section -->

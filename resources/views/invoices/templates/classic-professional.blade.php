@@ -118,7 +118,11 @@
             <div class="header-content">
                 <div class="company-info">
                     @if(isset($invoice['company']['logo']) && $invoice['company']['logo'])
-                        <img src="{{ public_path('storage/' . $invoice['company']['logo']) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" style="max-width: 80px; max-height: 80px; margin-bottom: 10px;">
+                        @if(isset($invoice['is_preview']) && $invoice['is_preview'])
+                            <img src="{{ $invoice['company']['logo'] }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" style="max-width: 80px; max-height: 80px; margin-bottom: 10px;">
+                        @else
+                            <img src="{{ public_path('storage/' . ($invoice['company']['logo_path'] ?? $invoice['company']['logo'])) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" style="max-width: 80px; max-height: 80px; margin-bottom: 10px;">
+                        @endif
                     @endif
                     <div class="company-name">{{ $invoice['company']['name'] ?? 'Company Name' }}</div>
                     @if(isset($invoice['company']['address']) && $invoice['company']['address'])

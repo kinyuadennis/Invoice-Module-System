@@ -1,21 +1,21 @@
 @props(['templates', 'selectedTemplate', 'company'])
 
-<div class="space-y-6">
+<div class="space-y-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" 
          x-data="invoiceTemplateSelector({{ $selectedTemplate ? $selectedTemplate->id : 'null' }})">
         
         @foreach($templates as $template)
             <div 
-                class="group relative border-2 rounded-xl p-5 cursor-pointer transition-all duration-200 hover:shadow-xl hover:-translate-y-1"
+                class="group relative border-2 rounded-xl p-5 cursor-pointer transition-all duration-200 hover:shadow-xl hover:-translate-y-1 bg-white"
                 :class="selectedTemplateId === {{ $template->id }} 
                     ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg ring-2 ring-blue-200' 
-                    : 'border-gray-200 hover:border-blue-300 bg-white'"
+                    : 'border-gray-200 hover:border-blue-300'"
                 @click="selectTemplate({{ $template->id }}, '{{ route('user.company.update-invoice-template') }}')"
             >
                 <!-- Selected Badge -->
                 <div 
                     x-show="selectedTemplateId === {{ $template->id }}"
-                    class="absolute top-3 right-3 bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5"
+                    class="absolute top-3 right-3 bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5 z-10"
                     x-cloak
                 >
                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -52,7 +52,7 @@
                             {{ $template->name }}
                         </h3>
                         @if($template->is_default)
-                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-md font-semibold flex items-center gap-1">
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-md font-semibold flex items-center gap-1 flex-shrink-0">
                                 <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                 </svg>

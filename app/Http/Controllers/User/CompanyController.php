@@ -241,6 +241,12 @@ class CompanyController extends Controller
         }
 
         // Generate sample invoice data for preview
+        // Convert logo to web URL for browser preview (not filesystem path)
+        $logoUrl = null;
+        if ($company->logo) {
+            $logoUrl = Storage::url($company->logo);
+        }
+
         $sampleInvoice = [
             'id' => 999,
             'invoice_number' => $template->prefix.'-0001',
@@ -256,7 +262,8 @@ class CompanyController extends Controller
             'company' => [
                 'id' => $company->id,
                 'name' => $company->name ?? 'Your Company Name',
-                'logo' => $company->logo,
+                'logo' => $logoUrl, // Use web URL for browser preview
+                'logo_path' => $company->logo, // Keep original path for PDF generation
                 'email' => $company->email ?? 'info@yourcompany.com',
                 'phone' => $company->phone ?? '+254 700 000 000',
                 'address' => $company->address ?? 'Nairobi, Kenya',
@@ -279,6 +286,7 @@ class CompanyController extends Controller
                 ],
             ],
             'notes' => 'Thank you for your business! Payment is due within 30 days.',
+            'is_preview' => true, // Flag to indicate this is a browser preview
         ];
 
         // Check if view exists

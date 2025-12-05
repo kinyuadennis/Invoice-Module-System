@@ -180,7 +180,11 @@
         <div class="header">
             <div class="logo-section">
                 @if(isset($invoice['company']['logo']) && $invoice['company']['logo'])
-                    <img src="{{ public_path('storage/' . $invoice['company']['logo']) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" class="logo-img">
+                    @if(isset($invoice['is_preview']) && $invoice['is_preview'])
+                        <img src="{{ $invoice['company']['logo'] }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" class="logo-img">
+                    @else
+                        <img src="{{ public_path('storage/' . ($invoice['company']['logo_path'] ?? $invoice['company']['logo'])) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" class="logo-img">
+                    @endif
                 @endif
                 <div>
                     <div class="logo-text">{{ $invoice['company']['name'] ?? 'Invoice Hub' }}</div>
