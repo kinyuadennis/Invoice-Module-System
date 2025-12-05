@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/company/invoice-customization', [CompanyController::class, 'invoiceCustomization'])->name('company.invoice-customization');
         Route::post('/company/invoice-format', [CompanyController::class, 'updateInvoiceFormat'])->name('company.update-invoice-format');
         Route::post('/company/invoice-template', [CompanyController::class, 'updateInvoiceTemplate'])->name('company.update-invoice-template');
+        Route::get('/company/invoice-template/preview', [CompanyController::class, 'previewTemplate'])->name('company.invoice-template.preview');
         
         // Payment Methods
         Route::post('/company/payment-methods', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'store'])->name('company.payment-methods.store');

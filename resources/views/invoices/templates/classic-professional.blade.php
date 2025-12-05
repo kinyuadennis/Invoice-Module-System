@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice {{ $invoice['invoice_number'] ?? 'INV-' . $invoice['id'] }}</title>
+    
+    @if(isset($template) && $template->css_file)
+        <link rel="stylesheet" href="{{ asset("css/invoice-templates/{$template->css_file}") }}">
+    @endif
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -112,33 +117,61 @@
         <div class="header">
             <div class="header-content">
                 <div class="company-info">
+                    @if(isset($invoice['company']['logo']) && $invoice['company']['logo'])
+                        <img src="{{ public_path('storage/' . $invoice['company']['logo']) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" style="max-width: 80px; max-height: 80px; margin-bottom: 10px;">
+                    @endif
                     <div class="company-name">{{ $invoice['company']['name'] ?? 'Company Name' }}</div>
-                    @if(isset($invoice['company']['address']))
+                    @if(isset($invoice['company']['address']) && $invoice['company']['address'])
                         <div style="color: #666; margin-top: 5px;">{{ $invoice['company']['address'] }}</div>
                     @endif
-                    @if(isset($invoice['company']['kra_pin']))
+                    @if(isset($invoice['company']['phone']) && $invoice['company']['phone'])
+                        <div style="color: #666; margin-top: 3px;">{{ $invoice['company']['phone'] }}</div>
+                    @endif
+                    @if(isset($invoice['company']['email']) && $invoice['company']['email'])
+                        <div style="color: #666; margin-top: 3px;">{{ $invoice['company']['email'] }}</div>
+                    @endif
+                    @if(isset($invoice['company']['kra_pin']) && $invoice['company']['kra_pin'])
                         <div style="color: #666; margin-top: 3px;">KRA PIN: {{ $invoice['company']['kra_pin'] }}</div>
                     @endif
                 </div>
                 <div class="invoice-details">
                     <div class="invoice-title">INVOICE</div>
                     <div class="invoice-number">{{ $invoice['invoice_number'] ?? 'INV-' . $invoice['id'] }}</div>
+                    <div style="margin-top: 10px; font-size: 11px;">Issue Date: {{ $invoice['date'] ?? date('Y-m-d') }}</div>
+                    <div style="font-size: 11px;">Due Date: {{ $invoice['due_date'] ?? 'N/A' }}</div>
                 </div>
             </div>
         </div>
 
         <div class="two-columns">
             <div class="column">
-                <div class="section-title">Bill To</div>
-                <div style="font-weight: bold; margin-bottom: 5px;">{{ $invoice['client']['name'] ?? 'Client Name' }}</div>
-                @if(isset($invoice['client']['address']))
-                    <div style="color: #666;">{{ $invoice['client']['address'] }}</div>
+                <div class="section-title">Bill From</div>
+                <div style="font-weight: bold; margin-bottom: 5px;">{{ $invoice['company']['name'] ?? 'Company Name' }}</div>
+                @if(isset($invoice['company']['address']) && $invoice['company']['address'])
+                    <div style="color: #666;">{{ $invoice['company']['address'] }}</div>
+                @endif
+                @if(isset($invoice['company']['phone']) && $invoice['company']['phone'])
+                    <div style="color: #666;">{{ $invoice['company']['phone'] }}</div>
+                @endif
+                @if(isset($invoice['company']['email']) && $invoice['company']['email'])
+                    <div style="color: #666;">{{ $invoice['company']['email'] }}</div>
+                @endif
+                @if(isset($invoice['company']['kra_pin']) && $invoice['company']['kra_pin'])
+                    <div style="color: #666;">KRA PIN: {{ $invoice['company']['kra_pin'] }}</div>
                 @endif
             </div>
             <div class="column">
-                <div class="section-title">Invoice Details</div>
-                <div>Issue Date: {{ $invoice['date'] ?? date('Y-m-d') }}</div>
-                <div>Due Date: {{ $invoice['due_date'] ?? 'N/A' }}</div>
+                <div class="section-title">Bill To</div>
+                <div style="font-weight: bold; margin-bottom: 5px;">{{ $invoice['client']['name'] ?? 'Client Name' }}</div>
+                @if(isset($invoice['client']['address']) && $invoice['client']['address'])
+                    <div style="color: #666;">{{ $invoice['client']['address'] }}</div>
+                @endif
+                @if(isset($invoice['client']['phone']) && $invoice['client']['phone'])
+                    <div style="color: #666;">{{ $invoice['client']['phone'] }}</div>
+                @endif
+                @if(isset($invoice['client']['email']) && $invoice['client']['email'])
+                    <div style="color: #666;">{{ $invoice['client']['email'] }}</div>
+                @endif
             </div>
         </div>
 

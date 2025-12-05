@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice {{ $invoice['invoice_number'] ?? 'INV-' . $invoice['id'] }}</title>
+    
+    @if(isset($template) && $template->css_file)
+        <link rel="stylesheet" href="{{ asset("css/invoice-templates/{$template->css_file}") }}">
+    @endif
+    
     <style>
         * {
             margin: 0;
@@ -169,7 +174,7 @@
         }
     </style>
 </head>
-<body>
+<body class="{{ isset($template) && $template->layout_class ? $template->layout_class : 'template-modern-clean' }}">
     <div class="container">
         <!-- Header -->
         <div class="header">

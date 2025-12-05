@@ -24,6 +24,7 @@ class Company extends Model
         'invoice_padding',
         'invoice_format',
         'invoice_template',
+        'invoice_template_id',
         'settings',
     ];
 
@@ -120,5 +121,31 @@ class Company extends Model
     public function enabledPaymentMethods()
     {
         return $this->paymentMethods()->enabled()->ordered();
+    }
+
+    /**
+     * The invoice template this company uses.
+     */
+    public function invoiceTemplate(): BelongsTo
+    {
+        return $this->belongsTo(InvoiceTemplate::class);
+    }
+
+    /**
+     * Get the active invoice template for this company.
+     */
+    public function getActiveInvoiceTemplate(): InvoiceTemplate
+    {
+        return $this->invoiceTemplate ?? InvoiceTemplate::getDefault();
+    }
+
+    /**
+     * Get the invoice prefix from the active template.
+     */
+    public function getInvoicePrefixFromTemplate(): string
+    {
+        $template = $this->getActiveInvoiceTemplate();
+
+        return $template->prefix ?? 'INV';
     }
 }

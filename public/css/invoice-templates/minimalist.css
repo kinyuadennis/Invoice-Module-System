@@ -1,0 +1,61 @@
+/* Minimalist Template Styles */
+.template-minimalist {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #1a1a1a;
+    line-height: 1.8;
+}
+
+.template-minimalist .invoice-header {
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.template-minimalist .invoice-title {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #111827;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.template-minimalist .invoice-number {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 300;
+}
+
+.template-minimalist table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+}
+
+.template-minimalist table th {
+    text-align: left;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 400;
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.template-minimalist table td {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.template-minimalist .invoice-total {
+    padding: 1rem 0;
+    margin-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.template-minimalist .total-amount {
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: #111827;
+}
+

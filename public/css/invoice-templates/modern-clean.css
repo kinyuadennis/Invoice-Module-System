@@ -1,0 +1,65 @@
+/* Modern Clean Template Styles */
+.template-modern-clean {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #1a1a1a;
+    line-height: 1.6;
+}
+
+.template-modern-clean .invoice-header {
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+}
+
+.template-modern-clean .invoice-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.template-modern-clean .invoice-number {
+    font-size: 1.25rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.template-modern-clean .invoice-details {
+    background-color: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.template-modern-clean table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+}
+
+.template-modern-clean table th {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+}
+
+.template-modern-clean table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.template-modern-clean .invoice-total {
+    background-color: #f9fafb;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+
+.template-modern-clean .total-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+

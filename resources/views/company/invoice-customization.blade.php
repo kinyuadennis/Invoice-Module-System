@@ -3,10 +3,11 @@
 @section('title', 'Invoice Customization')
 
 @section('content')
-<div class="space-y-6">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900">Invoice Customization</h1>
-        <p class="mt-1 text-sm text-gray-600">Customize your invoice numbering format and visual template</p>
+<div class="max-w-7xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-8 text-white shadow-lg">
+        <h1 class="text-3xl font-bold mb-2">Invoice Customization</h1>
+        <p class="text-blue-100 text-lg">Customize your invoice numbering format and visual template</p>
     </div>
 
     @if(session('success'))
@@ -17,12 +18,22 @@
         <x-alert type="error">{{ session('error') }}</x-alert>
     @endif
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Main Content - Left Side -->
+        <div class="lg:col-span-8 space-y-6">
             <!-- Invoice Number Format Section -->
-            <x-card>
-                <h2 class="text-xl font-semibold text-gray-900 mb-6">Invoice Number Format</h2>
+            <x-card class="shadow-md">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Invoice Number Format</h2>
+                        <p class="text-sm text-gray-500">Configure how your invoice numbers are generated</p>
+                    </div>
+                </div>
                 
                 <form method="POST" action="{{ route('user.company.update-invoice-format') }}" x-data="invoiceFormatForm({{ json_encode($company) }}, {{ json_encode($formatPatterns) }})">
                     @csrf
@@ -41,7 +52,7 @@
                                     x-model="formData.prefix"
                                     @input="updatePreview()"
                                     maxlength="20"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
                                     placeholder="INV"
                                 />
                                 <p class="mt-1 text-xs text-gray-500">e.g., INV, HUB, ACME</p>
@@ -59,7 +70,7 @@
                                     x-model="formData.suffix"
                                     @input="updatePreview()"
                                     maxlength="20"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
                                     placeholder="KE"
                                 />
                                 <p class="mt-1 text-xs text-gray-500">e.g., KE, 2025</p>
@@ -77,7 +88,7 @@
                                     name="invoice_padding"
                                     x-model="formData.padding"
                                     @change="updatePreview()"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
                                 >
                                     <option value="3">3 digits (001)</option>
                                     <option value="4">4 digits (0001)</option>
@@ -96,7 +107,7 @@
                                     name="invoice_format"
                                     x-model="formData.format"
                                     @change="updatePreview()"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
                                 >
                                     @foreach($formatPatterns as $pattern => $example)
                                         <option value="{{ $pattern }}" {{ $company->invoice_format === $pattern ? 'selected' : '' }}>
@@ -108,14 +119,17 @@
                         </div>
 
                         <!-- Live Preview -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <label class="block text-sm font-medium text-blue-900 mb-2">Preview</label>
-                            <div class="text-2xl font-bold text-blue-600" x-text="preview"></div>
-                            <p class="mt-2 text-xs text-blue-700">This is how your next invoice number will look</p>
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 shadow-sm">
+                            <label class="block text-sm font-semibold text-blue-900 mb-3">Live Preview</label>
+                            <div class="text-3xl font-bold text-blue-600 mb-2" x-text="preview"></div>
+                            <p class="text-xs text-blue-700">This is how your next invoice number will look</p>
                         </div>
 
                         <div>
-                            <x-button type="submit" variant="primary">
+                            <x-button type="submit" variant="primary" class="w-full sm:w-auto">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
                                 Save Format Settings
                             </x-button>
                         </div>
@@ -123,66 +137,136 @@
                 </form>
             </x-card>
 
-            <!-- Invoice Template Selection Section -->
-            <x-card>
-                <h2 class="text-xl font-semibold text-gray-900 mb-6">Invoice Template</h2>
-                
-                <p class="text-sm text-gray-600 mb-6">Choose a visual template for your invoices. This will be applied to all future invoices and PDFs.</p>
-
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    @foreach($templates as $key => $template)
-                        <div 
-                            class="relative border-2 rounded-lg p-4 transition-all {{ $company->invoice_template === $key ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300' }}"
-                        >
-                            @if($company->invoice_template === $key)
-                                <div class="absolute top-2 right-2">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-500 text-white">
-                                        Active
-                                    </span>
-                                </div>
-                            @endif
-                            
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $template['name'] }}</h3>
-                            <p class="text-sm text-gray-600 mb-4">{{ $template['description'] }}</p>
-                            
-                            <form method="POST" action="{{ route('user.company.update-invoice-template') }}" class="inline">
-                                @csrf
-                                <input type="hidden" name="invoice_template" value="{{ $key }}">
-                                <x-button 
-                                    type="submit" 
-                                    variant="{{ $company->invoice_template === $key ? 'primary' : 'default' }}"
-                                    class="w-full"
-                                >
-                                    {{ $company->invoice_template === $key ? 'Currently Active' : 'Use This Template' }}
-                                </x-button>
-                            </form>
+            <!-- Invoice Template Selection - Moved to main content area -->
+            @if(isset($templates) && $templates->isNotEmpty())
+                <x-card class="shadow-md">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-purple-100 rounded-lg">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                            </svg>
                         </div>
-                    @endforeach
-                </div>
-            </x-card>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900">Invoice Template</h2>
+                            <p class="text-sm text-gray-500">Choose a visual template for your invoices</p>
+                        </div>
+                    </div>
+                    
+                    <x-invoice-template-selector 
+                        :templates="$templates" 
+                        :selectedTemplate="$selectedTemplate ?? null"
+                        :company="$company"
+                    />
+                </x-card>
+            @endif
         </div>
 
-        <!-- Sidebar -->
-        <div class="space-y-6">
+        <!-- Sidebar - Right Side -->
+        <div class="lg:col-span-4 space-y-6">
             <!-- Info Card -->
-            <x-card>
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">About Invoice Customization</h2>
-                <div class="space-y-3 text-sm text-gray-600">
-                    <p><strong>Invoice Number Format:</strong> Customize how your invoice numbers are generated. The format will be applied automatically when creating new invoices.</p>
-                    <p><strong>Invoice Template:</strong> Choose a visual style for your invoices. The selected template will be used for both online viewing and PDF generation.</p>
-                    <p><strong>Changes:</strong> Format and template changes apply to all future invoices. Existing invoices will not be affected.</p>
+            <x-card class="shadow-md bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h2 class="text-lg font-semibold text-gray-900">About Invoice Customization</h2>
+                </div>
+                <div class="space-y-4 text-sm text-gray-700">
+                    <div>
+                        <p class="font-semibold text-gray-900 mb-1">Invoice Number Format</p>
+                        <p class="text-gray-600">Customize how your invoice numbers are generated. The format will be applied automatically when creating new invoices.</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900 mb-1">Invoice Template</p>
+                        <p class="text-gray-600">Choose a visual style for your invoices. Each template has its own layout, styling, and invoice prefix.</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-900 mb-1">Template Prefix</p>
+                        <p class="text-gray-600">Each template comes with a default prefix (e.g., INV, FACT, BILL). When you select a template, the invoice prefix will automatically update to match.</p>
+                    </div>
+                    <div class="pt-3 border-t border-blue-200">
+                        <p class="font-semibold text-gray-900 mb-1">Important Note</p>
+                        <p class="text-gray-600">Format and template changes apply to all future invoices. Existing invoices will not be affected.</p>
+                    </div>
                 </div>
             </x-card>
 
+            <!-- Template Preview - Compact version in sidebar -->
+            @if(isset($templates) && $templates->isNotEmpty())
+                <x-card class="shadow-md" x-data="templatePreview()" @load-template-preview.window="loadPreview($event.detail.templateId)">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="p-1.5 bg-green-100 rounded-lg">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">Template Preview</h2>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">See how your invoice will look</p>
+                    
+                    <!-- Preview Loading State -->
+                    <div x-show="loading" class="text-center py-8" x-cloak>
+                        <div class="inline-flex flex-col items-center gap-2 text-blue-600">
+                            <svg class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-sm font-medium">Loading...</span>
+                        </div>
+                    </div>
+
+                    <!-- Preview Error State -->
+                    <div x-show="error" class="bg-red-50 border-2 border-red-200 rounded-lg p-3" x-cloak>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-xs text-red-800 font-medium" x-text="error"></p>
+                        </div>
+                    </div>
+
+                    <!-- Preview Content - Compact -->
+                    <div x-show="!loading && !error && previewHtml" class="border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-inner" x-cloak>
+                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-3 py-2 border-b border-gray-200">
+                            <p class="text-xs font-semibold text-gray-700">
+                                <span class="text-blue-600" x-text="templateName"></span>
+                            </p>
+                        </div>
+                        <div class="p-3 overflow-auto max-h-[500px] bg-white" style="transform: scale(0.75); transform-origin: top left; width: 133.33%;" x-html="previewHtml"></div>
+                    </div>
+
+                    <!-- Initial State -->
+                    <div x-show="!loading && !error && !previewHtml" class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                        <svg class="mx-auto h-10 w-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="text-xs text-gray-500 font-medium mb-1">No preview</p>
+                        <p class="text-xs text-gray-400">Select a template to preview</p>
+                    </div>
+                </x-card>
+            @endif
+
             <!-- Quick Links -->
-            <x-card>
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Links</h2>
-                <div class="space-y-2">
-                    <a href="{{ route('user.company.settings') }}" class="block text-sm text-blue-600 hover:text-blue-700">
-                        ← Back to Company Settings
+            <x-card class="shadow-md">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    <h2 class="text-lg font-semibold text-gray-900">Quick Links</h2>
+                </div>
+                <div class="space-y-3">
+                    <a href="{{ route('user.company.settings') }}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all group">
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">Back to Company Settings</span>
                     </a>
-                    <a href="{{ route('user.invoices.create') }}" class="block text-sm text-blue-600 hover:text-blue-700">
-                        Create New Invoice →
+                    <a href="{{ route('user.invoices.create') }}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all group">
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">Create New Invoice</span>
                     </a>
                 </div>
             </x-card>
@@ -219,6 +303,66 @@ function invoiceFormatForm(company, formatPatterns) {
         }
     }
 }
+
+function templatePreview() {
+    return {
+        loading: false,
+        error: null,
+        previewHtml: null,
+        templateName: null,
+        currentTemplateId: {{ $selectedTemplate ? $selectedTemplate->id : 'null' }},
+
+        init() {
+            // Load preview for initially selected template
+            if (this.currentTemplateId) {
+                this.loadPreview({ templateId: this.currentTemplateId });
+            }
+        },
+
+        async loadPreview(detail) {
+            const templateId = detail.templateId;
+            
+            if (!templateId) {
+                this.error = 'No template selected';
+                return;
+            }
+
+            this.loading = true;
+            this.error = null;
+            this.previewHtml = null;
+            this.templateName = null;
+
+            try {
+                const response = await fetch(`{{ route('user.company.invoice-template.preview') }}?template_id=${templateId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Failed to load preview' }));
+                    throw new Error(errorData.error || 'Failed to load preview');
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.html) {
+                    this.previewHtml = data.html;
+                    this.templateName = data.template?.name || 'Template';
+                } else {
+                    throw new Error(data.error || 'Failed to generate preview');
+                }
+            } catch (error) {
+                console.error('Error loading preview:', error);
+                this.error = error.message || 'Failed to load preview. Please try again.';
+            } finally {
+                this.loading = false;
+            }
+        }
+    }
+}
 </script>
 @endsection
-

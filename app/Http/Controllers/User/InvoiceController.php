@@ -263,7 +263,7 @@ class InvoiceController extends Controller
 
         // Ensure invoice belongs to user's company
         $invoice = Invoice::where('company_id', $companyId)
-            ->with(['client', 'invoiceItems', 'platformFees', 'user', 'company'])
+            ->with(['client', 'invoiceItems', 'platformFees', 'user', 'company.invoiceTemplate'])
             ->findOrFail($id);
 
         // Format invoice data for PDF
@@ -277,22 +277,38 @@ class InvoiceController extends Controller
 
         // Company data is already included in formatInvoiceForShow via the trait
 
-        // Get template from company settings
+        // Get template from company relationship
         $company = $invoice->company;
-        $templateName = $company->invoice_template ?? 'modern_clean';
-        $templates = config('invoice-templates.templates');
+        $template = $company->getActiveInvoiceTemplate();
 
-        // Get template view path
-        $templateView = $templates[$templateName]['view'] ?? 'invoices.templates.modern-clean';
+        // Fallback to modern-clean if template view doesn't exist
+        $templateView = $template->view_path;
+        if (! view()->exists($templateView)) {
+            // Fallback to default template
+            $templateView = 'invoices.templates.modern-clean';
+            \Log::warning("Template view not found: {$template->view_path}, using fallback: {$templateView}", [
+                'template_id' => $template->id,
+                'invoice_id' => $invoice->id,
+            ]);
+        }
 
         // Generate PDF using selected template
         $pdf = Pdf::loadView($templateView, [
             'invoice' => $formattedInvoice,
+            'template' => $template, // Pass template object for CSS file path
         ]);
 
         // Set PDF options
         $pdf->setPaper('a4', 'portrait');
         $pdf->setOption('enable-local-file-access', true);
+
+        // If template has custom CSS, ensure it's accessible
+        if ($template->css_file) {
+            $cssPath = public_path("css/invoice-templates/{$template->css_file}");
+            if (file_exists($cssPath)) {
+                $pdf->setOption('chroot', public_path());
+            }
+        }
 
         // Generate filename
         $filename = 'invoice-'.($formattedInvoice['invoice_number'] ?? $invoice->id).'.pdf';

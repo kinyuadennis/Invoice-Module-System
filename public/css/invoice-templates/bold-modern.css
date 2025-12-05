@@ -1,0 +1,68 @@
+/* Bold Modern Template Styles */
+.template-bold-modern {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #1a1a1a;
+    line-height: 1.6;
+}
+
+.template-bold-modern .invoice-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.template-bold-modern .invoice-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #fff;
+}
+
+.template-bold-modern .invoice-number {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+.template-bold-modern table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+}
+
+.template-bold-modern table th {
+    text-align: left;
+    padding: 1rem;
+    background-color: #667eea;
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+}
+
+.template-bold-modern table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.template-bold-modern table tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+.template-bold-modern .invoice-total {
+    background-color: #667eea;
+    color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+
+.template-bold-modern .total-amount {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+}
+
