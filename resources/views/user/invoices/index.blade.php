@@ -10,14 +10,24 @@
             <h1 class="text-3xl font-bold text-gray-900">Invoices</h1>
             <p class="mt-1 text-sm text-gray-600">Manage and track all your invoices</p>
         </div>
-        <a href="{{ route('user.invoices.create') }}">
-            <x-button variant="primary">
-                <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                New Invoice
-            </x-button>
-        </a>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('user.company.invoice-customization') }}">
+                <x-button variant="outline">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                    </svg>
+                    Customize Invoices
+                </x-button>
+            </a>
+            <a href="{{ route('user.invoices.create') }}">
+                <x-button variant="primary">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Invoice
+                </x-button>
+            </a>
+        </div>
     </div>
 
     <!-- Filters -->

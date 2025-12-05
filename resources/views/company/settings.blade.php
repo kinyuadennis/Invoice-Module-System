@@ -177,16 +177,7 @@
                     </x-card>
                 @endif
 
-                <!-- Invoice Customization Link -->
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Invoice Settings</h2>
-                    <p class="text-sm text-gray-600 mb-4">Customize your invoice templates, numbering format, and visual styles.</p>
-                    <a href="{{ route('user.company.invoice-customization') }}">
-                        <x-button variant="outline" class="w-full">
-                            Invoice Customization →
-                        </x-button>
-                    </a>
-                </x-card>
+                <!-- Invoice Customization Link - Removed, now accessible from Invoice section -->
 
                 <!-- Actions -->
                 <div>
