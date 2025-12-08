@@ -3,27 +3,29 @@
 @section('title', 'Invoice Customization')
 
 @section('content')
-<!-- Header -->
-<div class="mb-8">
-    <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
-        <h1 class="text-3xl font-bold mb-2">Invoice Customization</h1>
-        <p class="text-blue-100 text-lg">Customize your invoice numbering format and visual template</p>
+<!-- Wrapper with explicit width constraints to prevent layout shifting -->
+<div class="w-full max-w-full" style="min-width: 0;">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
+            <h1 class="text-3xl font-bold mb-2">Invoice Customization</h1>
+            <p class="text-blue-100 text-lg">Customize your invoice numbering format and visual template</p>
+        </div>
     </div>
-</div>
 
-@if(session('success'))
-    <div class="mb-6">
-        <x-alert type="success">{{ session('success') }}</x-alert>
-    </div>
-@endif
+    @if(session('success'))
+        <div class="mb-6">
+            <x-alert type="success">{{ session('success') }}</x-alert>
+        </div>
+    @endif
 
-@if(session('error'))
-    <div class="mb-6">
-        <x-alert type="error">{{ session('error') }}</x-alert>
-    </div>
-@endif
+    @if(session('error'))
+        <div class="mb-6">
+            <x-alert type="error">{{ session('error') }}</x-alert>
+        </div>
+    @endif
 
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
     <!-- Main Content - Left Side (8 columns) -->
     <div class="lg:col-span-8 space-y-6">
         <!-- Invoice Number Format Section -->
@@ -279,6 +281,8 @@
         </x-card>
     </div>
 </div>
+</div>
+<!-- End wrapper -->
 
 @php
     $templateId = isset($selectedTemplate) && $selectedTemplate ? $selectedTemplate->id : null;

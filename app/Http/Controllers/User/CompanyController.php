@@ -87,11 +87,6 @@ class CompanyController extends Controller
         }
 
         $company = Company::findOrFail($user->company_id);
-        $prefixService = app(InvoicePrefixService::class);
-
-        // Get prefix history
-        $prefixHistory = $prefixService->getPrefixHistory($company);
-        $activePrefix = $company->activeInvoicePrefix();
 
         // Get payment methods with display name
         $paymentMethods = $company->paymentMethods()->ordered()->get()->map(function ($method) {
@@ -104,8 +99,6 @@ class CompanyController extends Controller
 
         return view('company.settings', [
             'company' => $company,
-            'prefixHistory' => $prefixHistory,
-            'activePrefix' => $activePrefix,
             'paymentMethods' => $paymentMethods,
         ]);
     }
@@ -183,11 +176,6 @@ class CompanyController extends Controller
         }
 
         $company = Company::with('invoiceTemplate')->findOrFail($user->company_id);
-        $prefixService = app(InvoicePrefixService::class);
-
-        // Get prefix history
-        $prefixHistory = $prefixService->getPrefixHistory($company);
-        $activePrefix = $company->activeInvoicePrefix();
 
         // Get all active templates for selection (new database-driven system)
         $templates = InvoiceTemplate::active()->ordered()->get();
@@ -210,8 +198,6 @@ class CompanyController extends Controller
             'selectedTemplate' => $selectedTemplate,
             'legacyTemplates' => $legacyTemplates, // Keep for backward compatibility
             'formatPatterns' => $formatPatterns,
-            'prefixHistory' => $prefixHistory,
-            'activePrefix' => $activePrefix,
         ]);
     }
 

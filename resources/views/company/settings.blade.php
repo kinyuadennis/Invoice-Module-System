@@ -89,11 +89,14 @@
                         </div>
 
                         <div>
+                            @php
+                                $activePrefix = $company->activeInvoicePrefix();
+                            @endphp
                             <x-input
                                 type="text"
                                 name="invoice_prefix"
                                 label="Invoice Prefix"
-                                value="{{ old('invoice_prefix', $activePrefix->prefix ?? $company->invoice_prefix ?? 'INV') }}"
+                                value="{{ old('invoice_prefix', $activePrefix?->prefix ?? $company->invoice_prefix ?? 'INV') }}"
                                 maxlength="50"
                             />
                             <p class="mt-1 text-sm text-gray-500">
@@ -149,33 +152,6 @@
                         @enderror
                     </div>
                 </x-card>
-
-                <!-- Prefix History -->
-                @if($prefixHistory && $prefixHistory->count() > 0)
-                <x-card>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Prefix History</h2>
-                        <div class="space-y-3">
-                            @foreach($prefixHistory as $prefix)
-                                <div class="flex items-center justify-between p-2 rounded {{ $prefix->isActive() ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50' }}">
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-900">{{ $prefix->prefix }}</div>
-                                        <div class="text-xs text-gray-500">
-                                            {{ $prefix->started_at->format('M d, Y') }}
-                                            @if($prefix->ended_at)
-                                                - {{ $prefix->ended_at->format('M d, Y') }}
-                                            @else
-                                                <span class="text-blue-600 font-semibold">(Active)</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    @if($prefix->isActive())
-                                        <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">Active</span>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                </x-card>
-                @endif
 
                 <!-- Invoice Customization Link - Removed, now accessible from Invoice section -->
 
