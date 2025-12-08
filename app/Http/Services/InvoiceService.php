@@ -158,15 +158,19 @@ class InvoiceService
                 $itemModel->update(['unit_price' => $unitPrice]);
             }
 
+            // Calculate total_price = quantity * unit_price
+            $quantity = (float) ($item['quantity'] ?? 1);
+            $calculatedTotalPrice = $quantity * $unitPrice;
+
             $invoice->invoiceItems()->create([
                 'company_id' => $companyId,
                 'item_id' => $itemModel->id, // Link to reusable item
                 'description' => $description,
-                'quantity' => $item['quantity'],
+                'quantity' => $quantity,
                 'unit_price' => $unitPrice,
                 'vat_included' => $item['vat_included'] ?? false,
                 'vat_rate' => $item['vat_rate'] ?? 16.00,
-                'total_price' => $item['total_price'] ?? (($item['quantity'] ?? 1) * $unitPrice),
+                'total_price' => $calculatedTotalPrice, // Always calculate: quantity * unit_price
             ]);
 
             // Track service usage
@@ -258,15 +262,19 @@ class InvoiceService
                     $itemModel->update(['unit_price' => $unitPrice]);
                 }
 
+                // Calculate total_price = quantity * unit_price
+                $quantity = (float) ($item['quantity'] ?? 1);
+                $calculatedTotalPrice = $quantity * $unitPrice;
+
                 $invoice->invoiceItems()->create([
                     'company_id' => $companyId,
                     'item_id' => $itemModel->id, // Link to reusable item
                     'description' => $description,
-                    'quantity' => $item['quantity'],
+                    'quantity' => $quantity,
                     'unit_price' => $unitPrice,
                     'vat_included' => $item['vat_included'] ?? false,
                     'vat_rate' => $item['vat_rate'] ?? 16.00,
-                    'total_price' => $item['total_price'] ?? (($item['quantity'] ?? 1) * $unitPrice),
+                    'total_price' => $calculatedTotalPrice, // Always calculate: quantity * unit_price
                 ]);
 
                 // Track service usage
@@ -372,7 +380,8 @@ class InvoiceService
                 'unit_price' => (float) $item->unit_price,
                 'vat_included' => (bool) $item->vat_included,
                 'vat_rate' => (float) $item->vat_rate,
-                'total' => (float) $item->total_price,
+                'total_price' => (float) $item->total_price,
+                'total' => (float) $item->total_price, // Keep for backward compatibility
             ];
         });
 

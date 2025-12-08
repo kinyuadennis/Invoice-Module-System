@@ -93,9 +93,9 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ $item['quantity'] ?? 0 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">${{ number_format($item['rate'] ?? 0, 2) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">${{ number_format($item['unit_price'] ?? 0, 2) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                                ${{ number_format(($item['quantity'] ?? 0) * ($item['rate'] ?? 0), 2) }}
+                                ${{ number_format($item['total_price'] ?? $item['total'] ?? 0, 2) }}
                             </td>
                         </tr>
                     @endforeach

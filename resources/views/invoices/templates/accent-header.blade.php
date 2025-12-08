@@ -183,7 +183,7 @@
                             <td>{{ $item['description'] ?? 'Item' }}</td>
                             <td class="text-center">{{ $item['quantity'] ?? 1 }}</td>
                             <td class="text-right">KES {{ number_format($item['unit_price'] ?? 0, 2) }}</td>
-                            <td class="text-right">KES {{ number_format($item['total'] ?? 0, 2) }}</td>
+                            <td class="text-right">KES {{ number_format($item['total_price'] ?? $item['total'] ?? 0, 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -459,12 +459,17 @@ class InvoiceController extends Controller
                 'client' => $this->formatClientDataForPreview($validated['client'] ?? null, $validated['client_id'] ?? null),
                 'client_id' => $validated['client_id'] ?? null,
                 'items' => array_map(function ($item) {
+                    $quantity = (float) ($item['quantity'] ?? 1);
+                    $unitPrice = (float) ($item['unit_price'] ?? 0);
+                    $totalPrice = $quantity * $unitPrice;
+
                     return [
                         'id' => null,
                         'description' => $item['description'],
-                        'quantity' => $item['quantity'] ?? 1,
-                        'unit_price' => $item['unit_price'] ?? 0,
-                        'total' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'total_price' => $totalPrice,
+                        'total' => $totalPrice, // Keep for backward compatibility
                     ];
                 }, $validated['items']),
                 'company' => [
@@ -625,12 +630,17 @@ class InvoiceController extends Controller
                 'client' => $this->formatClientDataForPreview($validated['client'] ?? null, $validated['client_id'] ?? null),
                 'client_id' => $validated['client_id'] ?? null,
                 'items' => array_map(function ($item) {
+                    $quantity = (float) ($item['quantity'] ?? 1);
+                    $unitPrice = (float) ($item['unit_price'] ?? 0);
+                    $totalPrice = $quantity * $unitPrice;
+
                     return [
                         'id' => null,
                         'description' => $item['description'],
-                        'quantity' => $item['quantity'] ?? 1,
-                        'unit_price' => $item['unit_price'] ?? 0,
-                        'total' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'total_price' => $totalPrice,
+                        'total' => $totalPrice, // Keep for backward compatibility
                     ];
                 }, $validated['items']),
                 'company' => [
@@ -673,6 +683,51 @@ class InvoiceController extends Controller
         } catch (\Exception $e) {
             abort(500, 'Error generating preview: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Show invoice preview in iframe from existing invoice.
+     */
+    public function previewFrameFromInvoice($id)
+    {
+        $companyId = Auth::user()->company_id;
+
+        if (! $companyId) {
+            abort(403, 'You must belong to a company.');
+        }
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)
+            ->with(['client', 'invoiceItems', 'company'])
+            ->findOrFail($id);
+
+        // Format invoice data using the service
+        $formattedInvoice = $this->invoiceService->formatInvoiceForShow($invoice);
+
+        // Get template from invoice (if stored) or company's active template
+        $template = $invoice->getInvoiceTemplate();
+        $templateView = $template->view_path ?? 'invoices.templates.modern-clean';
+
+        // Check if view exists, fallback to default if not
+        if (! view()->exists($templateView)) {
+            $defaultTemplate = \App\Models\InvoiceTemplate::getDefault();
+            $templateView = $defaultTemplate->view_path ?? 'invoices.templates.modern-clean';
+        }
+
+        // Convert logo to web URL for browser preview
+        if ($invoice->company && $invoice->company->logo) {
+            $formattedInvoice['company']['logo'] = \Illuminate\Support\Facades\Storage::url($invoice->company->logo);
+            $formattedInvoice['company']['logo_path'] = $invoice->company->logo;
+        }
+
+        // Add is_preview flag for template rendering
+        $formattedInvoice['is_preview'] = true;
+
+        // Render preview HTML using the selected template
+        return view($templateView, [
+            'invoice' => $formattedInvoice,
+            'template' => $template,
+        ]);
     }
 
     /**

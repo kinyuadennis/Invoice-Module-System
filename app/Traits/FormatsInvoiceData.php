@@ -115,7 +115,8 @@ trait FormatsInvoiceData
                 'description' => $item->description,
                 'quantity' => (int) $item->quantity,
                 'unit_price' => (float) $item->unit_price,
-                'total' => (float) $item->total_price,
+                'total_price' => (float) $item->total_price,
+                'total' => (float) $item->total_price, // Keep for backward compatibility
             ];
         });
 

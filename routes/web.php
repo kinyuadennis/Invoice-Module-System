@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
         // Invoice routes - must be before resource route to avoid conflicts
         Route::post('/invoices/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
         Route::get('/invoices/preview-frame', [InvoiceController::class, 'previewFrame'])->name('invoices.preview-frame');
+        Route::get('/invoices/{invoice}/preview-frame', [InvoiceController::class, 'previewFrameFromInvoice'])->name('invoices.preview-frame-from-invoice');
         Route::post('/invoices/autosave', [InvoiceController::class, 'autosave'])->name('invoices.autosave');
 
         Route::resource('invoices', InvoiceController::class);

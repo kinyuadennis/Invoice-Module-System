@@ -91,17 +91,17 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Line Total</th>
                         </tr>
                     </x-slot>
                     @foreach($invoice['items'] ?? [] as $item)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ $item['quantity'] ?? 0 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['rate'] ?? 0, 2) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['unit_price'] ?? 0, 2) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                                KES {{ number_format(($item['quantity'] ?? 0) * ($item['rate'] ?? 0), 2) }}
+                                KES {{ number_format($item['total_price'] ?? $item['total'] ?? 0, 2) }}
                             </td>
                         </tr>
                     @endforeach
