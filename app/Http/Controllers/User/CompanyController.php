@@ -360,8 +360,13 @@ class CompanyController extends Controller
         // Refresh company to get updated data
         $company->refresh();
 
-        // If AJAX request, return JSON with updated invoice number
-        if ($request->wantsJson() || $request->ajax()) {
+        // Only return JSON if explicitly requested via Accept header AND X-Requested-With header
+        // This prevents regular form submissions from being treated as AJAX
+        $isExplicitAjax = $request->wantsJson()
+            && $request->hasHeader('X-Requested-With')
+            && $request->header('X-Requested-With') === 'XMLHttpRequest';
+
+        if ($isExplicitAjax) {
             $nextInvoiceNumber = $prefixService->getNextInvoiceNumberPreview($company);
 
             return response()->json([
@@ -372,7 +377,9 @@ class CompanyController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Invoice format updated successfully!');
+        // Always redirect for regular form submissions
+        return redirect()->route('user.company.invoice-customization')
+            ->with('success', 'Invoice format updated successfully!');
     }
 
     /**

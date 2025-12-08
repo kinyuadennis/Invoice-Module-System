@@ -115,8 +115,13 @@ class InvoiceController extends Controller
         // Check if user wants one-page builder (default) or wizard
         $builderType = request()->get('builder', 'one-page'); // 'one-page' or 'wizard'
 
-        // If AJAX request, return JSON with invoice number
-        if (request()->wantsJson() || request()->ajax()) {
+        // Only return JSON if explicitly requested via Accept header AND X-Requested-With header
+        // This prevents regular browser requests from being treated as AJAX
+        $isExplicitAjax = request()->wantsJson()
+            && request()->hasHeader('X-Requested-With')
+            && request()->header('X-Requested-With') === 'XMLHttpRequest';
+
+        if ($isExplicitAjax) {
             return response()->json([
                 'success' => true,
                 'next_invoice_number' => $nextInvoiceNumber,

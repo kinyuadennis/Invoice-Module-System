@@ -15,20 +15,20 @@
 
     @if(session('success'))
         <div class="mb-6">
-            <x-alert type="success">{{ session('success') }}</x-alert>
+        <x-alert type="success">{{ session('success') }}</x-alert>
         </div>
     @endif
 
     @if(session('error'))
         <div class="mb-6">
-            <x-alert type="error">{{ session('error') }}</x-alert>
+        <x-alert type="error">{{ session('error') }}</x-alert>
         </div>
     @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
     <!-- Main Content - Left Side (8 columns) -->
     <div class="lg:col-span-8 space-y-6">
-        <!-- Invoice Number Format Section -->
+            <!-- Invoice Number Format Section -->
         <x-card class="shadow-lg border border-gray-200">
             <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
                 <div class="p-2.5 bg-blue-100 rounded-lg">
@@ -41,108 +41,108 @@
                     <p class="text-sm text-gray-500 mt-0.5">Configure how your invoice numbers are generated</p>
                 </div>
             </div>
-            
-            <form method="POST" action="{{ route('user.company.update-invoice-format') }}" x-data="invoiceFormatForm({{ json_encode($company) }}, {{ json_encode($formatPatterns) }})">
-                @csrf
                 
-                <div class="space-y-6">
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <!-- Prefix -->
-                        <div>
-                            <label for="invoice_prefix" class="block text-sm font-medium text-gray-700 mb-2">
-                                Prefix
-                            </label>
-                            <input
-                                type="text"
-                                id="invoice_prefix"
-                                name="invoice_prefix"
-                                x-model="formData.prefix"
-                                @input="updatePreview()"
-                                maxlength="20"
+                <form method="POST" action="{{ route('user.company.update-invoice-format') }}" x-data="invoiceFormatForm({{ json_encode($company) }}, {{ json_encode($formatPatterns) }})">
+                    @csrf
+                    
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <!-- Prefix -->
+                            <div>
+                                <label for="invoice_prefix" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Prefix
+                                </label>
+                                <input
+                                    type="text"
+                                    id="invoice_prefix"
+                                    name="invoice_prefix"
+                                    x-model="formData.prefix"
+                                    @input="updatePreview()"
+                                    maxlength="20"
                                 class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
-                                placeholder="INV"
-                            />
+                                    placeholder="INV"
+                                />
                             <p class="mt-1.5 text-xs text-gray-500">e.g., INV, HUB, ACME</p>
-                        </div>
+                            </div>
 
-                        <!-- Suffix -->
-                        <div>
-                            <label for="invoice_suffix" class="block text-sm font-medium text-gray-700 mb-2">
-                                Suffix (Optional)
-                            </label>
-                            <input
-                                type="text"
-                                id="invoice_suffix"
-                                name="invoice_suffix"
-                                x-model="formData.suffix"
-                                @input="updatePreview()"
-                                maxlength="20"
+                            <!-- Suffix -->
+                            <div>
+                                <label for="invoice_suffix" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Suffix (Optional)
+                                </label>
+                                <input
+                                    type="text"
+                                    id="invoice_suffix"
+                                    name="invoice_suffix"
+                                    x-model="formData.suffix"
+                                    @input="updatePreview()"
+                                    maxlength="20"
                                 class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
-                                placeholder="KE"
-                            />
+                                    placeholder="KE"
+                                />
                             <p class="mt-1.5 text-xs text-gray-500">e.g., KE, 2025</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <!-- Padding -->
-                        <div>
-                            <label for="invoice_padding" class="block text-sm font-medium text-gray-700 mb-2">
-                                Number Padding
-                            </label>
-                            <select
-                                id="invoice_padding"
-                                name="invoice_padding"
-                                x-model="formData.padding"
-                                @change="updatePreview()"
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <!-- Padding -->
+                            <div>
+                                <label for="invoice_padding" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Number Padding
+                                </label>
+                                <select
+                                    id="invoice_padding"
+                                    name="invoice_padding"
+                                    x-model="formData.padding"
+                                    @change="updatePreview()"
                                 class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
-                            >
-                                <option value="3">3 digits (001)</option>
-                                <option value="4">4 digits (0001)</option>
-                                <option value="5">5 digits (00001)</option>
-                                <option value="6">6 digits (000001)</option>
-                            </select>
-                        </div>
+                                >
+                                    <option value="3">3 digits (001)</option>
+                                    <option value="4">4 digits (0001)</option>
+                                    <option value="5">5 digits (00001)</option>
+                                    <option value="6">6 digits (000001)</option>
+                                </select>
+                            </div>
 
-                        <!-- Format Pattern -->
-                        <div>
-                            <label for="invoice_format" class="block text-sm font-medium text-gray-700 mb-2">
-                                Format Pattern
-                            </label>
-                            <select
-                                id="invoice_format"
-                                name="invoice_format"
-                                x-model="formData.format"
-                                @change="updatePreview()"
+                            <!-- Format Pattern -->
+                            <div>
+                                <label for="invoice_format" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Format Pattern
+                                </label>
+                                <select
+                                    id="invoice_format"
+                                    name="invoice_format"
+                                    x-model="formData.format"
+                                    @change="updatePreview()"
                                 class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
-                            >
-                                @foreach($formatPatterns as $pattern => $example)
-                                    <option value="{{ $pattern }}" {{ $company->invoice_format === $pattern ? 'selected' : '' }}>
-                                        {{ $example }}
-                                    </option>
-                                @endforeach
-                            </select>
+                                >
+                                    @foreach($formatPatterns as $pattern => $example)
+                                        <option value="{{ $pattern }}" {{ $company->invoice_format === $pattern ? 'selected' : '' }}>
+                                            {{ $example }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Live Preview -->
+                        <!-- Live Preview -->
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 shadow-sm">
                         <label class="block text-sm font-semibold text-blue-900 mb-3">Live Preview</label>
                         <div class="text-3xl font-bold text-blue-600 mb-2" x-text="preview"></div>
                         <p class="text-xs text-blue-700">This is how your next invoice number will look</p>
-                    </div>
+                        </div>
 
                     <div class="pt-2">
                         <x-button type="submit" variant="primary" class="w-full sm:w-auto min-w-[200px]">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            Save Format Settings
-                        </x-button>
+                                Save Format Settings
+                            </x-button>
+                        </div>
                     </div>
-                </div>
-            </form>
-        </x-card>
+                </form>
+            </x-card>
 
         <!-- Invoice Template Selection - Moved to main content area -->
         @if(isset($templates) && $templates->isNotEmpty())
@@ -209,7 +209,7 @@
                         </svg>
                     </div>
                     <h2 class="text-lg font-semibold text-gray-900">Template Preview</h2>
-                </div>
+                                </div>
                 <p class="text-sm text-gray-600 mb-4">See how your invoice will look</p>
                 
                 <!-- Preview Loading State -->
@@ -230,7 +230,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         <p class="text-xs text-red-800 font-medium" x-text="error"></p>
-                    </div>
+                        </div>
                 </div>
 
                 <!-- Preview Content - Compact with proper scaling -->
@@ -243,7 +243,7 @@
                     <div class="preview-container" style="max-height: 500px; overflow: auto;">
                         <div class="preview-content" style="transform: scale(0.7); transform-origin: top left; width: 142.86%; padding: 8px;" x-html="previewHtml"></div>
                     </div>
-                </div>
+        </div>
 
                 <!-- Initial State -->
                 <div x-show="!loading && !error && !previewHtml" class="text-center py-10 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
@@ -256,7 +256,7 @@
             </x-card>
         @endif
 
-        <!-- Quick Links -->
+            <!-- Quick Links -->
         <x-card class="shadow-lg border border-gray-200">
             <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
                 <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,17 +270,17 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">Back to Invoices</span>
-                </a>
+                    </a>
                 <a href="{{ route('user.invoices.create') }}" class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all group">
                     <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                     <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">Create New Invoice</span>
-                </a>
-            </div>
-        </x-card>
+                    </a>
+                </div>
+            </x-card>
+        </div>
     </div>
-</div>
 </div>
 <!-- End wrapper -->
 

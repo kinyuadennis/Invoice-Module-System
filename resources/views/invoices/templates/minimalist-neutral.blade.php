@@ -115,7 +115,7 @@
                         <img src="{{ public_path('storage/' . ($invoice['company']['logo_path'] ?? $invoice['company']['logo'])) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" style="max-width: 80px; max-height: 80px; margin-bottom: 10px;">
                     @endif
                 @endif
-                <div class="company-name">{{ $invoice['company']['name'] ?? 'Company Name' }}</div>
+            <div class="company-name">{{ $invoice['company']['name'] ?? 'Company Name' }}</div>
                 @if(isset($invoice['company']['kra_pin']) && $invoice['company']['kra_pin'])
                     <div style="font-size: 10px; color: #718096; margin-top: 4px;">KRA PIN: {{ $invoice['company']['kra_pin'] }}</div>
                 @endif
@@ -130,7 +130,7 @@
                 @endif
             </div>
             <div>
-                <div class="invoice-number">{{ $invoice['invoice_number'] ?? 'INV-' . $invoice['id'] }}</div>
+            <div class="invoice-number">{{ $invoice['invoice_number'] ?? 'INV-' . $invoice['id'] }}</div>
                 <div class="label" style="margin-top: 10px;">Date</div>
                 <div class="value">{{ $invoice['date'] ?? date('Y-m-d') }}</div>
                 <div class="label" style="margin-top: 10px;">Due Date</div>

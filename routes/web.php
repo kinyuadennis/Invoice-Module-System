@@ -21,6 +21,11 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
 
+// Favicon route - return 204 No Content to prevent errors
+Route::get('/favicon.ico', function () {
+    return response('', 204)->header('Content-Type', 'image/x-icon');
+})->name('favicon');
+
 // AJAX endpoint for invoice preview calculations
 Route::post('/api/calculate-invoice-preview', [HomeController::class, 'calculatePreview'])->name('api.calculate-preview')->middleware('throttle:30,1');
 
@@ -54,16 +59,16 @@ Route::middleware('auth')->group(function () {
     // User area (prefix: /app)
     Route::prefix('app')->middleware(\App\Http\Middleware\EnsureUserHasCompany::class)->name('user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
-        
+
         // Invoice routes - must be before resource route to avoid conflicts
         Route::post('/invoices/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
         Route::post('/invoices/autosave', [InvoiceController::class, 'autosave'])->name('invoices.autosave');
-        
+
         Route::resource('invoices', InvoiceController::class);
         Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
-        
+
         Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
         Route::get('/clients/search', [\App\Http\Controllers\User\ClientController::class, 'search'])->name('clients.search');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
@@ -76,7 +81,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/company/invoice-format', [CompanyController::class, 'updateInvoiceFormat'])->name('company.update-invoice-format');
         Route::post('/company/invoice-template', [CompanyController::class, 'updateInvoiceTemplate'])->name('company.update-invoice-template');
         Route::get('/company/invoice-template/preview', [CompanyController::class, 'previewTemplate'])->name('company.invoice-template.preview');
-        
+
         // Payment Methods
         Route::post('/company/payment-methods', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'store'])->name('company.payment-methods.store');
         Route::put('/company/payment-methods/{paymentMethod}', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'update'])->name('company.payment-methods.update');
@@ -93,8 +98,9 @@ Route::middleware('auth')->group(function () {
                 return redirect()->route('login')->with('error', 'Please log in to access the admin area.');
             }
             if ($user->role !== 'admin') {
-                abort(403, "Unauthorized. Your role is: " . ($user->role ?? 'not set') . ". Required role: admin");
+                abort(403, 'Unauthorized. Your role is: '.($user->role ?? 'not set').'. Required role: admin');
             }
+
             return redirect()->route('admin.dashboard');
         })->name('index');
         Route::get('/dashboard', [AdminDashboardController::class, '__invoke'])->name('dashboard');

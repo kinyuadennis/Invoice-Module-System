@@ -163,9 +163,9 @@
                 </div>
             </div>
             <div style="margin-top: 20px; margin-bottom: 20px;">
-                <div class="section-title">Invoice Details</div>
-                <div>Issue Date: {{ $invoice['date'] ?? date('Y-m-d') }}</div>
-                <div>Due Date: {{ $invoice['due_date'] ?? 'N/A' }}</div>
+                    <div class="section-title">Invoice Details</div>
+                    <div>Issue Date: {{ $invoice['date'] ?? date('Y-m-d') }}</div>
+                    <div>Due Date: {{ $invoice['due_date'] ?? 'N/A' }}</div>
             </div>
 
             <table>

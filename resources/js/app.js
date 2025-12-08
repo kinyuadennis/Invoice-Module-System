@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // This prevents the "flash" of unstyled content and layout shifts
     setTimeout(() => {
         if (window.Alpine) {
-            Alpine.start();
+Alpine.start();
         }
     }, 10);
 });
