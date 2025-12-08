@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
 
         // Invoice routes - must be before resource route to avoid conflicts
         Route::post('/invoices/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
+        Route::get('/invoices/preview-frame', [InvoiceController::class, 'previewFrame'])->name('invoices.preview-frame');
         Route::post('/invoices/autosave', [InvoiceController::class, 'autosave'])->name('invoices.autosave');
 
         Route::resource('invoices', InvoiceController::class);
@@ -81,6 +82,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/company/invoice-format', [CompanyController::class, 'updateInvoiceFormat'])->name('company.update-invoice-format');
         Route::post('/company/invoice-template', [CompanyController::class, 'updateInvoiceTemplate'])->name('company.update-invoice-template');
         Route::get('/company/invoice-template/preview', [CompanyController::class, 'previewTemplate'])->name('company.invoice-template.preview');
+
+        // Item search for autocomplete
+        Route::get('/items/search', [\App\Http\Controllers\User\ItemController::class, 'search'])->name('items.search');
 
         // Payment Methods
         Route::post('/company/payment-methods', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'store'])->name('company.payment-methods.store');

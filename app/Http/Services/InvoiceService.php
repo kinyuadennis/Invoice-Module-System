@@ -5,6 +5,7 @@ namespace App\Http\Services;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Models\Item;
 use App\Models\Service;
 use App\Services\InvoicePrefixService;
 use App\Traits\FormatsInvoiceData;
@@ -66,6 +67,10 @@ class InvoiceService
         // Automatically set company_id and user_id from authenticated user
         $data['company_id'] = $companyId;
         $data['user_id'] = $user->id;
+
+        // Store the template_id that was selected at invoice creation time
+        $template = $company->getActiveInvoiceTemplate();
+        $data['template_id'] = $template->id;
 
         // Get company for invoice prefix
         $company = Company::findOrFail($companyId);
@@ -137,8 +142,25 @@ class InvoiceService
             $description = $item['description'];
             $unitPrice = $item['unit_price'] ?? $item['rate'] ?? 0;
 
+            // Auto-save item to items table if it doesn't exist
+            $itemModel = Item::firstOrCreate(
+                [
+                    'company_id' => $companyId,
+                    'name' => $description,
+                ],
+                [
+                    'unit_price' => $unitPrice,
+                ]
+            );
+
+            // Update unit_price if it's different (to keep items table up to date)
+            if ($itemModel->unit_price != $unitPrice) {
+                $itemModel->update(['unit_price' => $unitPrice]);
+            }
+
             $invoice->invoiceItems()->create([
                 'company_id' => $companyId,
+                'item_id' => $itemModel->id, // Link to reusable item
                 'description' => $description,
                 'quantity' => $item['quantity'],
                 'unit_price' => $unitPrice,
@@ -220,8 +242,25 @@ class InvoiceService
                 $description = $item['description'];
                 $unitPrice = $item['unit_price'] ?? $item['rate'] ?? 0;
 
+                // Auto-save item to items table if it doesn't exist
+                $itemModel = Item::firstOrCreate(
+                    [
+                        'company_id' => $companyId,
+                        'name' => $description,
+                    ],
+                    [
+                        'unit_price' => $unitPrice,
+                    ]
+                );
+
+                // Update unit_price if it's different
+                if ($itemModel->unit_price != $unitPrice) {
+                    $itemModel->update(['unit_price' => $unitPrice]);
+                }
+
                 $invoice->invoiceItems()->create([
                     'company_id' => $companyId,
+                    'item_id' => $itemModel->id, // Link to reusable item
                     'description' => $description,
                     'quantity' => $item['quantity'],
                     'unit_price' => $unitPrice,

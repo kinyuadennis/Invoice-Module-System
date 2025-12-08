@@ -10,6 +10,7 @@ class Invoice extends Model
 {
     protected $fillable = [
         'company_id',
+        'template_id',
         'client_id',
         'user_id',
         'status',
@@ -122,6 +123,32 @@ class Invoice extends Model
     public function platformFees(): HasMany
     {
         return $this->hasMany(PlatformFee::class);
+    }
+
+    /**
+     * The invoice template used for this invoice.
+     */
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(InvoiceTemplate::class, 'template_id');
+    }
+
+    /**
+     * Get the template to use for this invoice (invoice's template or company's default).
+     */
+    public function getInvoiceTemplate(): InvoiceTemplate
+    {
+        if ($this->template_id && $this->template) {
+            return $this->template;
+        }
+
+        // Fallback to company's selected template
+        if ($this->company) {
+            return $this->company->getActiveInvoiceTemplate();
+        }
+
+        // Final fallback to system default
+        return InvoiceTemplate::getDefault();
     }
 
     /**

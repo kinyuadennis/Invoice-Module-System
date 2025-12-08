@@ -178,12 +178,12 @@ function clientCreateModal() {
                 }
                 
                 if (data.success && data.client) {
-                    // Success - emit event with new client
+                // Success - emit event with new client
                     window.dispatchEvent(new CustomEvent('client-created', { detail: data.client }));
                     
                     // Close modal
-                    this.open = false;
-                    this.resetForm();
+                this.open = false;
+                this.resetForm();
                 } else {
                     this.errors = { general: data.message || 'Failed to create client' };
                 }

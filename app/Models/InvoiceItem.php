@@ -10,6 +10,7 @@ class InvoiceItem extends Model
     protected $fillable = [
         'company_id',
         'invoice_id',
+        'item_id',
         'description',
         'quantity',
         'unit_price',
@@ -40,5 +41,13 @@ class InvoiceItem extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /**
+     * The reusable item this invoice item is linked to (nullable).
+     */
+    public function item(): BelongsTo
+    {
+        return $this->belongsTo(Item::class);
     }
 }

@@ -282,9 +282,8 @@ class InvoiceController extends Controller
 
         // Company data is already included in formatInvoiceForShow via the trait
 
-        // Get template from company relationship
-        $company = $invoice->company;
-        $template = $company->getActiveInvoiceTemplate();
+        // Get template from invoice (if stored) or company's active template
+        $template = $invoice->getInvoiceTemplate();
 
         // Fallback to modern-clean if template view doesn't exist
         $templateView = $template->view_path;
@@ -388,6 +387,8 @@ class InvoiceController extends Controller
                 'client' => 'nullable|array',
                 'issue_date' => 'nullable|date',
                 'due_date' => 'nullable|date',
+                'invoice_number' => 'nullable|string',
+                'po_number' => 'nullable|string',
                 'items' => 'required|array|min:1',
                 'items.*.description' => 'required|string',
                 'items.*.quantity' => 'required|numeric|min:0.01',
@@ -395,6 +396,10 @@ class InvoiceController extends Controller
                 'vat_registered' => 'nullable|boolean',
                 'discount' => 'nullable|numeric|min:0',
                 'discount_type' => 'nullable|in:fixed,percentage',
+                'notes' => 'nullable|string',
+                'terms_and_conditions' => 'nullable|string',
+                'payment_method' => 'nullable|string',
+                'payment_details' => 'nullable|string',
             ]);
 
             // Get company
@@ -429,22 +434,33 @@ class InvoiceController extends Controller
             $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
             $grandTotal = $totalBeforeFee + $platformFee;
 
-            // Format invoice data for preview
+            // Format invoice data for preview - include ALL fields
+            $issueDate = $validated['issue_date'] ?? now()->toDateString();
             $invoiceData = [
                 'id' => 'preview',
-                'invoice_number' => $request->input('invoice_number', 'INV-0001'),
+                'invoice_number' => $validated['invoice_number'] ?? $request->input('invoice_number', 'INV-0001'),
+                'po_number' => $validated['po_number'] ?? null,
                 'status' => 'draft',
-                'issue_date' => $validated['issue_date'] ?? now()->toDateString(),
+                'issue_date' => $issueDate,
+                'date' => $issueDate, // Some templates use 'date' instead of 'issue_date'
                 'due_date' => $validated['due_date'] ?? null,
                 'subtotal' => $subtotal,
                 'discount' => $discountAmount,
+                'discount_type' => $discountType,
+                'vat_registered' => $validated['vat_registered'] ?? false,
                 'vat_amount' => $vatAmount,
                 'platform_fee' => $platformFee,
                 'total' => $totalBeforeFee,
                 'grand_total' => $grandTotal,
-                'client' => $validated['client'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'terms_and_conditions' => $validated['terms_and_conditions'] ?? null,
+                'payment_method' => $validated['payment_method'] ?? null,
+                'payment_details' => $validated['payment_details'] ?? null,
+                'client' => $this->formatClientDataForPreview($validated['client'] ?? null, $validated['client_id'] ?? null),
+                'client_id' => $validated['client_id'] ?? null,
                 'items' => array_map(function ($item) {
                     return [
+                        'id' => null,
                         'description' => $item['description'],
                         'quantity' => $item['quantity'] ?? 1,
                         'unit_price' => $item['unit_price'] ?? 0,
@@ -452,6 +468,7 @@ class InvoiceController extends Controller
                     ];
                 }, $validated['items']),
                 'company' => [
+                    'id' => $company->id,
                     'name' => $company->name,
                     'email' => $company->email,
                     'phone' => $company->phone,
@@ -461,13 +478,30 @@ class InvoiceController extends Controller
                 ],
             ];
 
-            // Get template
-            $templateName = $company->invoice_template ?? 'modern_clean';
-            $templates = config('invoice-templates.templates');
-            $templateView = $templates[$templateName]['view'] ?? 'invoices.templates.modern-clean';
+            // Get template from company's selected template (database-driven)
+            $template = $company->getActiveInvoiceTemplate();
+            $templateView = $template->view_path ?? 'invoices.templates.modern-clean';
 
-            // Render preview HTML
-            $html = view($templateView, ['invoice' => $invoiceData])->render();
+            // Check if view exists, fallback to default if not
+            if (! view()->exists($templateView)) {
+                $defaultTemplate = \App\Models\InvoiceTemplate::getDefault();
+                $templateView = $defaultTemplate->view_path ?? 'invoices.templates.modern-clean';
+            }
+
+            // Convert logo to web URL for browser preview
+            if ($company->logo) {
+                $invoiceData['company']['logo'] = \Illuminate\Support\Facades\Storage::url($company->logo);
+                $invoiceData['company']['logo_path'] = $company->logo; // Keep original path for PDF
+            }
+
+            // Add is_preview flag for template rendering
+            $invoiceData['is_preview'] = true;
+
+            // Render preview HTML using the selected template
+            $html = view($templateView, [
+                'invoice' => $invoiceData,
+                'template' => $template,
+            ])->render();
 
             return response()->json([
                 'success' => true,
@@ -493,6 +527,179 @@ class InvoiceController extends Controller
                 'error' => 'An error occurred while generating preview: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Show invoice preview in iframe (for draft/preview).
+     * Handles both GET (query params) and POST requests.
+     */
+    public function previewFrame(Request $request)
+    {
+        try {
+            $companyId = Auth::user()->company_id;
+
+            if (! $companyId) {
+                abort(403, 'You must belong to a company.');
+            }
+
+            // Get company
+            $company = Company::findOrFail($companyId);
+
+            // Validate request data (works with both GET query params and POST body)
+            $validated = $request->validate([
+                'client_id' => 'nullable|exists:clients,id',
+                'client' => 'nullable|array',
+                'client.name' => 'nullable|string',
+                'client.email' => 'nullable|email',
+                'client.phone' => 'nullable|string',
+                'client.address' => 'nullable|string',
+                'client.kra_pin' => 'nullable|string',
+                'issue_date' => 'nullable|date',
+                'due_date' => 'nullable|date',
+                'invoice_number' => 'nullable|string',
+                'po_number' => 'nullable|string',
+                'items' => 'required|array|min:1',
+                'items.*.description' => 'required|string',
+                'items.*.quantity' => 'required|numeric|min:0.01',
+                'items.*.unit_price' => 'required|numeric|min:0',
+                'vat_registered' => 'nullable|boolean',
+                'discount' => 'nullable|numeric|min:0',
+                'discount_type' => 'nullable|in:fixed,percentage',
+                'notes' => 'nullable|string',
+                'terms_and_conditions' => 'nullable|string',
+                'payment_method' => 'nullable|string',
+                'payment_details' => 'nullable|string',
+            ]);
+
+            // Calculate totals
+            $subtotal = 0;
+            foreach ($validated['items'] as $item) {
+                $subtotal += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
+            }
+
+            // Apply discount
+            $discount = $validated['discount'] ?? 0;
+            $discountType = $validated['discount_type'] ?? 'fixed';
+            $discountAmount = 0;
+            if ($discount > 0) {
+                if ($discountType === 'percentage') {
+                    $discountAmount = $subtotal * ($discount / 100);
+                } else {
+                    $discountAmount = $discount;
+                }
+            }
+            $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
+
+            // Calculate VAT
+            $vatAmount = 0;
+            if ($validated['vat_registered'] ?? false) {
+                $vatAmount = $subtotalAfterDiscount * 0.16;
+            }
+
+            $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
+            $platformFee = $totalBeforeFee * 0.03;
+            $grandTotal = $totalBeforeFee + $platformFee;
+
+            // Format invoice data for preview - include ALL fields
+            $issueDate = $validated['issue_date'] ?? now()->toDateString();
+            $invoiceData = [
+                'id' => 'preview',
+                'invoice_number' => $validated['invoice_number'] ?? $request->input('invoice_number', 'INV-0001'),
+                'po_number' => $validated['po_number'] ?? null,
+                'status' => 'draft',
+                'issue_date' => $issueDate,
+                'date' => $issueDate,
+                'due_date' => $validated['due_date'] ?? null,
+                'subtotal' => $subtotal,
+                'discount' => $discountAmount,
+                'discount_type' => $discountType,
+                'vat_registered' => $validated['vat_registered'] ?? false,
+                'vat_amount' => $vatAmount,
+                'platform_fee' => $platformFee,
+                'total' => $totalBeforeFee,
+                'grand_total' => $grandTotal,
+                'notes' => $validated['notes'] ?? null,
+                'terms_and_conditions' => $validated['terms_and_conditions'] ?? null,
+                'payment_method' => $validated['payment_method'] ?? null,
+                'payment_details' => $validated['payment_details'] ?? null,
+                'client' => $this->formatClientDataForPreview($validated['client'] ?? null, $validated['client_id'] ?? null),
+                'client_id' => $validated['client_id'] ?? null,
+                'items' => array_map(function ($item) {
+                    return [
+                        'id' => null,
+                        'description' => $item['description'],
+                        'quantity' => $item['quantity'] ?? 1,
+                        'unit_price' => $item['unit_price'] ?? 0,
+                        'total' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
+                    ];
+                }, $validated['items']),
+                'company' => [
+                    'id' => $company->id,
+                    'name' => $company->name,
+                    'email' => $company->email,
+                    'phone' => $company->phone,
+                    'address' => $company->address,
+                    'kra_pin' => $company->kra_pin,
+                    'logo' => $company->logo,
+                ],
+            ];
+
+            // Get template from company's selected template (database-driven)
+            $template = $company->getActiveInvoiceTemplate();
+            $templateView = $template->view_path ?? 'invoices.templates.modern-clean';
+
+            // Check if view exists, fallback to default if not
+            if (! view()->exists($templateView)) {
+                $defaultTemplate = \App\Models\InvoiceTemplate::getDefault();
+                $templateView = $defaultTemplate->view_path ?? 'invoices.templates.modern-clean';
+            }
+
+            // Convert logo to web URL for browser preview
+            if ($company->logo) {
+                $invoiceData['company']['logo'] = \Illuminate\Support\Facades\Storage::url($company->logo);
+                $invoiceData['company']['logo_path'] = $company->logo;
+            }
+
+            // Add is_preview flag for template rendering
+            $invoiceData['is_preview'] = true;
+
+            // Render preview HTML using the selected template
+            return view($templateView, [
+                'invoice' => $invoiceData,
+                'template' => $template,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            abort(422, 'Invalid preview data: '.implode(', ', array_flatten($e->errors())));
+        } catch (\Exception $e) {
+            abort(500, 'Error generating preview: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Format client data for preview.
+     */
+    private function formatClientDataForPreview(?array $client, ?int $clientId): ?array
+    {
+        if ($client && is_array($client)) {
+            return $client;
+        }
+
+        // If client_id is provided but client data is not, try to load it
+        if ($clientId) {
+            $clientModel = \App\Models\Client::find($clientId);
+            if ($clientModel) {
+                return [
+                    'id' => $clientModel->id,
+                    'name' => $clientModel->name,
+                    'email' => $clientModel->email,
+                    'phone' => $clientModel->phone,
+                    'address' => $clientModel->address,
+                    'kra_pin' => $clientModel->kra_pin,
+                ];
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -89,6 +89,14 @@ class Company extends Model
     }
 
     /**
+     * All reusable items belonging to this company.
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(Item::class);
+    }
+
+    /**
      * All invoice prefixes for this company.
      */
     public function invoicePrefixes(): HasMany

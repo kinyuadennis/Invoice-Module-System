@@ -27,7 +27,7 @@ class HomeController extends Controller
             $refererHost = $referer ? parse_url($referer, PHP_URL_HOST) : null;
             $currentHost = request()->getHost();
             $isInternalNavigation = $refererHost && $refererHost === $currentHost;
-            
+
             // Only auto-redirect on direct access (typing URL directly, no referer, no view param)
             if (! $isInternalNavigation) {
                 if (Auth::user()->role === 'admin') {
@@ -261,7 +261,7 @@ class HomeController extends Controller
             'variant2' => 'Create invoices, collect payments, stay KRA-compliant — in minutes.',
             'variant3' => 'Invoices that get paid faster — simple setup, custom templates, MPesa-ready.',
         ];
-        
+
         // Get variant from query parameter or default to variant1
         $heroVariant = request()->get('hero', 'variant1');
         $heroHeading = $heroHeadingVariants[$heroVariant] ?? $heroHeadingVariants['variant1'];

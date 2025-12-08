@@ -119,7 +119,7 @@
                         <input 
                             type="date"
                             x-model="formData.issue_date"
-                            @change="updatePreview()"
+                            @change="if (showPreview) updatePreview()"
                             :value="formData.issue_date || '{{ date('Y-m-d') }}'"
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             required
@@ -130,7 +130,7 @@
                         <input 
                             type="date"
                             x-model="formData.due_date"
-                            @change="updatePreview()"
+                            @change="if (showPreview) updatePreview()"
                             :min="formData.issue_date"
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             required
@@ -174,7 +174,7 @@
                         <input 
                             type="text"
                             x-model="formData.po_number"
-                            @change="updatePreview()"
+                            @change="if (showPreview) updatePreview()"
                             placeholder="Optional"
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         >
@@ -184,7 +184,7 @@
                             <input 
                                 type="checkbox"
                                 x-model="formData.vat_registered"
-                                @change="updatePreview()"
+                                @change="if (showPreview) updatePreview()"
                                 class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             >
                             <span class="text-sm font-medium text-gray-700">VAT Registered Business</span>
@@ -211,8 +211,8 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rate</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Line Total</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
                             </tr>
                         </thead>
@@ -220,20 +220,53 @@
                             <template x-for="(item, index) in formData.items" :key="index">
                                 <tr>
                                     <td class="px-4 py-3">
-                                        <input 
-                                            type="text"
-                                            x-model="item.description"
-                                            @input="calculateItemTotal(index); updatePreview()"
-                                            placeholder="Item description"
-                                            class="w-full border-0 focus:ring-0 p-0 text-sm"
-                                            required
-                                        >
+                                        <div class="relative">
+                                            <input 
+                                                type="text"
+                                                x-model="item.description"
+                                                @input.debounce.300ms="searchItems(index, $event.target.value); calculateItemTotal(index); if (showPreview) updatePreview()"
+                                                @focus="if (item.description && item.description.length >= 2) searchItems(index, item.description)"
+                                                @click.outside="itemSearchResults = { ...itemSearchResults, [index]: [] }"
+                                                placeholder="Item description"
+                                                class="w-full border-0 focus:ring-0 p-0 text-sm"
+                                                required
+                                            >
+                                            <!-- Autocomplete Dropdown -->
+                                            <div 
+                                                x-show="getItemSearchResults(index).length > 0"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="opacity-0 scale-95"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="opacity-100 scale-100"
+                                                x-transition:leave-end="opacity-0 scale-95"
+                                                class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                                x-cloak
+                                            >
+                                                <template x-for="suggestion in getItemSearchResults(index)" :key="suggestion.id">
+                                                    <div 
+                                                        @click.stop="selectItem(index, suggestion)"
+                                                        class="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                                    >
+                                                        <div class="font-medium" x-text="suggestion.name"></div>
+                                                        <div class="text-sm text-gray-500" x-text="formatCurrency(suggestion.unit_price)"></div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <div 
+                                                x-show="isItemSearchLoading(index)"
+                                                class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 text-center text-sm text-gray-500"
+                                                x-cloak
+                                            >
+                                                Searching...
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3">
                                         <input 
                                             type="number"
                                             x-model="item.quantity"
-                                            @input="calculateItemTotal(index); updatePreview()"
+                                            @input="calculateItemTotal(index); if (showPreview) updatePreview()"
                                             min="0.01"
                                             step="0.01"
                                             class="w-20 border-0 focus:ring-0 p-0 text-sm text-right"
@@ -244,7 +277,7 @@
                                         <input 
                                             type="number"
                                             x-model="item.unit_price"
-                                            @input="calculateItemTotal(index); updatePreview()"
+                                            @input="calculateItemTotal(index); if (showPreview) updatePreview()"
                                             min="0"
                                             step="0.01"
                                             class="w-24 border-0 focus:ring-0 p-0 text-sm text-right"
@@ -317,7 +350,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Notes to Client</label>
                         <textarea 
                             x-model="formData.notes"
-                            @change="updatePreview()"
+                            @change="if (showPreview) updatePreview()"
                             rows="3"
                             placeholder="Any additional notes or terms..."
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -327,7 +360,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Terms & Conditions</label>
                         <textarea 
                             x-model="formData.terms_and_conditions"
-                            @change="updatePreview()"
+                            @change="if (showPreview) updatePreview()"
                             rows="3"
                             placeholder="Payment terms, conditions, etc..."
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -340,6 +373,17 @@
         <!-- Bottom Action Bar -->
         <div class="border-t border-gray-200 bg-gray-50 px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
+                <button 
+                    @click="togglePreview()" 
+                    :disabled="processing || !canShowPreview()"
+                    class="px-4 py-2 border border-blue-300 bg-white text-blue-600 rounded-lg hover:bg-blue-50 font-medium disabled:opacity-50 flex items-center gap-2"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <span x-text="showPreview ? 'Hide Preview' : 'Preview Invoice'"></span>
+                </button>
                 <button 
                     @click="saveDraft()" 
                     :disabled="processing"
@@ -376,21 +420,43 @@
         </div>
     </div>
 
-    <!-- Right Column: Live Preview (Optional - can be hidden on smaller screens) -->
-    <div class="mt-6 lg:hidden">
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Preview</h2>
-                <button 
-                    @click="downloadPdf()"
-                    :disabled="!previewHtml"
-                    class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 disabled:opacity-50"
-                >
-                    Download PDF
-                </button>
+    <!-- Invoice Preview Section -->
+    <div class="mt-6" x-show="showPreview" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-cloak>
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Invoice Preview</h2>
+                <div class="flex items-center gap-2">
+                    <span x-show="previewLoading" class="text-sm text-gray-500 flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating preview...
+                    </span>
+                </div>
             </div>
-            <div class="border border-gray-200 rounded-lg p-4 bg-white" style="max-height: 600px; overflow-y: auto;">
-                <div x-html="previewHtml || '<p class=\"text-gray-500 text-center py-8\">Add items to see preview</p>'"></div>
+            <div class="p-4">
+                <div class="border border-gray-200 rounded-lg bg-white overflow-hidden" style="max-height: 800px; overflow-y: auto;">
+                    <!-- Use iframe for preview to ensure proper template rendering -->
+                    <iframe 
+                        x-show="showPreview && previewFrameUrl"
+                        :src="previewFrameUrl"
+                        class="w-full border-0"
+                        style="min-height: 600px; width: 100%;"
+                        x-cloak
+                    ></iframe>
+                    <div x-show="showPreview && !previewFrameUrl && !previewLoading" class="text-center py-8 text-gray-500" x-cloak>
+                        <p>Add items to see preview</p>
+                    </div>
+                    <div x-show="previewLoading" class="text-center py-8" x-cloak>
+                        <svg class="animate-spin h-8 w-8 mx-auto text-blue-600" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-2 text-sm text-gray-500">Generating preview...</p>
+                    </div>
+                </div>
+                <p class="mt-2 text-xs text-gray-500 text-center">Preview uses your selected invoice template</p>
             </div>
         </div>
     </div>
@@ -432,7 +498,11 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
         clientSearchResults: [],
         showClientDropdown: false,
         showCreateClientModal: false,
-        previewHtml: '',
+        itemSearchResults: {}, // Object to store search results per item index
+        itemSearchLoading: {}, // Object to store loading state per item index
+        previewFrameUrl: null, // URL for iframe preview
+        previewLoading: false,
+        showPreview: false, // Controls preview visibility
         totals: {
             subtotal: 0,
             discount: 0,
@@ -451,8 +521,19 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
             return meta ? meta.content : null;
         },
 
+        // Helper to safely get search results for an index
+        getItemSearchResults(index) {
+            return this.itemSearchResults[index] || [];
+        },
+
+        // Helper to check if loading for an index
+        isItemSearchLoading(index) {
+            return this.itemSearchLoading[index] || false;
+        },
+
         init() {
-            this.updatePreview();
+            // Don't auto-update preview on init - wait for user to click preview button
+            // this.updatePreview();
             this.startAutosave();
             this.refreshInvoiceNumber();
             
@@ -465,7 +546,9 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
                     if (e.detail.next_invoice_number) {
                         // Use the new invoice number directly if provided
                         this.formData.invoice_number = e.detail.next_invoice_number;
-                        this.updatePreview();
+                        if (this.showPreview) {
+                            this.updatePreview();
+                        }
                     } else {
                         // Otherwise refresh from server
                         this.refreshInvoiceNumber();
@@ -512,7 +595,74 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
             this.formData.client_id = client.id;
             this.clientSearch = client.name;
             this.showClientDropdown = false;
-            this.updatePreview();
+            if (this.showPreview) {
+                this.updatePreview();
+            }
+        },
+
+        async searchItems(index, query) {
+            if (!query || query.length < 2) {
+                // Use direct assignment for Alpine.js reactivity
+                this.itemSearchResults = { ...this.itemSearchResults, [index]: [] };
+                return;
+            }
+
+            try {
+                // Use direct assignment for Alpine.js reactivity
+                this.itemSearchLoading = { ...this.itemSearchLoading, [index]: true };
+                const csrfToken = this.getCsrfToken();
+                if (!csrfToken) {
+                    console.error('CSRF token not found');
+                    return;
+                }
+
+                const response = await fetch(`{{ route('user.items.search') }}?query=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Search failed');
+                }
+
+                const data = await response.json();
+                // Use direct assignment for Alpine.js reactivity
+                this.itemSearchResults = { ...this.itemSearchResults, [index]: data.items || [] };
+            } catch (error) {
+                console.error('Error searching items:', error);
+                this.itemSearchResults = { ...this.itemSearchResults, [index]: [] };
+            } finally {
+                this.itemSearchLoading = { ...this.itemSearchLoading, [index]: false };
+            }
+        },
+
+        selectItem(index, item) {
+            if (!item) return;
+            this.formData.items[index].description = item.name;
+            this.formData.items[index].unit_price = item.unit_price;
+            // Clear search results for this index
+            this.itemSearchResults = { ...this.itemSearchResults, [index]: [] };
+            this.calculateItemTotal(index);
+            // Only update preview if it's currently visible
+            if (this.showPreview) {
+                this.updatePreview();
+            }
+        },
+
+        togglePreview() {
+            this.showPreview = !this.showPreview;
+            // If showing preview and we don't have preview URL yet, generate it
+            if (this.showPreview && !this.previewFrameUrl) {
+                this.updatePreview();
+            }
+        },
+
+        canShowPreview() {
+            // Can show preview if there's at least one item with description
+            return this.formData.items.length > 0 && 
+                   this.formData.items.some(item => item.description && item.description.trim() !== '');
         },
 
         addLineItem() {
@@ -525,14 +675,18 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
                 this.addLineItem();
             }
             this.calculateTotals();
-            this.updatePreview();
+            if (this.showPreview) {
+                this.updatePreview();
+            }
         },
 
         duplicateItem(index) {
             const item = { ...this.formData.items[index] };
             this.formData.items.splice(index + 1, 0, item);
             this.calculateTotals();
-            this.updatePreview();
+            if (this.showPreview) {
+                this.updatePreview();
+            }
         },
 
         calculateItemTotal(index) {
@@ -582,55 +736,81 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
             this.calculateTotals();
 
             if (this.formData.items.length === 0 || !this.formData.items[0].description) {
-                this.previewHtml = '<p class="text-gray-500 text-center py-8">Add items to see preview</p>';
+                this.previewFrameUrl = null;
                 return;
             }
 
+            this.previewLoading = true;
             try {
-                const csrfToken = this.getCsrfToken();
-                if (!csrfToken) {
-                    console.error('CSRF token not found');
-                    return;
+                // Build URL with query parameters for iframe preview
+                const params = new URLSearchParams();
+                
+                // Add client data
+                if (this.formData.client_id) {
+                    params.append('client_id', this.formData.client_id);
+                }
+                if (this.formData.client && typeof this.formData.client === 'object') {
+                    params.append('client[name]', this.formData.client.name || '');
+                    params.append('client[email]', this.formData.client.email || '');
+                    params.append('client[phone]', this.formData.client.phone || '');
+                    params.append('client[address]', this.formData.client.address || '');
+                    params.append('client[kra_pin]', this.formData.client.kra_pin || '');
                 }
                 
-                const response = await fetch('{{ route("user.invoices.preview") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        client_id: this.formData.client_id,
-                        client: this.formData.client,
-                        issue_date: this.formData.issue_date,
-                        due_date: this.formData.due_date,
-                        invoice_number: this.formData.invoice_number,
-                        items: this.formData.items.filter(item => item.description && item.description.trim() !== ''),
-                        vat_registered: this.formData.vat_registered,
-                        discount: this.formData.discount,
-                        discount_type: this.formData.discount_type,
-                    })
+                // Add invoice details
+                if (this.formData.issue_date) {
+                    params.append('issue_date', this.formData.issue_date);
+                }
+                if (this.formData.due_date) {
+                    params.append('due_date', this.formData.due_date);
+                }
+                if (this.formData.invoice_number) {
+                    params.append('invoice_number', this.formData.invoice_number);
+                }
+                if (this.formData.po_number) {
+                    params.append('po_number', this.formData.po_number);
+                }
+                
+                // Add items
+                const validItems = this.formData.items.filter(item => item.description && item.description.trim() !== '');
+                validItems.forEach((item, index) => {
+                    params.append(`items[${index}][description]`, item.description || '');
+                    params.append(`items[${index}][quantity]`, (item.quantity || 1).toString());
+                    params.append(`items[${index}][unit_price]`, (item.unit_price || 0).toString());
                 });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Preview error:', errorText);
-                    return;
+                
+                // Add other fields
+                if (this.formData.vat_registered) {
+                    params.append('vat_registered', '1');
                 }
-
-                const data = await response.json();
-                if (data.success) {
-                    this.previewHtml = data.html;
-                    // Update totals from server calculation
-                    if (data.totals) {
-                        this.totals = data.totals;
-                    }
-                } else {
-                    console.error('Preview failed:', data.error || 'Unknown error');
+                if (this.formData.discount) {
+                    params.append('discount', this.formData.discount.toString());
                 }
+                if (this.formData.discount_type) {
+                    params.append('discount_type', this.formData.discount_type);
+                }
+                if (this.formData.notes) {
+                    params.append('notes', this.formData.notes);
+                }
+                if (this.formData.terms_and_conditions) {
+                    params.append('terms_and_conditions', this.formData.terms_and_conditions);
+                }
+                if (this.formData.payment_method) {
+                    params.append('payment_method', this.formData.payment_method);
+                }
+                if (this.formData.payment_details) {
+                    params.append('payment_details', this.formData.payment_details);
+                }
+                
+                // Build iframe URL
+                const baseUrl = '{{ route("user.invoices.preview-frame") }}';
+                this.previewFrameUrl = `${baseUrl}?${params.toString()}`;
+                
             } catch (error) {
-                console.error('Error updating preview:', error);
+                console.error('Error building preview URL:', error);
+                this.previewFrameUrl = null;
+            } finally {
+                this.previewLoading = false;
             }
         },
 
@@ -824,7 +1004,9 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
                     const data = await response.json();
                     if (data.success && data.next_invoice_number) {
                         this.formData.invoice_number = data.next_invoice_number;
-                        this.updatePreview();
+                        if (this.showPreview) {
+                            this.updatePreview();
+                        }
                     }
                 }
             } catch (error) {
