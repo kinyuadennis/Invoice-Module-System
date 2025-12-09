@@ -19,6 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'company_id',
+        'active_company_id',
     ];
 
     protected $hidden = [
@@ -35,11 +36,47 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * The company this user belongs to.
+     * The company this user belongs to (legacy - for backward compatibility).
      */
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * The currently active/selected company for this user.
+     */
+    public function activeCompany(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'active_company_id');
+    }
+
+    /**
+     * All companies owned by this user.
+     */
+    public function ownedCompanies(): HasMany
+    {
+        return $this->hasMany(Company::class, 'owner_user_id');
+    }
+
+    /**
+     * Get the current active company, falling back to first owned company or legacy company_id.
+     */
+    public function getCurrentCompany(): ?Company
+    {
+        // First try active company
+        if ($this->active_company_id && $this->activeCompany) {
+            return $this->activeCompany;
+        }
+
+        // Fallback to first owned company
+        $ownedCompany = $this->ownedCompanies()->first();
+        if ($ownedCompany) {
+            return $ownedCompany;
+        }
+
+        // Legacy fallback to company_id
+        return $this->company;
     }
 
     /**

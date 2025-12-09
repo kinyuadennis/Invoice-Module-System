@@ -19,12 +19,16 @@ class Company extends Model
         'phone',
         'address',
         'kra_pin',
+        'currency',
+        'timezone',
         'invoice_prefix',
         'invoice_suffix',
         'invoice_padding',
         'invoice_format',
         'invoice_template',
         'invoice_template_id',
+        'default_invoice_template_id',
+        'next_invoice_sequence',
         'settings',
     ];
 
@@ -144,7 +148,14 @@ class Company extends Model
      */
     public function getActiveInvoiceTemplate(): InvoiceTemplate
     {
-        return $this->invoiceTemplate ?? InvoiceTemplate::getDefault();
+        // Use default_invoice_template_id if set, otherwise fallback to invoice_template_id
+        $templateId = $this->default_invoice_template_id ?? $this->invoice_template_id;
+
+        if ($templateId && $this->invoiceTemplate) {
+            return $this->invoiceTemplate;
+        }
+
+        return InvoiceTemplate::getDefault();
     }
 
     /**

@@ -18,6 +18,42 @@
         </a>
     </div>
 
+    @php
+        $user = auth()->user();
+        $userCompanies = $user->ownedCompanies()->get();
+        $selectedCompanyId = $selectedCompanyId ?? $company->id;
+    @endphp
+
+    @if($userCompanies->count() > 1)
+        <div class="mb-6">
+            <x-card>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label for="company-selector" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Select Company
+                        </label>
+                        <p class="text-xs text-gray-500">Choose which company to create this invoice for</p>
+                    </div>
+                    <div class="w-64">
+                        <select 
+                            id="company-selector"
+                            x-data="{ companyId: '{{ $selectedCompanyId }}' }"
+                            x-model="companyId"
+                            @change="window.location.href = '{{ route('user.invoices.create') }}?company_id=' + companyId"
+                            class="block w-full px-[var(--spacing-4)] py-[var(--spacing-3)] rounded-[var(--border-radius-md)] border border-[var(--color-neutral-200)] shadow-sm text-[var(--font-size-base)] min-h-[44px] focus:border-[var(--color-primary-500)] focus:ring-0 focus:shadow-[0_0_0_4px_rgba(var(--color-primary-rgb),0.08)]"
+                        >
+                            @foreach($userCompanies as $comp)
+                                <option value="{{ $comp->id }}" {{ $comp->id == $selectedCompanyId ? 'selected' : '' }}>
+                                    {{ $comp->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </x-card>
+        </div>
+    @endif
+
     <x-one-page-invoice-builder 
         :clients="$clients" 
         :services="$services" 

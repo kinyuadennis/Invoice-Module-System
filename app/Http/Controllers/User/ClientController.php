@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreClientRequest;
 use App\Models\Client;
+use App\Services\CurrentCompanyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,14 +16,7 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        $companyId = Auth::user()->company_id;
-
-        if (! $companyId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You must belong to a company to create clients.',
-            ], 403);
-        }
+        $companyId = CurrentCompanyService::requireId();
 
         // Validate using StoreClientRequest rules directly
         $validated = $request->validate([

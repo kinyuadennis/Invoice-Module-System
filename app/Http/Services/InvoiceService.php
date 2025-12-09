@@ -32,11 +32,7 @@ class InvoiceService
     public function createInvoice(Request $request): Invoice
     {
         $user = $request->user();
-        $companyId = $user->company_id;
-
-        if (! $companyId) {
-            throw new \RuntimeException('User must belong to a company to create invoices.');
-        }
+        $companyId = CurrentCompanyService::requireId();
 
         // Validate client belongs to same company (if provided)
         // Client is optional for drafts but required for final invoices

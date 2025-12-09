@@ -100,11 +100,67 @@
 
                     <div class="flex-1"></div>
 
+                    <!-- Company Switcher -->
+                    @php
+                        $user = auth()->user();
+                        $companies = $user->ownedCompanies()->get();
+                        $activeCompany = $user->getCurrentCompany();
+                    @endphp
+                    @if($companies->count() > 1)
+                        <div class="flex items-center space-x-4 mr-4" x-data="{ open: false }">
+                            <div class="relative">
+                                <button @click="open = !open" class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:outline-2 focus-visible:outline-[#2B6EF6] focus-visible:outline-offset-2 transition-colors duration-150">
+                                    @if($activeCompany?->logo)
+                                        <img src="{{ Storage::url($activeCompany->logo) }}" alt="{{ $activeCompany->name }}" class="h-6 w-6 rounded object-contain">
+                                    @else
+                                        <div class="h-6 w-6 rounded bg-[#2B6EF6] flex items-center justify-center text-white text-xs font-semibold">
+                                            {{ strtoupper(substr($activeCompany?->name ?? 'C', 0, 1)) }}
+                                        </div>
+                                    @endif
+                                    <span class="hidden md:block">{{ $activeCompany?->name ?? 'Select Company' }}</span>
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200 max-h-96 overflow-y-auto">
+                                    <div class="px-4 py-2 border-b border-gray-200">
+                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Switch Company</p>
+                                    </div>
+                                    @foreach($companies as $company)
+                                        <form method="POST" action="{{ route('user.company.switch') }}" class="company-switch-form">
+                                            @csrf
+                                            <input type="hidden" name="company_id" value="{{ $company->id }}">
+                                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 {{ $company->id === $activeCompany?->id ? 'bg-blue-50 text-[#2B6EF6]' : '' }}">
+                                                @if($company->logo)
+                                                    <img src="{{ Storage::url($company->logo) }}" alt="{{ $company->name }}" class="h-5 w-5 rounded object-contain">
+                                                @else
+                                                    <div class="h-5 w-5 rounded bg-[#2B6EF6] flex items-center justify-center text-white text-xs font-semibold">
+                                                        {{ strtoupper(substr($company->name, 0, 1)) }}
+                                                    </div>
+                                                @endif
+                                                <span class="flex-1">{{ $company->name }}</span>
+                                                @if($company->id === $activeCompany?->id)
+                                                    <svg class="h-4 w-4 text-[#2B6EF6]" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                    </svg>
+                                                @endif
+                                            </button>
+                                        </form>
+                                    @endforeach
+                                    <div class="px-4 py-2 border-t border-gray-200">
+                                        <a href="{{ route('user.companies.index') }}" class="block px-2 py-1.5 text-xs font-semibold text-[#2B6EF6] hover:text-[#2563EB]">Manage Companies</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- User menu -->
                     <div class="flex items-center space-x-4" x-data="{ open: false }">
                         <div class="relative">
-                            <button @click="open = !open" class="flex items-center space-x-3 text-sm focus:outline-none">
-                                <div class="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center text-white font-medium">
+                            <button @click="open = !open" class="flex items-center space-x-3 text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-[#2B6EF6] focus-visible:outline-offset-2 rounded-lg p-1">
+                                <div class="h-8 w-8 rounded-full bg-[#374151] flex items-center justify-center text-white font-medium">
                                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                                 </div>
                                 <span class="hidden md:block text-gray-700 font-medium">{{ auth()->user()->name ?? 'User' }}</span>
@@ -113,11 +169,14 @@
                                 </svg>
                             </button>
 
-                            <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                                <a href="{{ route('user.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+                            <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200">
+                                <a href="{{ route('user.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">Your Profile</a>
+                                @if($companies->count() > 0)
+                                    <a href="{{ route('user.companies.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">Manage Companies</a>
+                                @endif
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">Sign out</button>
                                 </form>
                             </div>
                         </div>

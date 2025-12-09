@@ -21,9 +21,9 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        // If user already has a company, redirect to settings
-        if ($user->company_id) {
-            return redirect()->route('company.settings');
+        // If user already has companies, redirect to company management
+        if ($user->ownedCompanies()->count() > 0) {
+            return redirect()->route('user.companies.index');
         }
 
         return view('company.setup');
@@ -36,11 +36,7 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        // Prevent creating multiple companies
-        if ($user->company_id) {
-            return redirect()->route('company.settings')
-                ->with('error', 'You already have a company.');
-        }
+        // Allow creating multiple companies - no restriction
 
         $data = $request->validated();
         $data['owner_user_id'] = $user->id;
@@ -68,8 +64,15 @@ class CompanyController extends Controller
         $prefixService = app(InvoicePrefixService::class);
         $prefixService->createDefaultPrefix($company, $user->id);
 
-        // Update user with company_id
-        $user->update(['company_id' => $company->id]);
+        // Set as active company if user doesn't have one
+        if (! $user->active_company_id) {
+            $user->update(['active_company_id' => $company->id]);
+        }
+
+        // Legacy: also update company_id for backward compatibility
+        if (! $user->company_id) {
+            $user->update(['company_id' => $company->id]);
+        }
 
         return redirect()->route('user.dashboard')
             ->with('success', 'Company created successfully!');
@@ -82,11 +85,11 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->company_id) {
+        $company = $user->getCurrentCompany();
+
+        if (! $company) {
             return redirect()->route('company.setup');
         }
-
-        $company = Company::findOrFail($user->company_id);
 
         // Get payment methods with display name
         $paymentMethods = $company->paymentMethods()->ordered()->get()->map(function ($method) {
@@ -110,15 +113,20 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->company_id) {
+        $company = $user->getCurrentCompany();
+
+        if (! $company) {
             return redirect()->route('company.setup');
         }
-
-        $company = Company::findOrFail($user->company_id);
 
         // Only owner can update company
         if ($company->owner_user_id !== $user->id) {
             return back()->with('error', 'Only the company owner can update settings.');
+        }
+
+        // Ensure we're updating the active company
+        if ($company->id !== $user->active_company_id) {
+            return back()->with('error', 'You can only update your active company.');
         }
 
         $data = $request->validated();
@@ -311,11 +319,11 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->company_id) {
+        $company = $user->getCurrentCompany();
+
+        if (! $company) {
             return redirect()->route('company.setup');
         }
-
-        $company = Company::findOrFail($user->company_id);
 
         if ($company->owner_user_id !== $user->id) {
             return back()->with('error', 'Only the company owner can update settings.');
@@ -389,11 +397,11 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->company_id) {
+        $company = $user->getCurrentCompany();
+
+        if (! $company) {
             return redirect()->route('company.setup');
         }
-
-        $company = Company::findOrFail($user->company_id);
 
         if ($company->owner_user_id !== $user->id) {
             if ($request->wantsJson() || $request->ajax()) {

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Item;
+use App\Services\CurrentCompanyService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ItemController extends Controller
 {
@@ -14,11 +14,7 @@ class ItemController extends Controller
      */
     public function search(Request $request)
     {
-        $user = Auth::user();
-
-        if (! $user->company_id) {
-            return response()->json(['error' => 'Company not found'], 403);
-        }
+        $companyId = CurrentCompanyService::requireId();
 
         $query = $request->input('query', '');
 
@@ -26,8 +22,8 @@ class ItemController extends Controller
             return response()->json(['items' => []]);
         }
 
-        // Search items by name (description) for the user's company
-        $items = Item::forCompany($user->company_id)
+        // Search items by name (description) for the user's active company
+        $items = Item::forCompany($companyId)
             ->where('name', 'like', "%{$query}%")
             ->orderBy('name', 'asc')
             ->limit(10)

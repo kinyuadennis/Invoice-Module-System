@@ -77,6 +77,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        // Company management routes
+        Route::resource('companies', \App\Http\Controllers\User\CompanyManagementController::class);
+        Route::post('/company/switch', [\App\Http\Controllers\User\CompanyManagementController::class, 'switchCompany'])->name('company.switch');
+        Route::get('/company/{id}/details', [\App\Http\Controllers\User\CompanyManagementController::class, 'getCompanyDetails'])->name('company.details');
+
         Route::get('/company/settings', [CompanyController::class, 'settings'])->name('company.settings');
         Route::put('/company', [CompanyController::class, 'update'])->name('company.update');
         Route::get('/company/invoice-customization', [CompanyController::class, 'invoiceCustomization'])->name('company.invoice-customization');

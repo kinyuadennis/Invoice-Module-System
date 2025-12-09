@@ -9,6 +9,7 @@ use App\Http\Services\InvoiceService;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Services\CurrentCompanyService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -25,14 +26,9 @@ class InvoiceController extends Controller
 
     public function index(Request $request)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = CurrentCompanyService::requireId();
 
-        if (! $companyId) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You must belong to a company to view invoices.');
-        }
-
-        // Scope to current user's company invoices
+        // Scope to current user's active company invoices
         $query = Invoice::where('company_id', $companyId)
             ->with('client')
             ->latest();
@@ -91,11 +87,23 @@ class InvoiceController extends Controller
 
     public function create()
     {
-        $companyId = Auth::user()->company_id;
+        $user = Auth::user();
+        $companies = $user->ownedCompanies()->get();
+
+        // Get company ID from request or use active company
+        $companyId = request()->input('company_id', CurrentCompanyService::id());
 
         if (! $companyId) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You must belong to a company to create invoices.');
+            if ($companies->count() === 0) {
+                return redirect()->route('company.setup')
+                    ->with('error', 'Please create a company first.');
+            }
+            $companyId = $companies->first()->id;
+        }
+
+        // Ensure user owns this company
+        if (! $companies->pluck('id')->contains($companyId)) {
+            $companyId = CurrentCompanyService::requireId();
         }
 
         $clients = Client::where('company_id', $companyId)
@@ -135,6 +143,8 @@ class InvoiceController extends Controller
                 'services' => $services,
                 'company' => $company,
                 'nextInvoiceNumber' => $nextInvoiceNumber,
+                'companies' => $companies,
+                'selectedCompanyId' => $companyId,
             ]);
         }
 
@@ -166,14 +176,9 @@ class InvoiceController extends Controller
 
     public function show($id)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = CurrentCompanyService::requireId();
 
-        if (! $companyId) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You must belong to a company to view invoices.');
-        }
-
-        // Ensure invoice belongs to user's company
+        // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)
             ->with(['client', 'invoiceItems', 'payments', 'company'])
             ->findOrFail($id);
@@ -185,14 +190,9 @@ class InvoiceController extends Controller
 
     public function edit($id)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = CurrentCompanyService::requireId();
 
-        if (! $companyId) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You must belong to a company to edit invoices.');
-        }
-
-        // Ensure invoice belongs to user's company
+        // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)
             ->with(['client', 'invoiceItems'])
             ->findOrFail($id);
@@ -213,14 +213,9 @@ class InvoiceController extends Controller
 
     public function update(UpdateInvoiceRequest $request, $id)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = CurrentCompanyService::requireId();
 
-        if (! $companyId) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You must belong to a company to update invoices.');
-        }
-
-        // Ensure invoice belongs to user's company
+        // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)->findOrFail($id);
 
         // Update invoice using service
@@ -232,14 +227,9 @@ class InvoiceController extends Controller
 
     public function destroy($id)
     {
-        $companyId = Auth::user()->company_id;
+        $companyId = CurrentCompanyService::requireId();
 
-        if (! $companyId) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You must belong to a company to delete invoices.');
-        }
-
-        // Ensure invoice belongs to user's company
+        // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)->findOrFail($id);
 
         // Only allow deletion of draft invoices
@@ -260,11 +250,7 @@ class InvoiceController extends Controller
      */
     public function generatePdf($id)
     {
-        $companyId = Auth::user()->company_id;
-
-        if (! $companyId) {
-            abort(403, 'You must belong to a company to generate PDFs.');
-        }
+        $companyId = CurrentCompanyService::requireId();
 
         // Ensure invoice belongs to user's company
         $invoice = Invoice::where('company_id', $companyId)
@@ -326,11 +312,7 @@ class InvoiceController extends Controller
      */
     public function sendEmail($id)
     {
-        $companyId = Auth::user()->company_id;
-
-        if (! $companyId) {
-            return response()->json(['error' => 'You must belong to a company.'], 403);
-        }
+        $companyId = CurrentCompanyService::requireId();
 
         // Ensure invoice belongs to user's company
         $invoice = Invoice::where('company_id', $companyId)
@@ -350,11 +332,7 @@ class InvoiceController extends Controller
      */
     public function sendWhatsApp($id)
     {
-        $companyId = Auth::user()->company_id;
-
-        if (! $companyId) {
-            return response()->json(['error' => 'You must belong to a company.'], 403);
-        }
+        $companyId = CurrentCompanyService::requireId();
 
         // Ensure invoice belongs to user's company
         $invoice = Invoice::where('company_id', $companyId)
@@ -375,11 +353,7 @@ class InvoiceController extends Controller
     public function preview(Request $request)
     {
         try {
-            $companyId = Auth::user()->company_id;
-
-            if (! $companyId) {
-                return response()->json(['success' => false, 'error' => 'You must belong to a company.'], 403);
-            }
+            $companyId = CurrentCompanyService::requireId();
 
             // Validate request data
             $validated = $request->validate([
