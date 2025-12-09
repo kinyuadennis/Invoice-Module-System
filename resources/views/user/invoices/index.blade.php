@@ -3,7 +3,7 @@
 @section('title', 'Invoices')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6 mb-6">
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
@@ -87,26 +87,26 @@
             <x-table>
                 <x-slot name="header">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Invoice #</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Client</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Issue Date</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Due Date</th>
+                        <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </x-slot>
                 @foreach($invoices as $invoice)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="{{ route('user.invoices.show', $invoice['id']) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-5 py-3 whitespace-nowrap">
+                            <a href="{{ route('user.invoices.show', $invoice['id']) }}" class="text-sm font-medium text-[#2B6EF6] hover:text-[#2563EB] transition-colors duration-150">
                                 {{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}
                             </a>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
                             {{ $invoice['client']['name'] ?? 'Unknown' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-5 py-3 whitespace-nowrap">
                             @php
                                 $statusVariant = match(strtolower($invoice['status'] ?? 'draft')) {
                                     'paid' => 'success',
@@ -118,16 +118,16 @@
                             @endphp
                             <x-badge :variant="$statusVariant">{{ ucfirst($invoice['status'] ?? 'draft') }}</x-badge>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
                             {{ $invoice['issue_date'] ? \Carbon\Carbon::parse($invoice['issue_date'])->format('M d, Y') : 'N/A' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
                             {{ $invoice['due_date'] ? \Carbon\Carbon::parse($invoice['due_date'])->format('M d, Y') : 'N/A' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                             KES {{ number_format($invoice['total'] ?? 0, 2) }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
                                 <a href="{{ route('user.invoices.show', $invoice['id']) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                                 <a href="{{ route('user.invoices.edit', $invoice['id']) }}" class="text-gray-600 hover:text-gray-900">Edit</a>
@@ -146,7 +146,7 @@
 
             <!-- Pagination -->
             @if(method_exists($invoices, 'links'))
-                <div class="px-6 py-4 border-t border-gray-200">
+                <div class="px-5 py-3 border-t border-gray-200">
                     {{ $invoices->links() }}
                 </div>
             @endif

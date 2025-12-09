@@ -23,11 +23,11 @@
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <!-- Main Form -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-6 mb-6">
                 <x-card>
                     <h2 class="text-xl font-semibold text-gray-900 mb-6">Company Information</h2>
 
-                    <div class="space-y-6">
+                    <div class="space-y-4">
                         <div>
                             <x-input
                                 type="text"

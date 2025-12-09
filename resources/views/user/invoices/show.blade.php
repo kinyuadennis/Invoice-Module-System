@@ -83,24 +83,24 @@
 
             <!-- Line Items -->
             <x-card padding="none">
-                <div class="px-6 py-4 border-b border-gray-200">
+                <div class="px-5 py-4 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900">Line Items</h2>
                 </div>
                 <x-table>
                     <x-slot name="header">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Line Total</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+                            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
+                            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Unit Price</th>
+                            <th class="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Line Total</th>
                         </tr>
                     </x-slot>
                     @foreach($invoice['items'] ?? [] as $item)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ $item['quantity'] ?? 0 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['unit_price'] ?? 0, 2) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
+                            <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600">{{ $item['quantity'] ?? 0 }}</td>
+                            <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['unit_price'] ?? 0, 2) }}</td>
+                            <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                                 KES {{ number_format($item['total_price'] ?? $item['total'] ?? 0, 2) }}
                             </td>
                         </tr>

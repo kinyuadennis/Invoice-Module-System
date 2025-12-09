@@ -16,7 +16,7 @@ $icon = [
 ][$type] ?? 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
 @endphp
 
-<div {{ $attributes->merge(['class' => 'rounded-md border p-4 ' . $classes]) }}>
+<div {{ $attributes->merge(['class' => 'rounded-lg border p-4 ' . $classes]) }}>
     <div class="flex">
         <div class="flex-shrink-0">
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
