@@ -170,4 +170,97 @@ class Company extends Model
 
         return $template->prefix ?? 'INV';
     }
+
+    /**
+     * Get branding settings from the settings JSON column.
+     *
+     * @return array<string, mixed>
+     */
+    public function getBrandingSettings(): array
+    {
+        $settings = $this->settings ?? [];
+        $branding = $settings['branding'] ?? [];
+
+        return [
+            'primary_color' => $branding['primary_color'] ?? '#2B6EF6',
+            'secondary_color' => $branding['secondary_color'] ?? null,
+            'font_family' => $branding['font_family'] ?? 'Inter',
+        ];
+    }
+
+    /**
+     * Get advanced styling settings from the settings JSON column.
+     *
+     * @return array<string, mixed>
+     */
+    public function getAdvancedStylingSettings(): array
+    {
+        $settings = $this->settings ?? [];
+        $advancedStyling = $settings['advanced_styling'] ?? [];
+
+        return [
+            'enabled' => $advancedStyling['enabled'] ?? false,
+            'column_widths' => $advancedStyling['column_widths'] ?? [
+                'description' => 40,
+                'quantity' => 15,
+                'price' => 20,
+                'total' => 25,
+            ],
+            'table_borders' => $advancedStyling['table_borders'] ?? 'thin',
+            'spacing' => $advancedStyling['spacing'] ?? [
+                'padding' => 16,
+                'margin' => 24,
+            ],
+            'header_text' => $advancedStyling['header_text'] ?? null,
+            'footer_text' => $advancedStyling['footer_text'] ?? null,
+            'watermark_enabled' => $advancedStyling['watermark_enabled'] ?? false,
+            'custom_css' => $advancedStyling['custom_css'] ?? '',
+        ];
+    }
+
+    /**
+     * Set a branding setting in the settings JSON column.
+     */
+    public function setBrandingSetting(string $key, mixed $value): void
+    {
+        $settings = $this->settings ?? [];
+        $settings['branding'] = $settings['branding'] ?? [];
+        $settings['branding'][$key] = $value;
+        $this->settings = $settings;
+    }
+
+    /**
+     * Set an advanced styling setting in the settings JSON column.
+     */
+    public function setAdvancedStylingSetting(string $key, mixed $value): void
+    {
+        $settings = $this->settings ?? [];
+        $settings['advanced_styling'] = $settings['advanced_styling'] ?? [];
+        $settings['advanced_styling'][$key] = $value;
+        $this->settings = $settings;
+    }
+
+    /**
+     * Update multiple branding settings at once.
+     *
+     * @param  array<string, mixed>  $brandingData
+     */
+    public function updateBrandingSettings(array $brandingData): void
+    {
+        $settings = $this->settings ?? [];
+        $settings['branding'] = array_merge($settings['branding'] ?? [], $brandingData);
+        $this->settings = $settings;
+    }
+
+    /**
+     * Update multiple advanced styling settings at once.
+     *
+     * @param  array<string, mixed>  $stylingData
+     */
+    public function updateAdvancedStylingSettings(array $stylingData): void
+    {
+        $settings = $this->settings ?? [];
+        $settings['advanced_styling'] = array_merge($settings['advanced_styling'] ?? [], $stylingData);
+        $this->settings = $settings;
+    }
 }

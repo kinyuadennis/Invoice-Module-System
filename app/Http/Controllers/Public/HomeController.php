@@ -207,53 +207,8 @@ class HomeController extends Controller
             ],
         ];
 
-        // Testimonials
-        $testimonials = [
-            [
-                'name' => 'John Mwangi',
-                'role' => 'Owner',
-                'business' => "John's Garage",
-                'location' => 'Nairobi',
-                'industry' => 'automotive',
-                'avatar' => 'JM',
-                'quote' => 'Payment delays cut from 45 to 8 days. Game changer for cash flow.',
-                'metric' => '45 days → 8 days average',
-                'verified' => true,
-            ],
-            [
-                'name' => 'Mary Wanjiku',
-                'role' => 'Owner',
-                'business' => "Mary's Salon",
-                'location' => 'Mombasa',
-                'industry' => 'beauty',
-                'avatar' => 'MW',
-                'quote' => 'M-Pesa integration makes getting paid so easy. Clients love it.',
-                'metric' => '95% payments via M-Pesa',
-                'verified' => true,
-            ],
-            [
-                'name' => 'David Ochieng',
-                'role' => 'Founder',
-                'business' => 'TechFix Ltd',
-                'location' => 'Nairobi',
-                'industry' => 'technology',
-                'avatar' => 'DO',
-                'quote' => 'Professional invoices that clients actually pay on time. KRA compliance is a bonus.',
-                'metric' => '100% KRA compliant invoices',
-                'verified' => true,
-            ],
-            [
-                'name' => 'Sarah Muthoni',
-                'role' => 'Creative Director',
-                'business' => 'Design Studio',
-                'location' => 'Kisumu',
-                'industry' => 'creative',
-                'avatar' => 'SM',
-                'quote' => 'Best investment for my business. ROI in first month.',
-                'metric' => 'KES 50K saved in first month',
-                'verified' => true,
-            ],
-        ];
+        // Reviews are now loaded dynamically via API endpoint /api/reviews
+        // No need to pass testimonials to the view
 
         // Hero heading variants for A/B testing
         $heroHeadingVariants = [
@@ -273,7 +228,6 @@ class HomeController extends Controller
             'steps' => $steps,
             'features' => $features,
             'plans' => $plans,
-            'testimonials' => $testimonials,
             'heroHeading' => $heroHeading,
         ]);
     }

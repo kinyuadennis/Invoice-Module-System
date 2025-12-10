@@ -29,6 +29,9 @@ Route::get('/favicon.ico', function () {
 // AJAX endpoint for invoice preview calculations
 Route::post('/api/calculate-invoice-preview', [HomeController::class, 'calculatePreview'])->name('api.calculate-preview')->middleware('throttle:30,1');
 
+// Public API endpoint for reviews
+Route::get('/api/reviews', [\App\Http\Controllers\Public\ReviewController::class, 'index'])->name('api.reviews');
+
 // Authentication (public)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -45,19 +48,26 @@ Route::middleware('guest')->group(function () {
 
 // Email verification (accessible without auth - uses session for pending users)
 Route::get('/email/verify', [AuthController::class, 'showVerificationNotice'])->name('verification.notice');
-Route::get('/email/verify/{token}', [AuthController::class, 'verifyEmail'])->name('verification.verify');
-Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])->name('verification.send');
+Route::get('/email/verify/check', [AuthController::class, 'checkVerificationStatus'])->name('verification.check');
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+    ->middleware(['signed'])
+    ->name('verification.verify');
+Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])
+    ->middleware('throttle:6,1')
+    ->name('verification.send');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Company setup (must be before other routes to catch users without companies)
-    Route::get('/company/setup', [CompanyController::class, 'setup'])->name('company.setup');
-    Route::post('/company', [CompanyController::class, 'store'])->name('company.store');
+    // Company setup (requires email verification)
+    Route::middleware('verified')->group(function () {
+        Route::get('/company/setup', [CompanyController::class, 'setup'])->name('company.setup');
+        Route::post('/company', [CompanyController::class, 'store'])->name('company.store');
+    });
 
     // User area (prefix: /app)
-    Route::prefix('app')->middleware(\App\Http\Middleware\EnsureUserHasCompany::class)->name('user.')->group(function () {
+    Route::prefix('app')->middleware(['verified', \App\Http\Middleware\EnsureUserHasCompany::class])->name('user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
 
         // Invoice routes - must be before resource route to avoid conflicts
@@ -88,6 +98,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/company/invoice-format', [CompanyController::class, 'updateInvoiceFormat'])->name('company.update-invoice-format');
         Route::post('/company/invoice-template', [CompanyController::class, 'updateInvoiceTemplate'])->name('company.update-invoice-template');
         Route::get('/company/invoice-template/preview', [CompanyController::class, 'previewTemplate'])->name('company.invoice-template.preview');
+        Route::post('/company/branding', [CompanyController::class, 'updateBranding'])->name('company.update-branding');
+        Route::post('/company/advanced-styling', [CompanyController::class, 'updateAdvancedStyling'])->name('company.update-advanced-styling');
 
         // Item search for autocomplete
         Route::get('/items/search', [\App\Http\Controllers\User\ItemController::class, 'search'])->name('items.search');
@@ -100,7 +112,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Admin area (prefix: /admin)
-    Route::prefix('admin')->middleware('role:admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->middleware(['verified', 'role:admin'])->name('admin.')->group(function () {
         // Simple /admin route redirects to dashboard
         Route::get('/', function () {
             $user = \Illuminate\Support\Facades\Auth::user();
@@ -116,6 +128,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, '__invoke'])->name('dashboard');
         Route::resource('companies', \App\Http\Controllers\Admin\CompanyController::class)->except(['create', 'store']);
         Route::resource('clients', ClientController::class);
+        Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class);
+        Route::post('/reviews/{review}/approve', [\App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('reviews.approve');
         Route::get('/invoices', [AdminInvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/{id}', [AdminInvoiceController::class, 'show'])->name('invoices.show');
         Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');

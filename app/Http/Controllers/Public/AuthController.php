@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\SendVerificationEmail;
-use App\Models\EmailVerification;
 use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -33,14 +33,27 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => 'user',
+            'email_verified_at' => null, // Explicitly set to null
         ]);
 
-        // Send verification email immediately (synchronously)
-        // This ensures emails are sent right away, especially in development
+        // Send verification email using Laravel's standard method
         try {
-            (new SendVerificationEmail($user, $request->ip()))->handle();
+            $user->sendEmailVerificationNotification();
+
+            // In development, store the verification URL in session for easy access
+            if (config('app.env') === 'local' || config('app.debug')) {
+                $verificationUrl = URL::temporarySignedRoute(
+                    'verification.verify',
+                    now()->addHours(24),
+                    [
+                        'id' => $user->getKey(),
+                        'hash' => sha1($user->getEmailForVerification()),
+                    ]
+                );
+                $request->session()->put('dev_verification_url', $verificationUrl);
+            }
         } catch (\Exception $e) {
-            \Log::error('Failed to send verification email during registration', [
+            Log::error('Failed to send verification email during registration', [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'error' => $e->getMessage(),
@@ -207,6 +220,47 @@ class AuthController extends Controller
     }
 
     /**
+     * Check verification status (for polling).
+     */
+    public function checkVerificationStatus(Request $request)
+    {
+        $userId = Auth::id() ?? $request->session()->get('pending_verification_user_id');
+
+        if (! $userId) {
+            return response()->json(['verified' => false]);
+        }
+
+        $user = User::find($userId);
+
+        if (! $user) {
+            return response()->json(['verified' => false]);
+        }
+
+        // Refresh user to get latest verification status
+        $user->refresh();
+
+        if ($user->hasVerifiedEmail()) {
+            // Clear session
+            $request->session()->forget('pending_verification_user_id');
+
+            // Determine redirect URL
+            $redirect = route('user.dashboard');
+            if ($user->role === 'admin') {
+                $redirect = route('admin.dashboard');
+            } elseif (! $user->company_id) {
+                $redirect = route('company.setup');
+            }
+
+            return response()->json([
+                'verified' => true,
+                'redirect' => $redirect,
+            ]);
+        }
+
+        return response()->json(['verified' => false]);
+    }
+
+    /**
      * Resend the email verification notification.
      */
     public function resendVerificationEmail(Request $request)
@@ -241,40 +295,24 @@ class AuthController extends Controller
             return redirect()->route('user.dashboard');
         }
 
-        // Rate limiting: 3 per hour, 5 per 24 hours
-        $hourlyKey = "verification_resend:{$user->id}:hourly";
-        $dailyKey = "verification_resend:{$user->id}:daily";
-
-        $hourlyCount = Cache::get($hourlyKey, 0);
-        $dailyCount = Cache::get($dailyKey, 0);
-
-        if ($hourlyCount >= 3) {
-            $nextAllowed = Cache::get("{$hourlyKey}:next", now()->addHour());
-
-            return back()->withErrors([
-                'email' => 'Too many verification emails sent. Please try again in '.now()->diffForHumans($nextAllowed, true).'.',
-            ]);
-        }
-
-        if ($dailyCount >= 5) {
-            $nextAllowed = Cache::get("{$dailyKey}:next", now()->addDay());
-
-            return back()->withErrors([
-                'email' => 'Daily limit reached. Please try again in '.now()->diffForHumans($nextAllowed, true).'.',
-            ]);
-        }
-
-        // Increment counters
-        Cache::put($hourlyKey, $hourlyCount + 1, now()->addHour());
-        Cache::put($dailyKey, $dailyCount + 1, now()->addDay());
-        Cache::put("{$hourlyKey}:next", now()->addHour(), now()->addHour());
-        Cache::put("{$dailyKey}:next", now()->addDay(), now()->addDay());
-
-        // Send verification email immediately (synchronously)
+        // Send verification email using Laravel's standard method
         try {
-            (new SendVerificationEmail($user, $request->ip()))->handle();
+            $user->sendEmailVerificationNotification();
+
+            // In development, store the verification URL in session for easy access
+            if (config('app.env') === 'local' || config('app.debug')) {
+                $verificationUrl = URL::temporarySignedRoute(
+                    'verification.verify',
+                    now()->addHours(24),
+                    [
+                        'id' => $user->getKey(),
+                        'hash' => sha1($user->getEmailForVerification()),
+                    ]
+                );
+                $request->session()->put('dev_verification_url', $verificationUrl);
+            }
         } catch (\Exception $e) {
-            \Log::error('Failed to send verification email during resend', [
+            Log::error('Failed to send verification email during resend', [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'error' => $e->getMessage(),
@@ -285,42 +323,40 @@ class AuthController extends Controller
             ]);
         }
 
-        return back()->with('status', 'Verification link sent!');
+        return back()->with('status', 'Verification link sent! Please check your email.');
     }
 
     /**
-     * Verify the user's email address using token.
+     * Verify the user's email address using signed URL.
      */
-    public function verifyEmail(Request $request, string $token)
+    public function verifyEmail(Request $request)
     {
-        $verification = EmailVerification::where('token', $token)
-            ->valid()
-            ->first();
+        $user = User::findOrFail($request->route('id'));
 
-        if (! $verification) {
+        // Verify the hash matches the user's email
+        if (! hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
             return redirect()->route('verification.notice')
-                ->withErrors(['email' => 'Invalid or expired verification link.']);
+                ->withErrors(['email' => 'Invalid verification link.']);
         }
 
-        $user = $verification->user;
-
+        // Check if already verified
         if ($user->hasVerifiedEmail()) {
-            $verification->markAsUsed();
+            // Clear pending verification session
+            $request->session()->forget('pending_verification_user_id');
+
+            // Log in if not already logged in
+            if (! Auth::check()) {
+                Auth::login($user);
+            }
 
             return redirect()->route('user.dashboard')
                 ->with('status', 'Email already verified.');
         }
 
-        // Mark email as verified
-        $user->email_verified_at = now();
-        $user->save();
-
-        // Mark token as used
-        $verification->markAsUsed();
-
-        // Clear rate limit cache
-        Cache::forget("verification_resend:{$user->id}:hourly");
-        Cache::forget("verification_resend:{$user->id}:daily");
+        // Mark email as verified and fire verified event
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
 
         // Clear pending verification session
         $request->session()->forget('pending_verification_user_id');

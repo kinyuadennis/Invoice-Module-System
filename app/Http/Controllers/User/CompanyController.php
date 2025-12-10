@@ -7,7 +7,9 @@ use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
 use App\Models\InvoiceTemplate;
+use App\Services\CurrentCompanyService;
 use App\Services\InvoicePrefixService;
+use App\Services\InvoicePreviewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -177,19 +179,13 @@ class CompanyController extends Controller
      */
     public function invoiceCustomization()
     {
-        $user = Auth::user();
+        $company = CurrentCompanyService::require();
 
-        if (! $user->company_id) {
-            return redirect()->route('company.setup');
-        }
-
-        $company = Company::with('invoiceTemplate')->findOrFail($user->company_id);
-
-        // Get all active templates for selection (new database-driven system)
+        // Get all active templates for selection
         $templates = InvoiceTemplate::active()->ordered()->get();
 
         // Get default template if none selected
-        $selectedTemplate = $company->invoiceTemplate ?? InvoiceTemplate::getDefault();
+        $selectedTemplate = $company->getActiveInvoiceTemplate();
 
         // Ensure we have a selected template
         if (! $selectedTemplate && $templates->isNotEmpty()) {
@@ -202,110 +198,63 @@ class CompanyController extends Controller
 
         return view('company.invoice-customization', [
             'company' => $company,
-            'templates' => $templates, // New database templates
+            'templates' => $templates,
             'selectedTemplate' => $selectedTemplate,
-            'legacyTemplates' => $legacyTemplates, // Keep for backward compatibility
+            'legacyTemplates' => $legacyTemplates,
             'formatPatterns' => $formatPatterns,
         ]);
     }
 
     /**
-     * Preview invoice template with sample data
+     * Preview invoice template with sample data, branding, and advanced styling
      */
-    public function previewTemplate()
+    public function previewTemplate(Request $request)
     {
-        $user = Auth::user();
+        $company = CurrentCompanyService::require();
 
-        if (! $user->company_id) {
-            return response()->json(['error' => 'Company not found'], 404);
+        $templateId = $request->input('template_id');
+        // Convert to integer if provided, null otherwise
+        $templateId = $templateId ? (int) $templateId : null;
+
+        // Decode JSON strings if they're sent as strings
+        $branding = $request->input('branding', []);
+        if (is_string($branding)) {
+            $branding = json_decode($branding, true) ?? [];
+        }
+        if (! is_array($branding)) {
+            $branding = [];
         }
 
-        $company = Company::with('invoiceTemplate')->findOrFail($user->company_id);
-        $templateId = request()->input('template_id');
-
-        // Get template (selected or default)
-        if ($templateId) {
-            $template = InvoiceTemplate::find($templateId);
-        } else {
-            $template = $company->getActiveInvoiceTemplate();
+        $advancedStyling = $request->input('advanced_styling', []);
+        if (is_string($advancedStyling)) {
+            $advancedStyling = json_decode($advancedStyling, true) ?? [];
+        }
+        if (! is_array($advancedStyling)) {
+            $advancedStyling = [];
         }
 
-        if (! $template) {
-            return response()->json(['error' => 'Template not found'], 404);
-        }
-
-        // Generate sample invoice data for preview
-        // Convert logo to web URL for browser preview (not filesystem path)
-        $logoUrl = null;
-        if ($company->logo) {
-            $logoUrl = Storage::url($company->logo);
-        }
-
-        $sampleInvoice = [
-            'id' => 999,
-            'invoice_number' => $template->prefix.'-0001',
-            'status' => 'sent',
-            'issue_date' => now()->toDateString(),
-            'due_date' => now()->addDays(30)->toDateString(),
-            'subtotal' => 10000.00,
-            'tax' => 1600.00,
-            'vat_amount' => 1600.00,
-            'platform_fee' => 300.00,
-            'grand_total' => 11900.00,
-            'total' => 11900.00,
-            'company' => [
-                'id' => $company->id,
-                'name' => $company->name ?? 'Your Company Name',
-                'logo' => $logoUrl, // Use web URL for browser preview
-                'logo_path' => $company->logo, // Keep original path for PDF generation
-                'email' => $company->email ?? 'info@yourcompany.com',
-                'phone' => $company->phone ?? '+254 700 000 000',
-                'address' => $company->address ?? 'Nairobi, Kenya',
-                'kra_pin' => $company->kra_pin ?? 'P000000000A',
-            ],
-            'client' => [
-                'id' => 1,
-                'name' => 'Sample Client Company',
-                'email' => 'client@example.com',
-                'phone' => '+254 700 111 111',
-                'address' => '123 Client Street, Nairobi, Kenya',
-            ],
-            'items' => [
-                [
-                    'id' => 1,
-                    'description' => 'Web Development Services',
-                    'quantity' => 10,
-                    'unit_price' => 1000.00,
-                    'total' => 10000.00,
-                ],
-            ],
-            'notes' => 'Thank you for your business! Payment is due within 30 days.',
-            'is_preview' => true, // Flag to indicate this is a browser preview
-        ];
-
-        // Check if view exists
-        if (! view()->exists($template->view_path)) {
-            return response()->json(['error' => 'Template view not found'], 404);
-        }
-
-        // Render the template view
         try {
-            $html = view($template->view_path, [
-                'invoice' => $sampleInvoice,
-                'template' => $template,
-            ])->render();
+            $previewService = app(InvoicePreviewService::class);
+            $html = $previewService->generatePreview($templateId, $company, $branding, $advancedStyling);
+
+            // Apply advanced styling if enabled
+            if (! empty($advancedStyling['enabled'])) {
+                $html = $previewService->applyAdvancedStyling($html, $advancedStyling);
+            }
 
             return response()->json([
                 'success' => true,
                 'html' => $html,
-                'template' => [
-                    'id' => $template->id,
-                    'name' => $template->name,
-                    'slug' => $template->slug,
-                ],
             ]);
         } catch (\Exception $e) {
+            \Log::error('Preview generation error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'template_id' => $templateId,
+            ]);
+
             return response()->json([
+                'success' => false,
                 'error' => 'Failed to render preview',
                 'message' => $e->getMessage(),
             ], 500);
@@ -459,5 +408,121 @@ class CompanyController extends Controller
         }
 
         return back()->with('success', 'Invoice template updated successfully!');
+    }
+
+    /**
+     * Update branding settings
+     */
+    public function updateBranding(Request $request)
+    {
+        $user = Auth::user();
+        $company = CurrentCompanyService::require();
+
+        if ($company->owner_user_id !== $user->id) {
+            return response()->json(['error' => 'Only the company owner can update settings.'], 403);
+        }
+
+        $request->validate([
+            'primary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'secondary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'font_family' => 'nullable|string|in:Inter,Roboto,Open Sans,System',
+        ]);
+
+        $brandingData = [];
+        if ($request->has('primary_color')) {
+            $brandingData['primary_color'] = $request->input('primary_color');
+        }
+        if ($request->has('secondary_color')) {
+            $brandingData['secondary_color'] = $request->input('secondary_color');
+        }
+        if ($request->has('font_family')) {
+            $brandingData['font_family'] = $request->input('font_family');
+        }
+
+        if (! empty($brandingData)) {
+            $company->updateBrandingSettings($brandingData);
+            $company->save();
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Branding settings updated successfully!',
+                'branding' => $company->getBrandingSettings(),
+            ]);
+        }
+
+        return back()->with('success', 'Branding settings updated successfully!');
+    }
+
+    /**
+     * Update advanced styling settings
+     */
+    public function updateAdvancedStyling(Request $request)
+    {
+        $user = Auth::user();
+        $company = CurrentCompanyService::require();
+
+        if ($company->owner_user_id !== $user->id) {
+            return response()->json(['error' => 'Only the company owner can update settings.'], 403);
+        }
+
+        $request->validate([
+            'enabled' => 'nullable|boolean',
+            'column_widths' => 'nullable|array',
+            'column_widths.description' => 'nullable|integer|min:10|max:100',
+            'column_widths.quantity' => 'nullable|integer|min:5|max:100',
+            'column_widths.price' => 'nullable|integer|min:5|max:100',
+            'column_widths.total' => 'nullable|integer|min:5|max:100',
+            'table_borders' => 'nullable|string|in:none,thin,medium,thick',
+            'spacing' => 'nullable|array',
+            'spacing.padding' => 'nullable|integer|min:0|max:50',
+            'spacing.margin' => 'nullable|integer|min:0|max:100',
+            'header_text' => 'nullable|string|max:500',
+            'footer_text' => 'nullable|string|max:500',
+            'watermark_enabled' => 'nullable|boolean',
+            'custom_css' => 'nullable|string|max:5000',
+        ]);
+
+        $stylingData = [];
+        if ($request->has('enabled')) {
+            $stylingData['enabled'] = $request->boolean('enabled');
+        }
+        if ($request->has('column_widths')) {
+            $stylingData['column_widths'] = $request->input('column_widths');
+        }
+        if ($request->has('table_borders')) {
+            $stylingData['table_borders'] = $request->input('table_borders');
+        }
+        if ($request->has('spacing')) {
+            $stylingData['spacing'] = $request->input('spacing');
+        }
+        if ($request->has('header_text')) {
+            $stylingData['header_text'] = $request->input('header_text');
+        }
+        if ($request->has('footer_text')) {
+            $stylingData['footer_text'] = $request->input('footer_text');
+        }
+        if ($request->has('watermark_enabled')) {
+            $stylingData['watermark_enabled'] = $request->boolean('watermark_enabled');
+        }
+        if ($request->has('custom_css')) {
+            $stylingData['custom_css'] = $request->input('custom_css');
+        }
+
+        if (! empty($stylingData)) {
+            $company->updateAdvancedStylingSettings($stylingData);
+            $company->save();
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Advanced styling settings updated successfully!',
+                'advanced_styling' => $company->getAdvancedStylingSettings(),
+            ]);
+        }
+
+        return back()->with('success', 'Advanced styling settings updated successfully!');
     }
 }
