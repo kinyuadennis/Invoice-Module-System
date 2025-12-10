@@ -17,6 +17,8 @@ class Invoice extends Model
         'invoice_reference',
         'prefix_used',
         'serial_number',
+        'client_sequence',
+        'invoice_number',
         'full_number',
         'po_number',
         'issue_date',

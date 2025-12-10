@@ -64,15 +64,71 @@ class InvoiceService
         $data['company_id'] = $companyId;
         $data['user_id'] = $user->id;
 
+        // Get company for invoice prefix and template - refresh to ensure latest settings
+        $company = Company::findOrFail($companyId);
+        $company->refresh(); // Ensure we have the latest use_client_specific_numbering value
+
         // Store the template_id that was selected at invoice creation time
         $template = $company->getActiveInvoiceTemplate();
         $data['template_id'] = $template->id;
 
-        // Get company for invoice prefix
-        $company = Company::findOrFail($companyId);
+        // Generate invoice number - ALWAYS use client-specific if enabled
+        // Only skip if invoice_reference is explicitly provided and we want to preserve it
+        // But if client-specific numbering is enabled, we MUST regenerate per client
+        $useClientSpecific = (bool) $company->use_client_specific_numbering;
 
-        // Generate invoice number using new prefix system if not provided
-        if (empty($data['invoice_reference'])) {
+        // Get client_id - check both data and request, handle null/empty properly
+        // When JSON is sent, null values are included in $data, so we need to check explicitly
+        $clientId = null;
+
+        // First check if client_id exists in $data and is not null/empty
+        if (isset($data['client_id']) && $data['client_id'] !== null && $data['client_id'] !== '') {
+            $clientId = (int) $data['client_id'];
+        } elseif ($request->has('client_id') && $request->input('client_id') !== null && $request->input('client_id') !== '') {
+            // Check request directly (for JSON requests)
+            $clientId = (int) $request->input('client_id');
+        }
+
+        // Ensure client_id is set in data if we have it
+        if ($clientId) {
+            $data['client_id'] = $clientId;
+        }
+
+        // If client-specific numbering is enabled, ALWAYS generate (ignore existing invoice_reference)
+        if ($useClientSpecific) {
+            // Client-specific numbering is enabled
+            $isDraft = ($data['status'] ?? 'draft') === 'draft';
+
+            if (! $clientId && ! $isDraft) {
+                throw new \RuntimeException('Client ID is required when client-specific invoice numbering is enabled.');
+            }
+
+            // If we have a client_id, generate client-specific number
+            if ($clientId) {
+                // Get and validate client belongs to company
+                $client = Client::where('id', $clientId)
+                    ->where('company_id', $companyId)
+                    ->firstOrFail();
+
+                // Generate client-specific invoice number with row locking
+                $numberingData = $this->prefixService->generateClientInvoiceNumber($company, $client);
+
+                $data['client_sequence'] = $numberingData['client_sequence'];
+                $data['invoice_number'] = $numberingData['invoice_number'];
+                $data['invoice_reference'] = $numberingData['invoice_number']; // Override any existing value
+
+                // Also set prefix_used and serial_number for backward compatibility
+                $prefix = $this->prefixService->getActivePrefix($company);
+                $data['prefix_used'] = $prefix->prefix;
+                $data['serial_number'] = $numberingData['client_sequence'];
+                $data['full_number'] = $numberingData['invoice_number'];
+            } else {
+                // Draft without client - will be generated when client is added later
+                $data['invoice_number'] = null;
+                $data['client_sequence'] = null;
+            }
+        } elseif (empty($data['invoice_reference'])) {
+            // Global/company-wide numbering (only if client-specific is disabled AND no invoice_reference provided)
             $prefix = $this->prefixService->getActivePrefix($company);
             $serialNumber = $this->prefixService->generateNextSerialNumber($company, $prefix);
             $fullNumber = $this->prefixService->generateFullNumber($company, $prefix, $serialNumber);
@@ -189,6 +245,8 @@ class InvoiceService
     public function updateInvoice(Invoice $invoice, Request $request): Invoice
     {
         $companyId = $invoice->company_id;
+        $company = Company::findOrFail($companyId);
+        $company->refresh(); // Ensure latest settings
 
         // Validate client belongs to same company
         if ($request->has('client_id')) {
@@ -208,8 +266,54 @@ class InvoiceService
             'notes',
         ]);
 
-        // Explicitly prevent any prefix field updates
-        unset($data['prefix_used'], $data['serial_number'], $data['full_number'], $data['invoice_reference']);
+        // If client-specific numbering is enabled and client_id is being set/changed,
+        // and invoice doesn't have a client_sequence yet, generate it
+        $useClientSpecific = (bool) $company->use_client_specific_numbering;
+
+        // Get new client_id - properly handle null/empty values
+        $newClientId = null;
+        if (! empty($data['client_id'])) {
+            $newClientId = (int) $data['client_id'];
+        } elseif (! empty($request->input('client_id'))) {
+            $newClientId = (int) $request->input('client_id');
+        }
+
+        $hasClientSequence = $invoice->client_sequence !== null;
+        $currentClientId = $invoice->client_id;
+
+        // If client-specific numbering is enabled and:
+        // 1. Client is being added/changed, AND
+        // 2. Invoice doesn't have a client_sequence yet, OR
+        // 3. Client changed to a different client
+        if ($useClientSpecific && $newClientId && ($newClientId != $currentClientId || ! $hasClientSequence) && empty($invoice->invoice_number)) {
+            // Generate client-specific invoice number for this invoice
+            $client = Client::where('id', $newClientId)
+                ->where('company_id', $companyId)
+                ->firstOrFail();
+
+            $numberingData = $this->prefixService->generateClientInvoiceNumber($company, $client);
+
+            // Set client-specific fields (only if not already set)
+            $data['client_sequence'] = $numberingData['client_sequence'];
+            $data['invoice_number'] = $numberingData['invoice_number'];
+            $data['invoice_reference'] = $numberingData['invoice_number'];
+
+            $prefix = $this->prefixService->getActivePrefix($company);
+            $data['prefix_used'] = $prefix->prefix;
+            $data['serial_number'] = $numberingData['client_sequence'];
+            $data['full_number'] = $numberingData['invoice_number'];
+        }
+
+        // Explicitly prevent any prefix field updates if invoice_number is already set (immutable)
+        // This allows migrating from global to client-specific numbering for drafts/invoices without invoice_number
+        // But prevents changing invoice numbers once they're set
+        if (! empty($invoice->invoice_number)) {
+            // Invoice number is already set - make all numbering fields immutable
+            unset($data['prefix_used'], $data['serial_number'], $data['full_number'], $data['invoice_reference'], $data['client_sequence'], $data['invoice_number']);
+        } elseif ($invoice->client_sequence !== null) {
+            // Client sequence is set but invoice_number might not be - still prevent changes to sequence-related fields
+            unset($data['client_sequence'], $data['invoice_number']);
+        }
 
         // Update items if provided
         if ($request->has('items')) {

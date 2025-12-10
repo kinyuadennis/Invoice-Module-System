@@ -102,7 +102,7 @@
                         </div>
                     </div>
                     <button 
-                        @click="formData.client = null; formData.client_id = null"
+                        @click="formData.client = null; formData.client_id = null; refreshInvoiceNumber()"
                         class="mt-2 text-sm text-red-600 hover:text-red-700"
                     >
                         Change Client
@@ -151,7 +151,7 @@
                             <input 
                                 type="text"
                                 x-model="formData.invoice_number"
-                                value="{{ $nextInvoiceNumber }}"
+                                :placeholder="!formData.invoice_number ? (formData.client_id ? 'Generating invoice number...' : '{{ $nextInvoiceNumber }}') : ''"
                                 readonly
                                 class="flex-1 rounded-lg border-gray-300 bg-gray-50 shadow-sm"
                             >
@@ -485,7 +485,7 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
             client: null,
             issue_date: new Date().toISOString().split('T')[0],
             due_date: null,
-            invoice_number: nextInvoiceNumber,
+            invoice_number: (nextInvoiceNumber && nextInvoiceNumber !== 'Select a client to see invoice number') ? nextInvoiceNumber : '',
             po_number: '',
             vat_registered: false,
             items: [{ description: '', quantity: 1, unit_price: 0, total: 0 }],
@@ -595,6 +595,10 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
             this.formData.client_id = client.id;
             this.clientSearch = client.name;
             this.showClientDropdown = false;
+            
+            // Auto-generate invoice number when client is selected
+            this.refreshInvoiceNumber();
+            
             if (this.showPreview) {
                 this.updatePreview();
             }
@@ -992,7 +996,13 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
 
         async refreshInvoiceNumber() {
             try {
-                const response = await fetch('{{ route("user.invoices.create") }}', {
+                // Build URL with client_id if available
+                let url = '{{ route("user.invoices.create") }}';
+                if (this.formData.client_id) {
+                    url += '?client_id=' + this.formData.client_id;
+                }
+                
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

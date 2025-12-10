@@ -144,6 +144,94 @@
                 </form>
             </x-card>
 
+            <!-- Client-Specific Numbering Section -->
+            <x-card class="shadow-lg border border-gray-200">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                    <div class="p-2.5 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Client-Specific Invoice Numbering</h2>
+                        <p class="text-sm text-gray-500 mt-0.5">Enable per-client invoice sequences (e.g., each client starts from INV-001)</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ route('user.company.update-invoice-format') }}" x-data="{ 
+                    useClientSpecific: {{ $company->use_client_specific_numbering ? 'true' : 'false' }},
+                    clientFormat: '{{ $company->client_invoice_format ?? '{PREFIX}-{CLIENTSEQ}' }}'
+                }">
+                    @csrf
+                    
+                    <div class="space-y-6">
+                        <!-- Toggle -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div>
+                                <label for="use_client_specific_numbering" class="block text-sm font-semibold text-gray-900 mb-1">
+                                    Enable Client-Specific Numbering
+                                </label>
+                                <p class="text-xs text-gray-600">When enabled, each client will have their own independent invoice sequence</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input 
+                                    type="checkbox" 
+                                    id="use_client_specific_numbering"
+                                    name="use_client_specific_numbering"
+                                    x-model="useClientSpecific"
+                                    value="1"
+                                    class="sr-only peer"
+                                >
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Client Format Pattern (shown when enabled) -->
+                        <div x-show="useClientSpecific" x-transition class="space-y-4">
+                            <div>
+                                <label for="client_invoice_format" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Client Invoice Format Pattern
+                                </label>
+                                <select
+                                    id="client_invoice_format"
+                                    name="client_invoice_format"
+                                    x-model="clientFormat"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                                >
+                                    <option value="{PREFIX}-{CLIENTSEQ}">INV-001 (Prefix-Sequence)</option>
+                                    <option value="{PREFIX}-{CLIENTSEQ}-{YEAR}">INV-001-2025 (Prefix-Sequence-Year)</option>
+                                    <option value="{YEAR}/{CLIENTSEQ}">2025/001 (Year/Sequence)</option>
+                                    <option value="{PREFIX}/{CLIENTSEQ}">INV/001 (Prefix/Sequence)</option>
+                                    <option value="{CLIENTSEQ}">001 (Sequence only)</option>
+                                </select>
+                                <p class="mt-1.5 text-xs text-gray-500">
+                                    Available placeholders: <code class="text-blue-600">{PREFIX}</code>, <code class="text-blue-600">{CLIENTSEQ}</code>, <code class="text-blue-600">{YEAR}</code>, <code class="text-blue-600">{SUFFIX}</code>
+                                </p>
+                            </div>
+
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p class="text-sm font-semibold text-blue-900 mb-2">How it works:</p>
+                                <ul class="text-xs text-blue-800 space-y-1 list-disc list-inside">
+                                    <li>Each client starts with their own sequence (001, 002, 003...)</li>
+                                    <li>Client A: INV-001, INV-002, INV-003</li>
+                                    <li>Client B: INV-001, INV-002, INV-003 (independent)</li>
+                                    <li>Sequences are automatically managed per client</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <x-button type="submit" variant="primary" class="w-full sm:w-auto min-w-[200px]">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Save Client Numbering Settings
+                            </x-button>
+                        </div>
+                    </div>
+                </form>
+            </x-card>
+
         <!-- Invoice Template Selection - Moved to main content area -->
         @if(isset($templates) && $templates->isNotEmpty())
             <x-card class="shadow-lg border border-gray-200">

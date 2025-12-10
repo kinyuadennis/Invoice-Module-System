@@ -29,11 +29,14 @@ class Company extends Model
         'invoice_template_id',
         'default_invoice_template_id',
         'next_invoice_sequence',
+        'client_invoice_format',
+        'use_client_specific_numbering',
         'settings',
     ];
 
     protected $casts = [
         'settings' => 'array',
+        'use_client_specific_numbering' => 'boolean',
     ];
 
     /**

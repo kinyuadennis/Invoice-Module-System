@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Client;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoicePrefix;
@@ -196,5 +197,75 @@ class InvoicePrefixService
 
             return $newPrefixRecord;
         });
+    }
+
+    /**
+     * Generate client-specific invoice number with row locking for concurrency safety.
+     * This method locks the client row, reads next_invoice_sequence, uses it, and increments it.
+     */
+    public function generateClientInvoiceNumber(Company $company, Client $client): array
+    {
+        return DB::transaction(function () use ($company, $client) {
+            // Lock the client row for update to prevent race conditions
+            // Use fresh query to ensure we get the latest next_invoice_sequence
+            $lockedClient = Client::where('id', $client->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Get the next sequence number for this client
+            // Start from next_invoice_sequence, or fallback to invoice_sequence_start, or default to 1
+            $clientSequence = $lockedClient->next_invoice_sequence ?? $lockedClient->invoice_sequence_start ?? 1;
+
+            // Generate the formatted invoice number BEFORE incrementing
+            $invoiceNumber = $this->formatClientInvoiceNumber($company, $clientSequence);
+
+            // Increment the client's next_invoice_sequence atomically
+            // This ensures the next invoice for this client will use the incremented value
+            $lockedClient->increment('next_invoice_sequence');
+
+            return [
+                'client_sequence' => $clientSequence,
+                'invoice_number' => $invoiceNumber,
+            ];
+        }, 5); // Retry up to 5 times if deadlock occurs
+    }
+
+    /**
+     * Format invoice number using company's client-specific format pattern.
+     * Supports placeholders: {PREFIX}, {CLIENTSEQ}, {YEAR}, {SUFFIX}
+     */
+    public function formatClientInvoiceNumber(Company $company, int $clientSequence): string
+    {
+        // Get format pattern from company settings (default if not set)
+        $format = $company->client_invoice_format ?? $company->invoice_format ?? '{PREFIX}-{CLIENTSEQ}';
+        $prefix = $company->invoice_prefix ?? 'INV';
+        $suffix = $company->invoice_suffix ?? '';
+        $padding = $company->invoice_padding ?? 3;
+
+        // Process prefix with dynamic placeholders
+        $processedPrefix = $this->processPrefixPlaceholders($prefix);
+
+        // Pad the client sequence number
+        $paddedSequence = str_pad($clientSequence, $padding, '0', STR_PAD_LEFT);
+
+        // Replace placeholders in format
+        $invoiceNumber = $format;
+        $invoiceNumber = str_replace('{PREFIX}', $processedPrefix, $invoiceNumber);
+        $invoiceNumber = str_replace('{CLIENTSEQ}', $paddedSequence, $invoiceNumber);
+        $invoiceNumber = str_replace('{NUMBER}', $paddedSequence, $invoiceNumber); // Alias for CLIENTSEQ
+        $invoiceNumber = str_replace('{YEAR}', date('Y'), $invoiceNumber);
+        $invoiceNumber = str_replace('{SUFFIX}', $suffix, $invoiceNumber);
+
+        return $invoiceNumber;
+    }
+
+    /**
+     * Get preview of next invoice number for a client (read-only, doesn't increment).
+     */
+    public function getNextClientInvoiceNumberPreview(Company $company, Client $client): string
+    {
+        $nextSequence = $client->next_invoice_sequence ?? $client->invoice_sequence_start ?? 1;
+
+        return $this->formatClientInvoiceNumber($company, $nextSequence);
     }
 }

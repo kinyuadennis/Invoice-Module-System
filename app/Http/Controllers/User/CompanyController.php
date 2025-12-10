@@ -338,6 +338,8 @@ class CompanyController extends Controller
             'invoice_suffix' => 'nullable|string|max:20',
             'invoice_padding' => 'nullable|integer|min:1|max:10',
             'invoice_format' => 'nullable|string|in:{PREFIX}-{NUMBER},{PREFIX}-{YEAR}-{NUMBER},{YEAR}/{NUMBER},{PREFIX}/{NUMBER}/{SUFFIX},{NUMBER}',
+            'use_client_specific_numbering' => 'nullable|boolean',
+            'client_invoice_format' => 'nullable|string|max:100',
         ]);
 
         $prefixService = app(InvoicePrefixService::class);
@@ -349,7 +351,7 @@ class CompanyController extends Controller
             $prefixService->changePrefix($company, $newPrefix, $user->id);
         }
 
-        // Update other format settings (suffix, padding, format)
+        // Update other format settings (suffix, padding, format, client-specific)
         $updateData = [];
         if ($request->has('invoice_suffix')) {
             $updateData['invoice_suffix'] = $request->input('invoice_suffix');
@@ -359,6 +361,12 @@ class CompanyController extends Controller
         }
         if ($request->has('invoice_format')) {
             $updateData['invoice_format'] = $request->input('invoice_format');
+        }
+        if ($request->has('use_client_specific_numbering')) {
+            $updateData['use_client_specific_numbering'] = $request->boolean('use_client_specific_numbering');
+        }
+        if ($request->has('client_invoice_format')) {
+            $updateData['client_invoice_format'] = $request->input('client_invoice_format');
         }
 
         if (! empty($updateData)) {

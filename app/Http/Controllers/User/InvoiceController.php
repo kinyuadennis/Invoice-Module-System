@@ -118,7 +118,27 @@ class InvoiceController extends Controller
 
         // Get next invoice number preview
         $prefixService = app(\App\Services\InvoicePrefixService::class);
-        $nextInvoiceNumber = $prefixService->getNextInvoiceNumberPreview($company);
+        $clientId = request()->input('client_id');
+
+        // Check if client-specific numbering is enabled and client is provided
+        if ($company->use_client_specific_numbering && $clientId) {
+            // Get client-specific invoice number preview
+            $client = Client::where('id', $clientId)
+                ->where('company_id', $companyId)
+                ->first();
+
+            if ($client) {
+                $nextInvoiceNumber = $prefixService->getNextClientInvoiceNumberPreview($company, $client);
+            } else {
+                $nextInvoiceNumber = 'Select a client to see invoice number';
+            }
+        } elseif ($company->use_client_specific_numbering && ! $clientId) {
+            // Client-specific numbering enabled but no client selected
+            $nextInvoiceNumber = 'Select a client to see invoice number';
+        } else {
+            // Global numbering (default)
+            $nextInvoiceNumber = $prefixService->getNextInvoiceNumberPreview($company);
+        }
 
         // Check if user wants one-page builder (default) or wizard
         $builderType = request()->get('builder', 'one-page'); // 'one-page' or 'wizard'

@@ -16,6 +16,13 @@ class Client extends Model
         'phone',
         'address',
         'kra_pin',
+        'invoice_sequence_start',
+        'next_invoice_sequence',
+    ];
+
+    protected $casts = [
+        'invoice_sequence_start' => 'integer',
+        'next_invoice_sequence' => 'integer',
     ];
 
     /**
