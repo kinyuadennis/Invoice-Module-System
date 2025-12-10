@@ -22,24 +22,42 @@
     <x-trust.social-proof-bar />
 
     <!-- PRODUCT PREVIEW SECTION -->
-    <section class="py-16 lg:py-24 bg-slate-50">
+    <section class="py-16 lg:py-24 bg-slate-50" id="see-it-in-action">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
                     See It In Action
                 </h2>
-                <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-                    Create professional invoices in seconds with our intuitive interface
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
+                    Take an interactive tour to see how easy it is to create professional invoices, from signup to getting paid
+                </p>
+                
+                <!-- Play Demo Button -->
+                <button
+                    onclick="window.dispatchEvent(new Event('start-demo'))"
+                    class="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all transform hover:scale-105"
+                    aria-label="Start interactive demo"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Play Interactive Demo</span>
+                </button>
+                
+                <p class="mt-4 text-sm text-slate-500">
+                    Or <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-700 font-medium underline">sign up now</a> to get started
                 </p>
             </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <!-- Static Preview (Fallback) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mt-12">
                 <!-- Form Preview -->
                 <div class="bg-white rounded-xl shadow-lg p-6 lg:p-8 border border-slate-200">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-2">Client</label>
-                            <select class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-900">
+                            <select class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-900" disabled>
                                 <option>Select or add client...</option>
                             </select>
                         </div>
@@ -63,7 +81,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <input type="checkbox" id="vat" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <input type="checkbox" id="vat" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" disabled>
                             <label for="vat" class="text-sm text-slate-700">Include 16% VAT</label>
                         </div>
                     </div>
@@ -94,6 +112,13 @@
             </div>
         </div>
     </section>
+    
+    <!-- Demo Walkthrough Modal -->
+    <x-demo-walkthrough />
+    
+    @push('scripts')
+        @vite('resources/js/demo-landing.js')
+    @endpush
 
     <!-- HOW IT WORKS (Enhanced Business-Focused) -->
     <section id="invoicing-workflow" class="py-16 lg:py-24 bg-white scroll-mt-24">
