@@ -89,24 +89,9 @@ class InvoiceController extends Controller
 
     public function create()
     {
-        $user = Auth::user();
-        $companies = $user->ownedCompanies()->get();
-
-        // Get company ID from request or use active company from session
-        $companyId = request()->input('company_id', CurrentCompanyService::id());
-
-        if (! $companyId) {
-            if ($companies->count() === 0) {
-                return redirect()->route('company.setup')
-                    ->with('error', 'Please create a company first.');
-            }
-            $companyId = $companies->first()->id;
-        }
-
-        // Ensure user owns this company
-        if (! $companies->pluck('id')->contains($companyId)) {
-            $companyId = CurrentCompanyService::requireId();
-        }
+        // Always use session-based active company - never allow request parameter override
+        // This ensures clients and invoices are scoped to the correct company
+        $companyId = CurrentCompanyService::requireId();
 
         $clients = Client::where('company_id', $companyId)
             ->select('id', 'name', 'email', 'phone', 'address', 'kra_pin')
@@ -165,7 +150,6 @@ class InvoiceController extends Controller
                 'services' => $services,
                 'company' => $company,
                 'nextInvoiceNumber' => $nextInvoiceNumber,
-                'companies' => $companies,
                 'selectedCompanyId' => $companyId,
             ]);
         }

@@ -65,11 +65,8 @@ class ClientController extends Controller
      */
     public function search(Request $request)
     {
-        $companyId = Auth::user()->company_id;
-
-        if (! $companyId) {
-            return response()->json(['success' => false, 'error' => 'You must belong to a company.'], 403);
-        }
+        // Use session-based active company to ensure correct client scoping
+        $companyId = CurrentCompanyService::requireId();
 
         $query = $request->input('q', '');
 
