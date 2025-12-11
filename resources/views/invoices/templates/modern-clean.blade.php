@@ -11,7 +11,7 @@
     
     <style>
         @page {
-            margin: 71px 43px 57px 43px; /* 25mm top, 15mm left/right, 20mm bottom */
+            margin: 43px; /* Standard margins - no header/footer space needed */
         }
         * {
             margin: 0;
@@ -171,10 +171,7 @@
     </style>
 </head>
 <body class="{{ isset($template) && $template->layout_class ? $template->layout_class : 'template-modern-clean' }}">
-    @include('pdf.partials.header')
-    @include('pdf.partials.footer')
-    
-    <div class="container" style="margin-top: 130px; margin-bottom: 110px; padding: 0;">
+    <div class="container" style="padding: 0;">
 
         <!-- Bill To / From -->
         <div class="two-columns">

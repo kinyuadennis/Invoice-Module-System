@@ -134,9 +134,4 @@
     @endif
     <div style="font-size: 9px; color: #AAA;">Page 1 of 1</div>
 </div>
-@else
-<!-- Hidden in PDF (rendered via PHP script above) -->
-<div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
-    <div>Footer</div>
-</div>
 @endif

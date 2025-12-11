@@ -13,7 +13,6 @@ use App\Services\CurrentCompanyService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class InvoiceController extends Controller
@@ -810,7 +809,6 @@ class InvoiceController extends Controller
     public function autosave(Request $request)
     {
         try {
-            $user = Auth::user();
             // Use session-based active company
             $companyId = CurrentCompanyService::requireId();
 
@@ -828,7 +826,7 @@ class InvoiceController extends Controller
                 'discount_type' => 'nullable|in:fixed,percentage',
             ]);
 
-            // If draft_id exists, update it; otherwise create new draft
+            // If draft_id exists, update existing draft
             if ($request->has('draft_id') && $request->draft_id) {
                 $invoice = Invoice::where('company_id', $companyId)
                     ->where('id', $request->draft_id)
@@ -842,7 +840,7 @@ class InvoiceController extends Controller
                     ], 404);
                 }
 
-                // Update invoice (excluding prefix fields)
+                // Update invoice (excluding prefix fields which are immutable)
                 $updateData = array_intersect_key($validated, array_flip([
                     'client_id', 'issue_date', 'due_date', 'notes', 'terms_and_conditions',
                     'po_number', 'vat_registered', 'discount', 'discount_type',
@@ -851,9 +849,14 @@ class InvoiceController extends Controller
 
                 // Update items if provided
                 if ($request->has('items') && is_array($request->items) && count($request->items) > 0) {
-                    $invoice->invoiceItems()->delete();
-                    foreach ($request->items as $item) {
-                        if (! empty($item['description'])) {
+                    // Filter out empty items
+                    $items = array_filter($request->input('items', []), function ($item) {
+                        return ! empty($item['description']) && trim($item['description']) !== '';
+                    });
+
+                    if (count($items) > 0) {
+                        $invoice->invoiceItems()->delete();
+                        foreach ($items as $item) {
                             $invoice->invoiceItems()->create([
                                 'company_id' => $companyId,
                                 'description' => $item['description'] ?? '',
@@ -864,23 +867,18 @@ class InvoiceController extends Controller
                                 'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
                             ]);
                         }
+                        // Recalculate totals
+                        $this->invoiceService->updateTotals($invoice);
                     }
-                    // Recalculate totals
-                    $this->invoiceService->updateTotals($invoice);
                 }
             } else {
-                // Create new draft - client_id is optional for drafts, but items are required
+                // Create new draft using InvoiceService for proper invoice number generation
+                // This ensures duplicate handling, client-specific numbering, and proper locking
                 if (empty($request->input('items')) || count($request->input('items', [])) === 0) {
                     return response()->json([
                         'success' => false,
                         'error' => 'At least one item is required to create a draft.',
                     ], 422);
-                }
-
-                // If no client_id, we can still create a draft but need to handle it
-                if (empty($validated['client_id'])) {
-                    // Allow draft without client - will be required when finalizing
-                    $validated['client_id'] = null;
                 }
 
                 // Filter out empty items
@@ -895,91 +893,36 @@ class InvoiceController extends Controller
                     ], 422);
                 }
 
-                // Get company
-                $company = Company::findOrFail($companyId);
+                // Prepare request data for InvoiceService
+                // Create a new request with merged data to ensure proper format
+                $serviceRequest = Request::create(
+                    $request->url(),
+                    $request->method(),
+                    array_merge($request->all(), [
+                        'status' => 'draft',
+                        'items' => array_values($items), // Re-index array
+                    ])
+                );
+                $serviceRequest->setUserResolver($request->getUserResolver());
+                $serviceRequest->headers->replace($request->headers->all());
 
-                // Prepare invoice data
-                $invoiceData = array_merge($validated, [
-                    'company_id' => $companyId,
-                    'user_id' => $user->id,
-                    'status' => 'draft',
-                ]);
-
-                // Ensure client_id is set (can be null for drafts)
-                if (! isset($invoiceData['client_id'])) {
-                    $invoiceData['client_id'] = null;
-                }
-
-                // Generate invoice number if not provided
-                if (empty($invoiceData['invoice_reference'])) {
-                    $prefixService = app(\App\Services\InvoicePrefixService::class);
-                    $prefix = $prefixService->getActivePrefix($company);
-                    $serialNumber = $prefixService->generateNextSerialNumber($company, $prefix);
-                    $fullNumber = $prefixService->generateFullNumber($company, $prefix, $serialNumber);
-
-                    $invoiceData['prefix_used'] = $prefix->prefix;
-                    $invoiceData['serial_number'] = $serialNumber;
-                    $invoiceData['full_number'] = $fullNumber;
-                    $invoiceData['invoice_reference'] = $fullNumber;
-                }
-
-                // Set default issue_date if not provided
-                if (empty($invoiceData['issue_date'])) {
-                    $invoiceData['issue_date'] = now()->toDateString();
-                }
-
-                // Calculate totals
-                $subtotal = 0;
-                foreach ($items as $item) {
-                    $itemTotal = ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
-                    $subtotal += $itemTotal;
-                }
-
-                // Apply discount
-                $discount = $validated['discount'] ?? 0;
-                $discountType = $validated['discount_type'] ?? 'fixed';
-                $discountAmount = 0;
-                if ($discount > 0) {
-                    if ($discountType === 'percentage') {
-                        $discountAmount = $subtotal * ($discount / 100);
+                // Use InvoiceService to create invoice with proper duplicate handling
+                // This method handles:
+                // - Client-specific numbering if enabled
+                // - Proper invoice number generation with database locking
+                // - Duplicate prevention
+                // - Item creation and totals calculation
+                try {
+                    $invoice = $this->invoiceService->createInvoice($serviceRequest);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Handle duplicate entry errors specifically
+                    if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'Duplicate entry')) {
+                        // Retry once with a fresh request (invoice number will be regenerated)
+                        // The InvoiceService will generate a new invoice number on retry
+                        $invoice = $this->invoiceService->createInvoice($serviceRequest);
                     } else {
-                        $discountAmount = $discount;
+                        throw $e;
                     }
-                }
-                $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
-
-                // Calculate VAT
-                $vatAmount = 0;
-                if ($validated['vat_registered'] ?? false) {
-                    $vatAmount = $subtotalAfterDiscount * 0.16;
-                }
-
-                $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
-                $platformFee = $totalBeforeFee * 0.03;
-                $grandTotal = $totalBeforeFee + $platformFee;
-
-                $invoiceData['subtotal'] = $subtotal;
-                $invoiceData['discount'] = $discountAmount;
-                $invoiceData['tax'] = $vatAmount;
-                $invoiceData['vat_amount'] = $vatAmount;
-                $invoiceData['platform_fee'] = $platformFee;
-                $invoiceData['total'] = $totalBeforeFee;
-                $invoiceData['grand_total'] = $grandTotal;
-
-                // Create invoice
-                $invoice = Invoice::create($invoiceData);
-
-                // Add invoice items
-                foreach ($items as $item) {
-                    $invoice->invoiceItems()->create([
-                        'company_id' => $companyId,
-                        'description' => $item['description'],
-                        'quantity' => $item['quantity'] ?? 1,
-                        'unit_price' => $item['unit_price'] ?? 0,
-                        'vat_included' => $item['vat_included'] ?? false,
-                        'vat_rate' => $item['vat_rate'] ?? 16.00,
-                        'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
-                    ]);
                 }
             }
 
@@ -994,6 +937,19 @@ class InvoiceController extends Controller
                 'error' => 'Validation failed',
                 'errors' => $e->errors(),
             ], 422);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle database errors (including duplicate entry)
+            if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'Duplicate entry')) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'A duplicate invoice number was generated. Please try again.',
+                ], 409);
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => 'An error occurred while saving the draft: '.$e->getMessage(),
+            ], 500);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

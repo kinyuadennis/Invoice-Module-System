@@ -172,7 +172,7 @@
     }
 </script>
 
-<!-- Hidden header for preview mode (only shown in browser preview) -->
+<!-- Preview header for browser preview only (completely hidden in PDF) -->
 @if(isset($invoice['is_preview']) && $invoice['is_preview'])
 <div style="display: block; margin-bottom: 30px; padding: 30px 43px; border-bottom: 1px solid #E0E0E0;">
     <div style="display: table; width: 100%; table-layout: fixed;">
@@ -222,10 +222,5 @@
             @endif
         </div>
     </div>
-</div>
-@else
-<!-- Hidden in PDF (rendered via PHP script above) -->
-<div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
-    <div>{{ $invoice['company']['name'] ?? 'InvoiceHub' }} - {{ $invoice['invoice_number'] ?? 'INV-' . ($invoice['id'] ?? '') }}</div>
 </div>
 @endif

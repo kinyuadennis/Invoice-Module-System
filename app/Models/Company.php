@@ -19,6 +19,8 @@ class Company extends Model
         'phone',
         'address',
         'kra_pin',
+        'payment_terms',
+        'registration_number',
         'currency',
         'timezone',
         'invoice_prefix',

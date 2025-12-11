@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Invoice extends Model
 {
@@ -36,6 +37,7 @@ class Invoice extends Model
         'platform_fee',
         'total',
         'grand_total',
+        'uuid',
     ];
 
     /**
@@ -65,6 +67,13 @@ class Invoice extends Model
     protected static function boot(): void
     {
         parent::boot();
+
+        // Generate UUID for new invoices only
+        static::creating(function ($invoice) {
+            if (empty($invoice->uuid)) {
+                $invoice->uuid = (string) Str::uuid();
+            }
+        });
 
         // Prevent updating prefix fields after invoice is created
         static::updating(function ($invoice) {

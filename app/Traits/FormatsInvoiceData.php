@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Helpers\NumberToWords;
 use App\Models\Invoice;
 use Carbon\Carbon;
 
@@ -38,8 +39,14 @@ trait FormatsInvoiceData
             'prefix_used' => $invoice->prefix_used ?? null,
             'serial_number' => $invoice->serial_number ?? null,
             'payment_method' => $invoice->payment_method ?? null,
+            'payment_details' => $invoice->payment_details ?? null,
             'notes' => $invoice->notes ?? null,
+            'terms_and_conditions' => $invoice->terms_and_conditions ?? null,
+            'po_number' => $invoice->po_number ?? null,
+            'uuid' => $invoice->uuid ?? null,
             'client_id' => $invoice->client_id,
+            'generated_at' => $invoice->created_at->toIso8601String(),
+            'generated_timestamp' => $invoice->created_at->timestamp,
             'client' => [
                 'id' => optional($invoice->client)->id ?? null,
                 'name' => optional($invoice->client)->name ?? 'N/A',
@@ -68,7 +75,10 @@ trait FormatsInvoiceData
                 'phone' => $invoice->company->phone,
                 'address' => $invoice->company->address,
                 'kra_pin' => $invoice->company->kra_pin,
+                'registration_number' => $invoice->company->registration_number ?? null,
                 'invoice_prefix' => $invoice->company->invoice_prefix,
+                'currency' => $invoice->company->currency ?? 'KES',
+                'payment_terms' => $invoice->company->payment_terms ?? null,
             ];
         }
 
@@ -105,9 +115,19 @@ trait FormatsInvoiceData
                 'phone' => $invoice->company->phone,
                 'address' => $invoice->company->address,
                 'kra_pin' => $invoice->company->kra_pin,
+                'registration_number' => $invoice->company->registration_number ?? null,
                 'invoice_prefix' => $invoice->company->invoice_prefix,
+                'currency' => $invoice->company->currency ?? 'KES',
+                'payment_terms' => $invoice->company->payment_terms ?? null,
             ];
         }
+
+        // Get payment terms - use company default (per-invoice override can be added later via settings JSON column)
+        $data['payment_terms'] = $data['company']['payment_terms'] ?? null;
+
+        // Calculate amount in words
+        $currency = $data['company']['currency'] ?? 'KES';
+        $data['amount_in_words'] = NumberToWords::convert($data['grand_total'], $currency);
 
         $data['items'] = $invoice->invoiceItems->map(function ($item) {
             return [
