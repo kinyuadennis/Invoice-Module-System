@@ -10,13 +10,16 @@
     @endif
     
     <style>
+        @page {
+            margin: 71px 43px 57px 43px; /* 25mm top, 15mm left/right, 20mm bottom */
+        }
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: 'DejaVu Sans', 'Helvetica', sans-serif;
             font-size: 12px;
             color: #333;
             line-height: 1.6;
@@ -24,14 +27,7 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 40px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e5e7eb;
+            padding: 0;
         }
         .logo-section {
             display: flex;
@@ -175,33 +171,10 @@
     </style>
 </head>
 <body class="{{ isset($template) && $template->layout_class ? $template->layout_class : 'template-modern-clean' }}">
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo-section">
-                @if(isset($invoice['company']['logo']) && $invoice['company']['logo'])
-                    @if(isset($invoice['is_preview']) && $invoice['is_preview'])
-                        <img src="{{ $invoice['company']['logo'] }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" class="logo-img">
-                    @else
-                        <img src="{{ public_path('storage/' . ($invoice['company']['logo_path'] ?? $invoice['company']['logo'])) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" class="logo-img">
-                    @endif
-                @endif
-                <div>
-                    <div class="logo-text">{{ $invoice['company']['name'] ?? 'Invoice Hub' }}</div>
-                    @if(isset($invoice['company']['kra_pin']) && $invoice['company']['kra_pin'])
-                        <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">KRA PIN: {{ $invoice['company']['kra_pin'] }}</div>
-                    @endif
-                </div>
-            </div>
-            <div class="invoice-info">
-                <div class="invoice-number">{{ $invoice['invoice_number'] ?? 'INV-' . $invoice['id'] }}</div>
-                <div class="info-row">
-                    <span class="status-badge status-{{ strtolower($invoice['status'] ?? 'draft') }}">
-                        {{ ucfirst($invoice['status'] ?? 'Draft') }}
-                    </span>
-                </div>
-            </div>
-        </div>
+    @include('pdf.partials.header')
+    @include('pdf.partials.footer')
+    
+    <div class="container" style="margin-top: 130px; margin-bottom: 110px; padding: 0;">
 
         <!-- Bill To / From -->
         <div class="two-columns">
@@ -331,13 +304,10 @@
             </div>
         @endif
 
-        <!-- Footer -->
-        <div class="footer">
+        <!-- Thank You Message -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 10px;">
             <div>Thank you for your business!</div>
             <div style="margin-top: 5px;">This is a computer-generated invoice. No signature required.</div>
-            @if(isset($invoice['company']['name']))
-                <div style="margin-top: 5px;">{{ $invoice['company']['name'] }}</div>
-            @endif
         </div>
     </div>
 </body>

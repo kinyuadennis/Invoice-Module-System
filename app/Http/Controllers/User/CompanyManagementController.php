@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\InvoiceTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class CompanyManagementController extends Controller
@@ -19,9 +20,18 @@ class CompanyManagementController extends Controller
         $user = Auth::user();
         $companies = $user->ownedCompanies()->with('invoiceTemplate')->get();
 
+        // Get active company from session
+        $activeCompanyId = Session::get('active_company_id');
+        $activeCompany = $activeCompanyId ? $companies->find($activeCompanyId) : null;
+
+        // Fallback to User model if session not set
+        if (! $activeCompany && $user->active_company_id) {
+            $activeCompany = $companies->find($user->active_company_id);
+        }
+
         return view('user.companies.index', [
             'companies' => $companies,
-            'activeCompany' => $user->getCurrentCompany(),
+            'activeCompany' => $activeCompany ?? $companies->first(),
         ]);
     }
 
@@ -50,8 +60,8 @@ class CompanyManagementController extends Controller
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'kra_pin' => 'nullable|string|max:20',
-            'currency' => 'required|string|size:3|default:KES',
-            'timezone' => 'required|string|max:50|default:Africa/Nairobi',
+            'currency' => 'nullable|string|size:3',
+            'timezone' => 'nullable|string|max:50',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'default_invoice_template_id' => 'nullable|exists:invoice_templates,id',
         ]);
@@ -71,7 +81,10 @@ class CompanyManagementController extends Controller
 
         $company = Company::create($data);
 
-        // Set as active company if user doesn't have one
+        // Set as active company in session
+        Session::put('active_company_id', $company->id);
+
+        // Also update User model for backward compatibility
         if (! $user->active_company_id) {
             $user->update(['active_company_id' => $company->id]);
         }
@@ -122,8 +135,8 @@ class CompanyManagementController extends Controller
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'kra_pin' => 'nullable|string|max:20',
-            'currency' => 'required|string|size:3',
-            'timezone' => 'required|string|max:50',
+            'currency' => 'nullable|string|size:3',
+            'timezone' => 'nullable|string|max:50',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'default_invoice_template_id' => 'nullable|exists:invoice_templates,id',
         ]);
@@ -169,10 +182,14 @@ class CompanyManagementController extends Controller
         }
 
         // If this was the active company, switch to another
-        if ($user->active_company_id === $company->id) {
+        $activeCompanyId = Session::get('active_company_id', $user->active_company_id);
+        if ($activeCompanyId === $company->id) {
             $newActiveCompany = $user->ownedCompanies()->where('id', '!=', $company->id)->first();
             if ($newActiveCompany) {
+                Session::put('active_company_id', $newActiveCompany->id);
                 $user->update(['active_company_id' => $newActiveCompany->id]);
+            } else {
+                Session::forget('active_company_id');
             }
         }
 
@@ -190,9 +207,26 @@ class CompanyManagementController extends Controller
         $user = Auth::user();
         $companyId = $request->input('company_id');
 
+        if (! $companyId) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['error' => 'Company ID is required'], 422);
+            }
+
+            return redirect()->back()->with('error', 'Company ID is required.');
+        }
+
+        // Validate user owns the company
         $company = $user->ownedCompanies()->findOrFail($companyId);
 
+        // Store in session
+        Session::put('active_company_id', $company->id);
+
+        // Also update User model for backward compatibility
         $user->update(['active_company_id' => $company->id]);
+
+        // Clear request-level cache in CurrentCompanyService
+        // This ensures fresh data is loaded on next request
+        \App\Services\CurrentCompanyService::clearCache();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

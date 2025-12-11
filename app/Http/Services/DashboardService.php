@@ -8,6 +8,7 @@ use App\Models\PlatformFee;
 use App\Traits\FormatsInvoiceData;
 use App\Traits\InvoiceStatusHelper;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
 class DashboardService
@@ -16,6 +17,7 @@ class DashboardService
 
     /**
      * Get all dashboard data scoped by company
+     * Uses lightweight caching (5 minutes) to improve performance.
      *
      * @param  int  $companyId  Company ID to scope data
      */
@@ -25,16 +27,23 @@ class DashboardService
             return $this->getEmptyData();
         }
 
-        try {
-            return [
-                'stats' => $this->getStats($companyId),
-                'recentInvoices' => $this->getRecentInvoices($companyId),
-                'statusDistribution' => $this->getStatusDistribution($companyId),
-                'alerts' => $this->getAlerts($companyId),
-            ];
-        } catch (\Exception $e) {
-            return $this->getEmptyData();
-        }
+        // Cache dashboard data for 5 minutes to reduce DB load
+        // Cache key includes company_id to ensure data is scoped correctly
+        return Cache::remember("dashboard_data_{$companyId}", 300, function () use ($companyId) {
+            try {
+                // Calculate stats once and reuse to avoid double calculation
+                $stats = $this->getStats($companyId);
+
+                return [
+                    'stats' => $stats,
+                    'recentInvoices' => $this->getRecentInvoices($companyId),
+                    'statusDistribution' => $this->getStatusDistribution($companyId),
+                    'alerts' => $this->getAlerts($companyId, $stats), // Pass stats to avoid recalculation
+                ];
+            } catch (\Exception $e) {
+                return $this->getEmptyData();
+            }
+        });
     }
 
     /**
@@ -101,8 +110,9 @@ class DashboardService
      */
     protected function getRecentInvoices(int $companyId): array
     {
+        // Eager load all necessary relations to prevent N+1 queries
         $query = Invoice::where('company_id', $companyId)
-            ->with('client')
+            ->with(['client', 'company', 'invoiceItems'])
             ->latest();
 
         return $query->take(5)
@@ -165,11 +175,16 @@ class DashboardService
      * Get dashboard alerts scoped by company
      *
      * @param  int  $companyId  Company ID to scope invoices
+     * @param  array|null  $stats  Pre-calculated stats to avoid recalculation (optional for backward compatibility)
      */
-    protected function getAlerts(int $companyId): array
+    protected function getAlerts(int $companyId, ?array $stats = null): array
     {
         $alerts = collect();
-        $stats = $this->getStats($companyId);
+
+        // Use provided stats or calculate if not provided (backward compatibility)
+        if ($stats === null) {
+            $stats = $this->getStats($companyId);
+        }
 
         if ($stats['overdueCount'] > 0) {
             $alerts->push([

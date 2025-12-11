@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class InvoiceController extends Controller
 {
@@ -28,9 +29,10 @@ class InvoiceController extends Controller
     {
         $companyId = CurrentCompanyService::requireId();
 
-        // Scope to current user's active company invoices
+        // Scope to current user's active company invoices (from session)
+        // Eager load all necessary relations to prevent N+1 queries
         $query = Invoice::where('company_id', $companyId)
-            ->with('client')
+            ->with(['client', 'company', 'invoiceItems'])
             ->latest();
 
         // Search filter
@@ -90,7 +92,7 @@ class InvoiceController extends Controller
         $user = Auth::user();
         $companies = $user->ownedCompanies()->get();
 
-        // Get company ID from request or use active company
+        // Get company ID from request or use active company from session
         $companyId = request()->input('company_id', CurrentCompanyService::id());
 
         if (! $companyId) {
@@ -178,7 +180,11 @@ class InvoiceController extends Controller
 
     public function store(StoreInvoiceRequest $request)
     {
+        $companyId = CurrentCompanyService::requireId();
         $invoice = $this->invoiceService->createInvoice($request);
+
+        // Clear dashboard cache when invoice is created
+        Cache::forget("dashboard_data_{$companyId}");
 
         // If AJAX request, return JSON
         if ($request->wantsJson() || $request->ajax()) {
@@ -236,10 +242,16 @@ class InvoiceController extends Controller
         $companyId = CurrentCompanyService::requireId();
 
         // Ensure invoice belongs to user's active company
-        $invoice = Invoice::where('company_id', $companyId)->findOrFail($id);
+        // Eager load relations to prevent N+1 queries
+        $invoice = Invoice::where('company_id', $companyId)
+            ->with(['client', 'invoiceItems', 'company'])
+            ->findOrFail($id);
 
         // Update invoice using service
         $this->invoiceService->updateInvoice($invoice, $request);
+
+        // Clear dashboard cache when invoice is updated
+        Cache::forget("dashboard_data_{$companyId}");
 
         return redirect()->route('user.invoices.show', $invoice->id)
             ->with('success', 'Invoice updated successfully.');
@@ -250,7 +262,10 @@ class InvoiceController extends Controller
         $companyId = CurrentCompanyService::requireId();
 
         // Ensure invoice belongs to user's active company
-        $invoice = Invoice::where('company_id', $companyId)->findOrFail($id);
+        // Eager load relations to prevent N+1 queries
+        $invoice = Invoice::where('company_id', $companyId)
+            ->with(['client', 'invoiceItems', 'company'])
+            ->findOrFail($id);
 
         // Only allow deletion of draft invoices
         if ($invoice->status !== 'draft') {
@@ -261,6 +276,9 @@ class InvoiceController extends Controller
 
         $invoice->delete();
 
+        // Clear dashboard cache when invoice is deleted
+        Cache::forget("dashboard_data_{$companyId}");
+
         return redirect()->route('user.invoices.index')
             ->with('success', 'Invoice deleted successfully.');
     }
@@ -270,9 +288,12 @@ class InvoiceController extends Controller
      */
     public function generatePdf($id)
     {
+        // Increase execution time for PDF generation
+        set_time_limit(60); // 60 seconds should be enough
+
         $companyId = CurrentCompanyService::requireId();
 
-        // Ensure invoice belongs to user's company
+        // Ensure invoice belongs to user's active company (from session)
         $invoice = Invoice::where('company_id', $companyId)
             ->with(['client', 'invoiceItems', 'platformFees', 'user', 'company.invoiceTemplate'])
             ->findOrFail($id);
@@ -286,9 +307,13 @@ class InvoiceController extends Controller
             $formattedInvoice['platform_fee'] = (float) $platformFee->fee_amount;
         }
 
-        // Company data is already included in formatInvoiceForShow via the trait
+        // CRITICAL: Use invoice's company, NOT user's active company
+        // The PDF must show the company that created the invoice, not the currently selected company
+        if (! $invoice->company) {
+            throw new \RuntimeException('Invoice company not found. Cannot generate PDF.');
+        }
 
-        // Get template from invoice (if stored) or company's active template
+        // Get template from invoice (if stored) or invoice's company's active template
         $template = $invoice->getInvoiceTemplate();
 
         // Fallback to modern-clean if template view doesn't exist
@@ -302,15 +327,61 @@ class InvoiceController extends Controller
             ]);
         }
 
-        // Generate PDF using selected template
-        $pdf = Pdf::loadView($templateView, [
-            'invoice' => $formattedInvoice,
-            'template' => $template, // Pass template object for CSS file path
-        ]);
+        // Prepare logo path for PDF (resolve before passing to view to avoid blocking)
+        $logoPath = null;
+        if ($invoice->company->logo) {
+            $logoPath = $invoice->company->logo;
+            // Convert storage path to absolute file path
+            if (! str_starts_with($logoPath, 'http://') && ! str_starts_with($logoPath, 'https://')) {
+                $fullPath = public_path('storage/'.$logoPath);
+                if (file_exists($fullPath)) {
+                    $logoPath = $fullPath;
+                } else {
+                    $logoPath = null; // Logo file doesn't exist, skip it
+                }
+            }
+        }
 
-        // Set PDF options
-        $pdf->setPaper('a4', 'portrait');
-        $pdf->setOption('enable-local-file-access', true);
+        // Add resolved logo path to formatted invoice
+        if ($logoPath) {
+            $formattedInvoice['company']['logo_path'] = $logoPath;
+        }
+
+        // Generate PDF using selected template
+        // CRITICAL: Pass invoice's company, NOT activeCompany() or getCurrentCompany()
+        try {
+            $pdf = Pdf::loadView($templateView, [
+                'invoice' => $formattedInvoice,
+                'template' => $template, // Pass template object for CSS file path
+                'company' => $invoice->company, // Pass invoice's company for PDF settings
+            ]);
+
+            // Set PDF options
+            $pdf->setPaper('a4', 'portrait');
+            $pdf->setOption('enable-local-file-access', true);
+            $pdf->setOption('enable-php', true); // Enable PHP for page numbering
+            $pdf->setOption('isRemoteEnabled', false); // Disable remote to prevent timeouts
+            $pdf->setOption('isHtml5ParserEnabled', true);
+
+            // Font options to prevent font errors
+            // Disable font subsetting to avoid glyph bbox errors
+            $pdf->setOption('enable_font_subsetting', false);
+
+            // Suppress font warnings to prevent glyph bbox errors from breaking PDF generation
+            $pdf->setOption('show_warnings', false);
+
+            // Performance options
+            $pdf->setOption('dpi', 96); // Lower DPI for faster rendering
+        } catch (\Exception $e) {
+            \Log::error('PDF generation error', [
+                'invoice_id' => $invoice->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Failed to generate PDF. Please try again or contact support.');
+        }
 
         // If template has custom CSS, ensure it's accessible
         if ($template->css_file) {
@@ -535,11 +606,8 @@ class InvoiceController extends Controller
     public function previewFrame(Request $request)
     {
         try {
-            $companyId = Auth::user()->company_id;
-
-            if (! $companyId) {
-                abort(403, 'You must belong to a company.');
-            }
+            // Use session-based active company
+            $companyId = CurrentCompanyService::requireId();
 
             // Get company
             $company = Company::findOrFail($companyId);
@@ -684,13 +752,10 @@ class InvoiceController extends Controller
      */
     public function previewFrameFromInvoice($id)
     {
-        $companyId = Auth::user()->company_id;
+        // Use session-based active company
+        $companyId = CurrentCompanyService::requireId();
 
-        if (! $companyId) {
-            abort(403, 'You must belong to a company.');
-        }
-
-        // Ensure invoice belongs to user's company
+        // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)
             ->with(['client', 'invoiceItems', 'company'])
             ->findOrFail($id);
@@ -734,8 +799,12 @@ class InvoiceController extends Controller
         }
 
         // If client_id is provided but client data is not, try to load it
+        // Scope by company_id to prevent cross-company data access
         if ($clientId) {
-            $clientModel = \App\Models\Client::find($clientId);
+            $companyId = CurrentCompanyService::requireId();
+            $clientModel = \App\Models\Client::where('id', $clientId)
+                ->where('company_id', $companyId)
+                ->first();
             if ($clientModel) {
                 return [
                     'id' => $clientModel->id,
@@ -758,11 +827,8 @@ class InvoiceController extends Controller
     {
         try {
             $user = Auth::user();
-            $companyId = $user->company_id;
-
-            if (! $companyId) {
-                return response()->json(['success' => false, 'error' => 'You must belong to a company.'], 403);
-            }
+            // Use session-based active company
+            $companyId = CurrentCompanyService::requireId();
 
             $validated = $request->validate([
                 'draft_id' => 'nullable|exists:invoices,id',

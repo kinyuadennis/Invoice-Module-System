@@ -5,23 +5,18 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
     /**
-     * Display a listing of payments for the current user's company.
+     * Display a listing of payments for the current user's active company.
      */
     public function index(Request $request)
     {
-        $companyId = Auth::user()->company_id;
+        // Use session-based active company
+        $companyId = \App\Services\CurrentCompanyService::requireId();
 
-        if (! $companyId) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You must belong to a company to view payments.');
-        }
-
-        // Get payments scoped to company
+        // Get payments scoped to active company
         $payments = Payment::where('company_id', $companyId)
             ->with(['invoice.client'])
             ->latest()
@@ -54,14 +49,10 @@ class PaymentController extends Controller
      */
     public function show($id)
     {
-        $companyId = Auth::user()->company_id;
+        // Use session-based active company
+        $companyId = \App\Services\CurrentCompanyService::requireId();
 
-        if (! $companyId) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You must belong to a company to view payments.');
-        }
-
-        // Ensure payment belongs to user's company
+        // Ensure payment belongs to user's active company
         $payment = Payment::where('company_id', $companyId)
             ->with(['invoice.client', 'invoice.invoiceItems'])
             ->findOrFail($id);

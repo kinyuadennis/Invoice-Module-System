@@ -10,20 +10,18 @@
     @endif
     
     <style>
+        @page {
+            margin: 71px 43px 57px 43px; /* 25mm top, 15mm left/right, 20mm bottom */
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: 'DejaVu Sans', 'Helvetica', sans-serif;
             font-size: 11px;
             color: #2d3748;
             line-height: 1.7;
             background-color: #f7fafc;
         }
-        .container { max-width: 800px; margin: 0 auto; padding: 40px; background: white; }
-        .header {
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
+        .container { max-width: 800px; margin: 0 auto; padding: 0; background: white; }
         .company-name {
             font-size: 20px;
             font-weight: 300;
@@ -105,38 +103,10 @@
     </style>
 </head>
 <body class="{{ isset($template) && $template->layout_class ? $template->layout_class : 'template-minimalist' }}">
-    <div class="container">
-        <div class="header">
-            <div>
-                @if(isset($invoice['company']['logo']) && $invoice['company']['logo'])
-                    @if(isset($invoice['is_preview']) && $invoice['is_preview'])
-                        <img src="{{ $invoice['company']['logo'] }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" style="max-width: 80px; max-height: 80px; margin-bottom: 10px;">
-                    @else
-                        <img src="{{ public_path('storage/' . ($invoice['company']['logo_path'] ?? $invoice['company']['logo'])) }}" alt="{{ $invoice['company']['name'] ?? 'Company' }}" style="max-width: 80px; max-height: 80px; margin-bottom: 10px;">
-                    @endif
-                @endif
-            <div class="company-name">{{ $invoice['company']['name'] ?? 'Company Name' }}</div>
-                @if(isset($invoice['company']['kra_pin']) && $invoice['company']['kra_pin'])
-                    <div style="font-size: 10px; color: #718096; margin-top: 4px;">KRA PIN: {{ $invoice['company']['kra_pin'] }}</div>
-                @endif
-                @if(isset($invoice['company']['address']) && $invoice['company']['address'])
-                    <div style="font-size: 10px; color: #718096; margin-top: 4px;">{{ $invoice['company']['address'] }}</div>
-                @endif
-                @if(isset($invoice['company']['phone']) && $invoice['company']['phone'])
-                    <div style="font-size: 10px; color: #718096; margin-top: 2px;">{{ $invoice['company']['phone'] }}</div>
-                @endif
-                @if(isset($invoice['company']['email']) && $invoice['company']['email'])
-                    <div style="font-size: 10px; color: #718096; margin-top: 2px;">{{ $invoice['company']['email'] }}</div>
-                @endif
-            </div>
-            <div>
-            <div class="invoice-number">{{ $invoice['invoice_number'] ?? 'INV-' . $invoice['id'] }}</div>
-                <div class="label" style="margin-top: 10px;">Date</div>
-                <div class="value">{{ $invoice['date'] ?? date('Y-m-d') }}</div>
-                <div class="label" style="margin-top: 10px;">Due Date</div>
-                <div class="value">{{ $invoice['due_date'] ?? 'N/A' }}</div>
-            </div>
-        </div>
+    @include('pdf.partials.header')
+    @include('pdf.partials.footer')
+    
+    <div class="container" style="margin-top: 130px; margin-bottom: 110px; padding: 0 40px;">
 
         <div class="two-columns">
             <div class="column">
@@ -218,10 +188,6 @@
                 <div class="value" style="color: #718096; margin-top: 5px;">{{ $invoice['notes'] }}</div>
             </div>
         @endif
-
-        <div class="footer">
-            <div>{{ $invoice['company']['name'] ?? 'Company' }}</div>
-        </div>
     </div>
 </body>
 </html>

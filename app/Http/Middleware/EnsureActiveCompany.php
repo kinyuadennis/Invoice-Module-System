@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureUserHasCompany
+class EnsureActiveCompany
 {
     /**
      * Handle an incoming request.
@@ -21,7 +21,6 @@ class EnsureUserHasCompany
     {
         $user = $request->user();
 
-        // Early return for non-authenticated users
         if (! $user) {
             return redirect()->route('login');
         }
@@ -31,20 +30,13 @@ class EnsureUserHasCompany
             return $next($request);
         }
 
-        // Redirect to company setup if user doesn't have any companies
-        // Use count() only once, cache the result
-        if ($user->ownedCompanies()->count() === 0) {
-            return redirect()->route('company.setup')
-                ->with('error', 'Please set up your company first.');
-        }
-
         // Use CurrentCompanyService which has request-level caching
-        // This avoids multiple DB queries that were happening before
+        // This avoids multiple DB queries
         $company = CurrentCompanyService::get();
 
         if (! $company) {
-            return redirect()->route('company.setup')
-                ->with('error', 'Please set up your company first.');
+            return redirect()->route('user.companies.index')
+                ->with('error', 'Please select or create a company first.');
         }
 
         // Store validated company in request attributes for use in controllers

@@ -614,7 +614,6 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
         },
 
         async saveNumberingSettings() {
-            // Implementation for saving numbering settings
             const form = event.target.closest('form');
             const formData = new FormData(form);
             
@@ -624,10 +623,12 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
                     }
                 });
                 
-                if (response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (response.ok && contentType && contentType.includes('application/json')) {
                     const data = await response.json();
                     if (window.dispatchEvent) {
                         window.dispatchEvent(new CustomEvent('notify', {
@@ -637,9 +638,20 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
                             }
                         }));
                     }
+                } else {
+                    const text = await response.text();
+                    throw new Error(text || 'Failed to save settings');
                 }
             } catch (error) {
                 console.error('Error saving:', error);
+                if (window.dispatchEvent) {
+                    window.dispatchEvent(new CustomEvent('notify', {
+                        detail: {
+                            type: 'error',
+                            message: error.message || 'Error saving settings. Please try again.',
+                        }
+                    }));
+                }
             }
         },
 
@@ -653,10 +665,12 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
                     }
                 });
                 
-                if (response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (response.ok && contentType && contentType.includes('application/json')) {
                     const data = await response.json();
                     if (window.dispatchEvent) {
                         window.dispatchEvent(new CustomEvent('notify', {
@@ -666,9 +680,20 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
                             }
                         }));
                     }
+                } else {
+                    const text = await response.text();
+                    throw new Error(text || 'Failed to save settings');
                 }
             } catch (error) {
                 console.error('Error saving:', error);
+                if (window.dispatchEvent) {
+                    window.dispatchEvent(new CustomEvent('notify', {
+                        detail: {
+                            type: 'error',
+                            message: error.message || 'Error saving settings. Please try again.',
+                        }
+                    }));
+                }
             }
         },
 
@@ -682,10 +707,12 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
                     }
                 });
                 
-                if (response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (response.ok && contentType && contentType.includes('application/json')) {
                     const data = await response.json();
                     if (window.dispatchEvent) {
                         window.dispatchEvent(new CustomEvent('notify', {
@@ -695,9 +722,20 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
                             }
                         }));
                     }
+                } else {
+                    const text = await response.text();
+                    throw new Error(text || 'Failed to save settings');
                 }
             } catch (error) {
                 console.error('Error saving:', error);
+                if (window.dispatchEvent) {
+                    window.dispatchEvent(new CustomEvent('notify', {
+                        detail: {
+                            type: 'error',
+                            message: error.message || 'Error saving settings. Please try again.',
+                        }
+                    }));
+                }
             }
         },
 
@@ -711,10 +749,12 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
                     }
                 });
                 
-                if (response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (response.ok && contentType && contentType.includes('application/json')) {
                     const data = await response.json();
                     if (window.dispatchEvent) {
                         window.dispatchEvent(new CustomEvent('notify', {
@@ -724,9 +764,20 @@ function invoiceCustomizationManager(company, templates, selectedTemplate, forma
                             }
                         }));
                     }
+                } else {
+                    const text = await response.text();
+                    throw new Error(text || 'Failed to save settings');
                 }
             } catch (error) {
                 console.error('Error saving:', error);
+                if (window.dispatchEvent) {
+                    window.dispatchEvent(new CustomEvent('notify', {
+                        detail: {
+                            type: 'error',
+                            message: error.message || 'Error saving settings. Please try again.',
+                        }
+                    }));
+                }
             }
         },
 

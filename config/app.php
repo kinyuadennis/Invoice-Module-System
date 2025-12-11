@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Slow Query Logging
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, queries slower than 50ms will be logged to help identify
+    | performance bottlenecks. This complements Laravel Telescope's slow query
+    | detection (100ms threshold).
+    |
+    */
+
+    'log_slow_queries' => (bool) env('LOG_SLOW_QUERIES', false),
+
 ];

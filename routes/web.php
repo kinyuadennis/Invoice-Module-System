@@ -67,7 +67,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // User area (prefix: /app)
-    Route::prefix('app')->middleware(['verified', \App\Http\Middleware\EnsureUserHasCompany::class])->name('user.')->group(function () {
+    Route::prefix('app')->middleware(['verified', \App\Http\Middleware\EnsureUserHasCompany::class, \App\Http\Middleware\EnsureActiveCompany::class])->name('user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
 
         // Invoice routes - must be before resource route to avoid conflicts

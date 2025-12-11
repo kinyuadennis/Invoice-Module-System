@@ -12,6 +12,8 @@ use App\Services\InvoicePrefixService;
 use App\Services\InvoicePreviewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
@@ -66,6 +68,9 @@ class CompanyController extends Controller
         $prefixService = app(InvoicePrefixService::class);
         $prefixService->createDefaultPrefix($company, $user->id);
 
+        // Set as active company in session
+        Session::put('active_company_id', $company->id);
+
         // Set as active company if user doesn't have one
         if (! $user->active_company_id) {
             $user->update(['active_company_id' => $company->id]);
@@ -87,11 +92,8 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        $company = $user->getCurrentCompany();
-
-        if (! $company) {
-            return redirect()->route('company.setup');
-        }
+        // require() throws exception if no company found, so no null check needed
+        $company = CurrentCompanyService::require();
 
         // Get payment methods with display name
         $paymentMethods = $company->paymentMethods()->ordered()->get()->map(function ($method) {
@@ -115,11 +117,8 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        $company = $user->getCurrentCompany();
-
-        if (! $company) {
-            return redirect()->route('company.setup');
-        }
+        // require() throws exception if no company found, so no null check needed
+        $company = CurrentCompanyService::require();
 
         // Only owner can update company
         if ($company->owner_user_id !== $user->id) {
@@ -127,7 +126,8 @@ class CompanyController extends Controller
         }
 
         // Ensure we're updating the active company
-        if ($company->id !== $user->active_company_id) {
+        $activeCompanyId = Session::get('active_company_id', $user->active_company_id);
+        if ($company->id !== $activeCompanyId) {
             return back()->with('error', 'You can only update your active company.');
         }
 
@@ -170,6 +170,9 @@ class CompanyController extends Controller
         }
 
         $company->update($data);
+
+        // Clear dashboard cache for this company since settings may affect dashboard display
+        Cache::forget("dashboard_data_{$company->id}");
 
         return back()->with('success', 'Company settings updated successfully!');
     }
@@ -268,28 +271,39 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        $company = $user->getCurrentCompany();
-
-        if (! $company) {
-            return redirect()->route('company.setup');
-        }
+        // require() throws exception if no company found, so no null check needed
+        $company = CurrentCompanyService::require();
 
         if ($company->owner_user_id !== $user->id) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['error' => 'Only the company owner can update settings.'], 403);
+            }
+
             return back()->with('error', 'Only the company owner can update settings.');
         }
 
-        $request->validate([
-            'invoice_prefix' => ['nullable', 'string', 'max:50', function ($attribute, $value, $fail) {
-                if ($value && ! preg_match('/^[A-Za-z0-9\-_%]{1,50}$/', $value)) {
-                    $fail('The prefix must be alphanumeric with optional hyphens, underscores, and placeholders (like %YYYY%), max 50 characters.');
-                }
-            }],
-            'invoice_suffix' => 'nullable|string|max:20',
-            'invoice_padding' => 'nullable|integer|min:1|max:10',
-            'invoice_format' => 'nullable|string|in:{PREFIX}-{NUMBER},{PREFIX}-{YEAR}-{NUMBER},{YEAR}/{NUMBER},{PREFIX}/{NUMBER}/{SUFFIX},{NUMBER}',
-            'use_client_specific_numbering' => 'nullable|boolean',
-            'client_invoice_format' => 'nullable|string|max:100',
-        ]);
+        try {
+            $validated = $request->validate([
+                'invoice_prefix' => ['nullable', 'string', 'max:50', function ($attribute, $value, $fail) {
+                    if ($value && ! preg_match('/^[A-Za-z0-9\-_%]{1,50}$/', $value)) {
+                        $fail('The prefix must be alphanumeric with optional hyphens, underscores, and placeholders (like %YYYY%), max 50 characters.');
+                    }
+                }],
+                'invoice_suffix' => 'nullable|string|max:20',
+                'invoice_padding' => 'nullable|integer|min:1|max:10',
+                'invoice_format' => 'nullable|string|in:{PREFIX}-{NUMBER},{PREFIX}-{YEAR}-{NUMBER},{YEAR}/{NUMBER},{PREFIX}/{NUMBER}/{SUFFIX},{NUMBER}',
+                'use_client_specific_numbering' => 'nullable|boolean',
+                'client_invoice_format' => 'nullable|string|max:100',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'error' => 'Validation failed',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            throw $e;
+        }
 
         $prefixService = app(InvoicePrefixService::class);
         $newPrefix = $request->input('invoice_prefix', $company->invoice_prefix ?? 'INV');
@@ -325,6 +339,9 @@ class CompanyController extends Controller
         // Refresh company to get updated data
         $company->refresh();
 
+        // Clear dashboard cache for this company since invoice format may affect dashboard
+        Cache::forget("dashboard_data_{$company->id}");
+
         // Only return JSON if explicitly requested via Accept header AND X-Requested-With header
         // This prevents regular form submissions from being treated as AJAX
         $isExplicitAjax = $request->wantsJson()
@@ -354,11 +371,8 @@ class CompanyController extends Controller
     {
         $user = Auth::user();
 
-        $company = $user->getCurrentCompany();
-
-        if (! $company) {
-            return redirect()->route('company.setup');
-        }
+        // require() throws exception if no company found, so no null check needed
+        $company = CurrentCompanyService::require();
 
         if ($company->owner_user_id !== $user->id) {
             if ($request->wantsJson() || $request->ajax()) {
@@ -386,6 +400,9 @@ class CompanyController extends Controller
         $company->update([
             'invoice_template_id' => $template->id,
         ]);
+
+        // Clear dashboard cache for this company since template may affect dashboard
+        Cache::forget("dashboard_data_{$company->id}");
 
         // If template has a different prefix, update the invoice prefix
         $currentPrefix = $company->activeInvoicePrefix();
@@ -443,6 +460,9 @@ class CompanyController extends Controller
             $company->updateBrandingSettings($brandingData);
             $company->save();
         }
+
+        // Clear dashboard cache for this company since branding may affect dashboard
+        Cache::forget("dashboard_data_{$company->id}");
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -514,6 +534,9 @@ class CompanyController extends Controller
             $company->updateAdvancedStylingSettings($stylingData);
             $company->save();
         }
+
+        // Clear dashboard cache for this company since styling may affect dashboard
+        Cache::forget("dashboard_data_{$company->id}");
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

@@ -263,4 +263,19 @@ class Company extends Model
         $settings['advanced_styling'] = array_merge($settings['advanced_styling'] ?? [], $stylingData);
         $this->settings = $settings;
     }
+
+    /**
+     * Get PDF settings from the settings JSON column.
+     *
+     * @return array<string, mixed>
+     */
+    public function getPdfSettings(): array
+    {
+        $settings = $this->settings ?? [];
+        $pdf = $settings['pdf'] ?? [];
+
+        return [
+            'show_software_credit' => $pdf['show_software_credit'] ?? true,
+        ];
+    }
 }

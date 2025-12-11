@@ -64,9 +64,9 @@ class InvoiceService
         $data['company_id'] = $companyId;
         $data['user_id'] = $user->id;
 
-        // Get company for invoice prefix and template - refresh to ensure latest settings
+        // Get company for invoice prefix and template
+        // No need to refresh - findOrFail already gets fresh data from DB
         $company = Company::findOrFail($companyId);
-        $company->refresh(); // Ensure we have the latest use_client_specific_numbering value
 
         // Store the template_id that was selected at invoice creation time
         $template = $company->getActiveInvoiceTemplate();
@@ -229,8 +229,8 @@ class InvoiceService
             $this->trackServiceUsage($companyId, $description, $unitPrice);
         }
 
-        // Refresh invoice to ensure items are loaded, then update totals (in case of any discrepancies)
-        $invoice->refresh();
+        // Reload invoice items relationship to ensure fresh data, then update totals
+        $invoice->load('invoiceItems');
         $this->updateTotals($invoice);
 
         // Auto-generate platform fee (with company_id)
@@ -245,8 +245,8 @@ class InvoiceService
     public function updateInvoice(Invoice $invoice, Request $request): Invoice
     {
         $companyId = $invoice->company_id;
+        // No need to refresh - findOrFail already gets fresh data from DB
         $company = Company::findOrFail($companyId);
-        $company->refresh(); // Ensure latest settings
 
         // Validate client belongs to same company
         if ($request->has('client_id')) {
