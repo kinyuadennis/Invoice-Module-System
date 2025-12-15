@@ -45,6 +45,36 @@ class Invoice extends Model
      */
     protected $immutablePrefixFields = ['prefix_used', 'serial_number', 'full_number'];
 
+    /**
+     * Fields that become immutable once invoice is finalized.
+     * These represent financial truth and structural integrity.
+     */
+    protected $immutableWhenFinalized = [
+        // Financial fields
+        'subtotal',
+        'tax',
+        'vat_amount',
+        'platform_fee',
+        'total',
+        'grand_total',
+        'discount',
+        // Structural fields
+        'client_id',
+        'issue_date',
+        'due_date',
+        'invoice_number',
+        'invoice_reference',
+        // Configuration fields
+        'vat_registered',
+        'payment_method',
+        'payment_details',
+    ];
+
+    /**
+     * Fields that can be updated even when finalized (administrative only).
+     */
+    protected $mutableWhenFinalized = ['status', 'notes', 'terms_and_conditions'];
+
     protected function casts(): array
     {
         return [
@@ -84,6 +114,51 @@ class Invoice extends Model
                         $invoice->{$field} = $invoice->getOriginal($field);
                     }
                 }
+            }
+        });
+
+        // Prevent modifications to finalized invoices (financial truth boundary)
+        static::updating(function ($invoice) {
+            if ($invoice->exists && $invoice->isFinalized()) {
+                // Check if any immutable field is being modified
+                foreach ($invoice->immutableWhenFinalized as $field) {
+                    if ($invoice->isDirty($field)) {
+                        $invoiceNumber = $invoice->invoice_number ?? $invoice->id;
+                        throw new \DomainException(
+                            "Cannot modify finalized invoice #{$invoiceNumber}. Field '{$field}' is immutable after finalization."
+                        );
+                    }
+                }
+
+                // Validate status transitions (only allow forward progression)
+                if ($invoice->isDirty('status')) {
+                    $currentStatus = $invoice->getOriginal('status');
+                    $newStatus = $invoice->status;
+
+                    // Allow forward transitions: finalized -> sent -> paid
+                    $allowedTransitions = [
+                        'finalized' => ['sent', 'paid', 'cancelled'],
+                        'sent' => ['paid', 'overdue', 'cancelled'],
+                        'overdue' => ['paid', 'cancelled'],
+                    ];
+
+                    if (! isset($allowedTransitions[$currentStatus]) || ! in_array($newStatus, $allowedTransitions[$currentStatus], true)) {
+                        $invoiceNumber = $invoice->invoice_number ?? $invoice->id;
+                        throw new \DomainException(
+                            "Invalid status transition for finalized invoice #{$invoiceNumber}. Cannot change from '{$currentStatus}' to '{$newStatus}'."
+                        );
+                    }
+                }
+            }
+        });
+
+        // Prevent deletion of finalized invoices
+        static::deleting(function ($invoice) {
+            if ($invoice->isFinalized()) {
+                $invoiceNumber = $invoice->invoice_number ?? $invoice->id;
+                throw new \DomainException(
+                    "Cannot delete finalized invoice #{$invoiceNumber}. Finalized invoices are immutable and cannot be deleted."
+                );
             }
         });
     }
@@ -176,5 +251,73 @@ class Invoice extends Model
     public function scopeForCompany($query, int $companyId)
     {
         return $query->where('company_id', $companyId);
+    }
+
+    /**
+     * Check if invoice is in draft status.
+     */
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    /**
+     * Check if invoice is finalized (finalized, sent, paid, or overdue).
+     * Finalized means financial truth is locked - calculations frozen, structure immutable.
+     */
+    public function isFinalized(): bool
+    {
+        return in_array($this->status, ['finalized', 'sent', 'paid', 'overdue'], true);
+    }
+
+    /**
+     * Check if invoice is paid.
+     */
+    public function isPaid(): bool
+    {
+        return $this->status === 'paid';
+    }
+
+    /**
+     * Check if invoice can be modified.
+     * Only drafts are mutable - once finalized, invoice becomes immutable.
+     */
+    public function isMutable(): bool
+    {
+        return $this->isDraft();
+    }
+
+    /**
+     * Finalize the invoice - lock financial truth and structure.
+     * This is the only legal doorway into finalization.
+     * Once finalized, invoice becomes immutable (except status transitions and notes).
+     *
+     * @throws \DomainException if invoice cannot be finalized
+     */
+    public function finalize(): void
+    {
+        // Validate invoice can be finalized
+        if (! $this->isDraft()) {
+            $invoiceNumber = $this->invoice_number ?? $this->id;
+            throw new \DomainException(
+                "Invoice #{$invoiceNumber} cannot be finalized. Current status: {$this->status}"
+            );
+        }
+
+        if (empty($this->invoice_number)) {
+            throw new \DomainException(
+                'Invoice cannot be finalized without an invoice number.'
+            );
+        }
+
+        if (empty($this->client_id)) {
+            throw new \DomainException(
+                'Invoice cannot be finalized without a client.'
+            );
+        }
+
+        // Set status to finalized
+        $this->status = 'finalized';
+        $this->save();
     }
 }

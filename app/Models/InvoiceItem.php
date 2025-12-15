@@ -28,6 +28,38 @@ class InvoiceItem extends Model
     ];
 
     /**
+     * Boot the model.
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        // Prevent modification of invoice items when parent invoice is finalized
+        static::saving(function ($invoiceItem) {
+            if ($invoiceItem->exists || $invoiceItem->invoice_id) {
+                $invoice = $invoiceItem->invoice ?? Invoice::find($invoiceItem->invoice_id);
+                if ($invoice && $invoice->isFinalized()) {
+                    $invoiceNumber = $invoice->invoice_number ?? $invoice->id;
+                    throw new \DomainException(
+                        "Cannot modify invoice items on finalized invoice #{$invoiceNumber}. Items are immutable after finalization."
+                    );
+                }
+            }
+        });
+
+        // Prevent deletion of invoice items when parent invoice is finalized
+        static::deleting(function ($invoiceItem) {
+            $invoice = $invoiceItem->invoice ?? Invoice::find($invoiceItem->invoice_id);
+            if ($invoice && $invoice->isFinalized()) {
+                $invoiceNumber = $invoice->invoice_number ?? $invoice->id;
+                throw new \DomainException(
+                    "Cannot delete invoice items on finalized invoice #{$invoiceNumber}. Items are immutable after finalization."
+                );
+            }
+        });
+    }
+
+    /**
      * The company this invoice item belongs to.
      */
     public function company(): BelongsTo
