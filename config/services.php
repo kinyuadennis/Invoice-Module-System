@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -14,12 +13,24 @@ return [
     |
     */
 
-    'postmark' => [
-        'key' => env('POSTMARK_API_KEY'),
+    'mpesa' => [
+        'consumer_key' => env('MPESA_CONSUMER_KEY', ''),
+        'consumer_secret' => env('MPESA_CONSUMER_SECRET', ''),
+        'passkey' => env('MPESA_PASSKEY', ''),
+        'shortcode' => env('MPESA_SHORTCODE', ''),
+        'webhook_secret' => env('MPESA_WEBHOOK_SECRET', ''),
+        'sandbox' => env('MPESA_SANDBOX', true),
     ],
 
-    'resend' => [
-        'key' => env('RESEND_API_KEY'),
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => env('MAILGUN_SCHEME', 'https'),
+    ],
+
+    'postmark' => [
+        'token' => env('POSTMARK_TOKEN'),
     ],
 
     'ses' => [
@@ -27,12 +38,4 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
-    'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
-        ],
-    ],
-
 ];

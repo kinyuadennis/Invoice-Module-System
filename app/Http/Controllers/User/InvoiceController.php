@@ -25,14 +25,18 @@ class InvoiceController extends Controller
 
     protected InvoiceEtimsExportService $etimsExportService;
 
+    protected InvoiceAuditService $auditService;
+
     public function __construct(
         InvoiceService $invoiceService,
         InvoiceSnapshotFormatter $snapshotFormatter,
-        InvoiceEtimsExportService $etimsExportService
+        InvoiceEtimsExportService $etimsExportService,
+        InvoiceAuditService $auditService
     ) {
         $this->invoiceService = $invoiceService;
         $this->snapshotFormatter = $snapshotFormatter;
         $this->etimsExportService = $etimsExportService;
+        $this->auditService = $auditService;
     }
 
     public function index(Request $request)
@@ -541,17 +545,36 @@ class InvoiceController extends Controller
     /**
      * Send invoice via email
      */
-    public function sendEmail($id)
+    public function sendEmail(Request $request, $id)
     {
         $companyId = CurrentCompanyService::requireId();
 
         // Ensure invoice belongs to user's company
         $invoice = Invoice::where('company_id', $companyId)
-            ->with(['client', 'invoiceItems'])
+            ->with(['client', 'company'])
             ->findOrFail($id);
 
-        // TODO: Implement email sending
-        // Queue email job for later implementation
+        // Validate request
+        $validated = $request->validate([
+            'recipient_email' => 'required|email',
+            'custom_message' => 'nullable|string|max:1000',
+        ]);
+
+        // Queue email job
+        \App\Jobs\SendInvoiceEmail::dispatch(
+            $invoice,
+            $validated['recipient_email'],
+            $validated['custom_message'] ?? null
+        );
+
+        // Log notification event
+        \Log::info('Invoice email queued', [
+            'invoice_id' => $invoice->id,
+            'recipient' => $validated['recipient_email'],
+            'user_id' => auth()->id(),
+            'company_id' => $companyId,
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Email queued for sending',
@@ -561,17 +584,31 @@ class InvoiceController extends Controller
     /**
      * Send invoice via WhatsApp
      */
-    public function sendWhatsApp($id)
+    public function sendWhatsApp(Request $request, $id)
     {
         $companyId = CurrentCompanyService::requireId();
 
         // Ensure invoice belongs to user's company
         $invoice = Invoice::where('company_id', $companyId)
-            ->with(['client', 'invoiceItems'])
+            ->with(['client', 'company'])
             ->findOrFail($id);
 
-        // TODO: Implement WhatsApp sending
-        // Queue WhatsApp job for later implementation
+        // Validate request
+        $validated = $request->validate([
+            'recipient_phone' => 'required|string',
+            'custom_message' => 'nullable|string|max:1000',
+        ]);
+
+        // Queue WhatsApp job
+        \App\Jobs\SendInvoiceWhatsApp::dispatch(
+            $invoice,
+            $validated['recipient_phone'],
+            $validated['custom_message'] ?? null
+        );
+
+        // Log send event
+        $this->auditService->logSend($invoice, 'whatsapp', $request);
+
         return response()->json([
             'success' => true,
             'message' => 'WhatsApp message queued for sending',

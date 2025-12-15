@@ -38,6 +38,9 @@ class Company extends Model
         'vat_enabled',
         'platform_fee_rate',
         'platform_fee_enabled',
+        'email_notifications_enabled',
+        'whatsapp_notifications_enabled',
+        'notification_preferences',
     ];
 
     protected $casts = [
@@ -47,6 +50,9 @@ class Company extends Model
         'vat_enabled' => 'boolean',
         'platform_fee_rate' => 'decimal:4',
         'platform_fee_enabled' => 'boolean',
+        'email_notifications_enabled' => 'boolean',
+        'whatsapp_notifications_enabled' => 'boolean',
+        'notification_preferences' => 'array',
     ];
 
     /**

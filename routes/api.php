@@ -46,5 +46,12 @@ Route::prefix('v1')->group(function () {
         // Clients
         Route::get('/clients', [\App\Http\Controllers\Api\V1\ClientController::class, 'index'])->name('api.v1.clients.index');
         Route::get('/clients/{id}', [\App\Http\Controllers\Api\V1\ClientController::class, 'show'])->name('api.v1.clients.show');
+
+        // Payment webhooks (no company scoping - webhooks are external)
+        Route::post('/webhooks/mpesa', [\App\Http\Controllers\Api\V1\PaymentWebhookController::class, 'mpesa'])->name('api.v1.webhooks.mpesa');
+
+        // Audit logs (read-only)
+        Route::get('/audit-logs', [\App\Http\Controllers\Api\V1\AuditLogController::class, 'index'])->name('api.v1.audit-logs.index');
+        Route::get('/invoices/{id}/audit-logs', [\App\Http\Controllers\Api\V1\AuditLogController::class, 'invoiceLogs'])->name('api.v1.audit-logs.invoice');
     });
 });

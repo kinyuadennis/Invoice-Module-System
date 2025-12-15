@@ -30,14 +30,18 @@ class InvoiceController extends Controller
 
     protected InvoiceEtimsExportService $etimsExportService;
 
+    protected InvoiceAuditService $auditService;
+
     public function __construct(
         InvoiceService $invoiceService,
         InvoiceFinalizationService $finalizationService,
-        InvoiceEtimsExportService $etimsExportService
+        InvoiceEtimsExportService $etimsExportService,
+        InvoiceAuditService $auditService
     ) {
         $this->invoiceService = $invoiceService;
         $this->finalizationService = $finalizationService;
         $this->etimsExportService = $etimsExportService;
+        $this->auditService = $auditService;
     }
 
     /**

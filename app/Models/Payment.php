@@ -14,6 +14,9 @@ class Payment extends Model
         'amount',
         'payment_method',
         'mpesa_reference',
+        'transaction_id',
+        'transaction_reference',
+        'gateway_metadata',
         'paid_at',
     ];
 
@@ -21,6 +24,7 @@ class Payment extends Model
         'payment_date' => 'date',
         'paid_at' => 'datetime',
         'amount' => 'decimal:2',
+        'gateway_metadata' => 'array',
     ];
 
     /**

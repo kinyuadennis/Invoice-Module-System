@@ -23,14 +23,18 @@ class InvoiceService
 
     protected InvoiceCalculationService $calculationService;
 
+    protected InvoiceAuditService $auditService;
+
     public function __construct(
         PlatformFeeService $platformFeeService,
         InvoicePrefixService $prefixService,
-        InvoiceCalculationService $calculationService
+        InvoiceCalculationService $calculationService,
+        InvoiceAuditService $auditService
     ) {
         $this->platformFeeService = $platformFeeService;
         $this->prefixService = $prefixService;
         $this->calculationService = $calculationService;
+        $this->auditService = $auditService;
     }
 
     /**
@@ -261,6 +265,9 @@ class InvoiceService
                 ->where('company_id', $companyId)
                 ->firstOrFail();
         }
+
+        // Capture old data for audit logging (before update)
+        $oldData = $this->auditService->extractInvoiceData($invoice);
 
         // Update invoice data (prefix fields are immutable and must never be updated)
         $data = $request->only([

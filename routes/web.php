@@ -83,6 +83,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
 
+        // Audit logs
+        Route::get('/audit-logs', [\App\Http\Controllers\User\AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::get('/invoices/{id}/audit-logs', [\App\Http\Controllers\User\AuditLogController::class, 'showInvoiceLogs'])->name('invoices.audit-logs');
+
         Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
         Route::get('/clients/search', [\App\Http\Controllers\User\ClientController::class, 'search'])->name('clients.search');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Services;
 
+use App\Http\Services\InvoiceAuditService;
 use App\Models\Invoice;
 use App\Models\InvoiceSnapshot;
 use Illuminate\Support\Facades\DB;
@@ -18,12 +19,16 @@ class InvoiceFinalizationService
 
     protected InvoiceCalculationService $calculationService;
 
+    protected InvoiceAuditService $auditService;
+
     public function __construct(
         InvoiceSnapshotBuilder $snapshotBuilder,
-        InvoiceCalculationService $calculationService
+        InvoiceCalculationService $calculationService,
+        InvoiceAuditService $auditService
     ) {
         $this->snapshotBuilder = $snapshotBuilder;
         $this->calculationService = $calculationService;
+        $this->auditService = $auditService;
     }
 
     /**
@@ -58,7 +63,10 @@ class InvoiceFinalizationService
                 'legacy_snapshot' => false,
             ]);
 
-            // Step 4: Return finalized invoice
+            // Step 4: Log finalization
+            $this->auditService->logFinalize($invoice->fresh());
+
+            // Step 5: Return finalized invoice
             return $invoice->fresh();
         });
     }
