@@ -212,6 +212,14 @@ class Invoice extends Model
     }
 
     /**
+     * The snapshot of this invoice (one-to-one relationship).
+     */
+    public function snapshot(): HasOne
+    {
+        return $this->hasOne(InvoiceSnapshot::class);
+    }
+
+    /**
      * The invoice template used for this invoice.
      */
     public function template(): BelongsTo

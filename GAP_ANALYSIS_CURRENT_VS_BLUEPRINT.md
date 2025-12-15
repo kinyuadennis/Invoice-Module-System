@@ -935,12 +935,38 @@ $companies = \App\Models\Company::orderBy('name')->get(['id', 'name']);
 
 ---
 
+## Phase 1 Resolution Status
+
+### Snapshot Structure: ✅ IMPLEMENTED
+- `invoice_snapshots` table created with JSON payload column
+- One-to-one relationship with invoices enforced
+- Legacy snapshot flag included
+
+### Snapshot Creation at Finalization: ✅ ENFORCED
+- `InvoiceFinalizationService` ensures atomic finalization + snapshot creation
+- Transaction ensures snapshot creation failure rolls back finalization
+- Hard invariant: finalized invoice must have snapshot (except legacy)
+
+### PDFs No Longer Require Live DB Data: ✅ STRUCTURALLY PREPARED
+- Snapshot contains all data needed for PDF rendering
+- Company, client, items, totals all captured in snapshot
+- Template and branding data included
+- Note: PDF views not yet updated (Phase 2+)
+
+### Financial Truth Capture: ✅ ESTABLISHED
+- Complete financial truth definition documented
+- Snapshot builder extracts all necessary data
+- Explicit values stored (not formulas)
+- Historical accuracy preserved
+
+---
+
 ## Next Steps (After Blueprint Update)
 
 1. **Update Blueprint** - Incorporate discovered constraints
 2. **Lock Assumptions** - Freeze scope based on gap analysis
-3. **Execute Phase 0** - Database migrations only
-4. **Execute Phase 1** - Models and lifecycle enforcement
+3. **Execute Phase 0** - ✅ COMPLETE
+4. **Execute Phase 1** - ✅ COMPLETE
 5. **Proceed Phase-by-Phase** - Test after each phase
 
 ---
