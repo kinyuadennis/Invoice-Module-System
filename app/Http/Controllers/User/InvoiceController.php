@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Services\InvoiceService;
+use App\Http\Services\InvoiceSnapshotFormatter;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\Invoice;
@@ -19,9 +20,12 @@ class InvoiceController extends Controller
 {
     protected InvoiceService $invoiceService;
 
-    public function __construct(InvoiceService $invoiceService)
+    protected InvoiceSnapshotFormatter $snapshotFormatter;
+
+    public function __construct(InvoiceService $invoiceService, InvoiceSnapshotFormatter $snapshotFormatter)
     {
         $this->invoiceService = $invoiceService;
+        $this->snapshotFormatter = $snapshotFormatter;
     }
 
     public function index(Request $request)
@@ -268,41 +272,77 @@ class InvoiceController extends Controller
 
     /**
      * Generate PDF for invoice
+     * Uses snapshot data for finalized invoices, live data for drafts.
      */
     public function generatePdf($id)
     {
         // Increase execution time for PDF generation
-        set_time_limit(60); // 60 seconds should be enough
+        set_time_limit(60);
 
         $companyId = CurrentCompanyService::requireId();
 
-        // Ensure invoice belongs to user's active company (from session)
+        // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)
-            ->with(['client', 'invoiceItems', 'platformFees', 'user', 'company.invoiceTemplate'])
+            ->with(['snapshot', 'company'])
             ->findOrFail($id);
 
-        // Format invoice data for PDF
-        $formattedInvoice = $this->invoiceService->formatInvoiceForShow($invoice);
+        // Check if invoice is finalized and has snapshot
+        if ($invoice->isFinalized() && $invoice->snapshot) {
+            // Use snapshot data (read-only, no DB queries)
+            $formattedInvoice = $this->snapshotFormatter->formatForPdf($invoice->snapshot);
+            $snapshotData = $invoice->snapshot->snapshot_data;
 
-        // Add platform fee if exists
-        $platformFee = $invoice->platformFees->first();
-        if ($platformFee) {
-            $formattedInvoice['platform_fee'] = (float) $platformFee->fee_amount;
+            // Get template from snapshot
+            $template = \App\Models\InvoiceTemplate::find($snapshotData['template']['id'] ?? null);
+            if (! $template) {
+                $template = \App\Models\InvoiceTemplate::getDefault();
+            }
+
+            // Pre-resolve PDF settings from snapshot (no DB queries in view)
+            $pdfSettings = $snapshotData['branding']['pdf_settings'] ?? ['show_software_credit' => true];
+            $showSoftwareCredit = $snapshotData['branding']['show_software_credit'] ?? true;
+
+            // Pre-resolve logo path from snapshot
+            $logoPath = $this->resolveLogoPath($snapshotData['branding']['logo_path'] ?? null);
+
+            // Add pre-resolved data to formatted invoice
+            $formattedInvoice['company']['logo_path'] = $logoPath;
+            $formattedInvoice['company']['pdf_settings'] = $pdfSettings;
+            $formattedInvoice['company']['show_software_credit'] = $showSoftwareCredit;
+
+            // Store rates used for display
+            $formattedInvoice['vat_rate_used'] = $snapshotData['configuration']['vat_rate_used'] ?? 16.00;
+            $formattedInvoice['platform_fee_rate_used'] = $snapshotData['configuration']['platform_fee_rate_used'] ?? 0.03;
+        } else {
+            // Draft invoice: use live data (allowed for preview)
+            $invoice->loadMissing(['client', 'invoiceItems', 'platformFees', 'user', 'company.invoiceTemplate']);
+            $formattedInvoice = $this->invoiceService->formatInvoiceForShow($invoice);
+
+            // Add platform fee if exists
+            $platformFee = $invoice->platformFees->first();
+            if ($platformFee) {
+                $formattedInvoice['platform_fee'] = (float) $platformFee->fee_amount;
+            }
+
+            // Get template
+            $template = $invoice->getInvoiceTemplate();
+
+            // Pre-resolve PDF settings (no DB queries in view)
+            $pdfSettings = $invoice->company->getPdfSettings();
+            $showSoftwareCredit = $pdfSettings['show_software_credit'] ?? true;
+
+            // Pre-resolve logo path
+            $logoPath = $this->resolveLogoPath($invoice->company->logo);
+
+            // Add pre-resolved data
+            $formattedInvoice['company']['logo_path'] = $logoPath;
+            $formattedInvoice['company']['pdf_settings'] = $pdfSettings;
+            $formattedInvoice['company']['show_software_credit'] = $showSoftwareCredit;
         }
-
-        // CRITICAL: Use invoice's company, NOT user's active company
-        // The PDF must show the company that created the invoice, not the currently selected company
-        if (! $invoice->company) {
-            throw new \RuntimeException('Invoice company not found. Cannot generate PDF.');
-        }
-
-        // Get template from invoice (if stored) or invoice's company's active template
-        $template = $invoice->getInvoiceTemplate();
 
         // Fallback to modern-clean if template view doesn't exist
         $templateView = $template->view_path;
         if (! view()->exists($templateView)) {
-            // Fallback to default template
             $templateView = 'invoices.templates.modern-clean';
             \Log::warning("Template view not found: {$template->view_path}, using fallback: {$templateView}", [
                 'template_id' => $template->id,
@@ -310,33 +350,13 @@ class InvoiceController extends Controller
             ]);
         }
 
-        // Prepare logo path for PDF (resolve before passing to view to avoid blocking)
-        $logoPath = null;
-        if ($invoice->company->logo) {
-            $logoPath = $invoice->company->logo;
-            // Convert storage path to absolute file path
-            if (! str_starts_with($logoPath, 'http://') && ! str_starts_with($logoPath, 'https://')) {
-                $fullPath = public_path('storage/'.$logoPath);
-                if (file_exists($fullPath)) {
-                    $logoPath = $fullPath;
-                } else {
-                    $logoPath = null; // Logo file doesn't exist, skip it
-                }
-            }
-        }
-
-        // Add resolved logo path to formatted invoice
-        if ($logoPath) {
-            $formattedInvoice['company']['logo_path'] = $logoPath;
-        }
-
         // Generate PDF using selected template
-        // CRITICAL: Pass invoice's company, NOT activeCompany() or getCurrentCompany()
+        // All data pre-resolved, no DB queries in view
         try {
             $pdf = Pdf::loadView($templateView, [
                 'invoice' => $formattedInvoice,
-                'template' => $template, // Pass template object for CSS file path
-                'company' => $invoice->company, // Pass invoice's company for PDF settings
+                'template' => $template,
+                'company' => null, // Company data already in invoice array, no need to pass separately
             ]);
 
             // Set PDF options
@@ -379,6 +399,30 @@ class InvoiceController extends Controller
 
         // Return PDF download
         return $pdf->download($filename);
+    }
+
+    /**
+     * Resolve logo path to absolute file path for PDF rendering.
+     * Pre-resolved in controller to avoid DB queries in views.
+     */
+    protected function resolveLogoPath(?string $logoPath): ?string
+    {
+        if (! $logoPath) {
+            return null;
+        }
+
+        // Skip remote URLs
+        if (str_starts_with($logoPath, 'http://') || str_starts_with($logoPath, 'https://')) {
+            return null;
+        }
+
+        // Convert storage path to absolute file path
+        $fullPath = public_path('storage/'.$logoPath);
+        if (file_exists($fullPath)) {
+            return $fullPath;
+        }
+
+        return null;
     }
 
     /**

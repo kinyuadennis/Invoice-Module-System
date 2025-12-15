@@ -133,21 +133,20 @@ class InvoiceSnapshotBuilder
      */
     protected function extractConfigurationData(Invoice $invoice, $company, $platformFee): array
     {
-        // Get VAT configuration
-        // Note: Currently hardcoded, but capturing what was used
-        $vatRate = 16.00; // Will be replaced with company rate in Phase 2
-        $vatEnabled = true; // Will be replaced with company setting in Phase 2
+        // Get VAT configuration from company (captured at finalization time)
+        $vatRate = $company->getVatRateDecimal();
+        $vatEnabled = $company->isVatEnabled();
 
-        // Get platform fee configuration
-        // Note: Currently inconsistent, but capturing what was used
-        $platformFeeRate = $platformFee ? ($platformFee->fee_rate / 100) : 0.03; // Will be replaced with company rate in Phase 2
+        // Get platform fee configuration from company (captured at finalization time)
+        $platformFeeRate = $company->getPlatformFeeRateDecimal();
+        $platformFeeEnabled = $company->isPlatformFeeEnabled();
 
         return [
             'vat_registered' => $invoice->vat_registered ?? false,
             'vat_rate_used' => $vatRate,
             'vat_enabled' => $vatEnabled,
             'platform_fee_rate_used' => $platformFeeRate,
-            'platform_fee_enabled' => true,
+            'platform_fee_enabled' => $platformFeeEnabled,
             'payment_method' => $invoice->payment_method,
             'payment_details' => $invoice->payment_details,
             'payment_terms' => $company->payment_terms ?? null,
@@ -171,11 +170,12 @@ class InvoiceSnapshotBuilder
             ];
         }
 
-        // Get company configuration (defaults for now)
-        $vatEnabled = true;
-        $vatRate = 16.00;
-        $platformFeeEnabled = true;
-        $platformFeeRate = 0.03;
+        // Get company configuration (company-specific rates)
+        $company = $invoice->company;
+        $vatEnabled = $company->isVatEnabled();
+        $vatRate = $company->getVatRateDecimal();
+        $platformFeeEnabled = $company->isPlatformFeeEnabled();
+        $platformFeeRate = $company->getPlatformFeeRateDecimal();
 
         // Use calculation service to get line-level breakdowns
         $calculationResult = $this->calculationService->calculate($calculationItems, [
@@ -223,11 +223,12 @@ class InvoiceSnapshotBuilder
             ];
         }
 
-        // Get company configuration (defaults for now)
-        $vatEnabled = true;
-        $vatRate = 16.00;
-        $platformFeeEnabled = true;
-        $platformFeeRate = 0.03;
+        // Get company configuration (company-specific rates)
+        $company = $invoice->company;
+        $vatEnabled = $company->isVatEnabled();
+        $vatRate = $company->getVatRateDecimal();
+        $platformFeeEnabled = $company->isPlatformFeeEnabled();
+        $platformFeeRate = $company->getPlatformFeeRateDecimal();
 
         // Use calculation service to get totals (authoritative source)
         $calculationResult = $this->calculationService->calculate($calculationItems, [

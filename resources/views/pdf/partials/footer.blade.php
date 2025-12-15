@@ -1,21 +1,12 @@
 @php
-    // Get PDF settings from company
-    $showSoftwareCredit = true;
-    if (isset($company) && $company) {
-        $pdfSettings = $company->getPdfSettings();
-        $showSoftwareCredit = $pdfSettings['show_software_credit'] ?? true;
-    } elseif (isset($invoice['company']['id'])) {
-        // Fallback: load company if only ID is available
-        $company = \App\Models\Company::find($invoice['company']['id']);
-        if ($company) {
-            $pdfSettings = $company->getPdfSettings();
-            $showSoftwareCredit = $pdfSettings['show_software_credit'] ?? true;
-        }
-    }
+    // PDF settings pre-resolved in controller (no DB queries here)
+    // Controller passes show_software_credit in invoice['company']['show_software_credit']
+    $showSoftwareCredit = $invoice['company']['show_software_credit'] ?? true;
+    
     // Convert to string for PHP script
     $showCredit = $showSoftwareCredit ? '1' : '0';
     
-    // Prepare footer data
+    // Prepare footer data (all pre-resolved, no DB queries)
     $companyWebsite = addslashes($invoice['company']['website'] ?? '');
     $companyEmail = addslashes($invoice['company']['email'] ?? '');
     $companyAddress = addslashes($invoice['company']['address'] ?? '');

@@ -658,14 +658,8 @@
                         @if(isset($invoice['discount']) && $invoice['discount'] > 0)
                             <td class="text-right">
                                 @php
-                                    $itemDiscount = 0;
-                                    $itemTotal = $item['total'] ?? $item['total_price'] ?? 0;
-                                    if (isset($invoice['discount_type']) && $invoice['discount_type'] === 'percentage') {
-                                        $itemDiscount = ($invoice['discount'] / 100) * $itemTotal;
-                                    } else {
-                                        $itemCount = count($invoice['items'] ?? [1]);
-                                        $itemDiscount = $itemCount > 0 ? ($invoice['discount'] / $itemCount) : 0;
-                                    }
+                                    // Discount per item pre-calculated in formatter (no calculations in view)
+                                    $itemDiscount = $item['discount'] ?? 0;
                                 @endphp
                                 {{ $invoice['company']['currency'] ?? 'KES' }} {{ number_format($itemDiscount, 2) }}
                             </td>

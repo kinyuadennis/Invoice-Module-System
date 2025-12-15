@@ -166,12 +166,12 @@ class InvoiceService
             ];
         }
 
-        // Get company configuration (defaults for now, will be company-specific in Phase 2+)
+        // Get company configuration (company-specific rates)
         $company = Company::findOrFail($companyId);
-        $vatEnabled = true; // Will be replaced with company setting
-        $vatRate = 16.00; // Will be replaced with company rate
-        $platformFeeEnabled = true; // Will be replaced with company setting
-        $platformFeeRate = 0.03; // Will be replaced with company rate
+        $vatEnabled = $company->isVatEnabled();
+        $vatRate = $company->getVatRateDecimal();
+        $platformFeeEnabled = $company->isPlatformFeeEnabled();
+        $platformFeeRate = $company->getPlatformFeeRateDecimal();
 
         // Calculate using authoritative service
         $calculationResult = $this->calculationService->calculate($calculationItems, [
@@ -341,11 +341,12 @@ class InvoiceService
                 ];
             }
 
-            // Get company configuration (defaults for now)
-            $vatEnabled = true;
-            $vatRate = 16.00;
-            $platformFeeEnabled = true;
-            $platformFeeRate = 0.03; // Fixed: was 0.008 (inconsistent)
+            // Get company configuration (company-specific rates)
+            $company = $invoice->company;
+            $vatEnabled = $company->isVatEnabled();
+            $vatRate = $company->getVatRateDecimal();
+            $platformFeeEnabled = $company->isPlatformFeeEnabled();
+            $platformFeeRate = $company->getPlatformFeeRateDecimal();
 
             // Calculate using authoritative service
             $calculationResult = $this->calculationService->calculate($calculationItems, [
@@ -440,11 +441,32 @@ class InvoiceService
             ];
         }
 
-        // Get company configuration (defaults for now)
-        $vatEnabled = true;
-        $vatRate = 16.00;
-        $platformFeeEnabled = true;
-        $platformFeeRate = 0.03;
+        // Get company configuration (company-specific rates)
+        // Note: For preview, we need company from request context
+        // This is a limitation - preview doesn't have invoice yet
+        // For now, use defaults; in production, get from session/request
+        $companyId = \App\Services\CurrentCompanyService::getId();
+        if ($companyId) {
+            $company = Company::find($companyId);
+            if ($company) {
+                $vatEnabled = $company->isVatEnabled();
+                $vatRate = $company->getVatRateDecimal();
+                $platformFeeEnabled = $company->isPlatformFeeEnabled();
+                $platformFeeRate = $company->getPlatformFeeRateDecimal();
+            } else {
+                // Fallback to defaults
+                $vatEnabled = true;
+                $vatRate = 16.00;
+                $platformFeeEnabled = true;
+                $platformFeeRate = 0.03;
+            }
+        } else {
+            // Fallback to defaults
+            $vatEnabled = true;
+            $vatRate = 16.00;
+            $platformFeeEnabled = true;
+            $platformFeeRate = 0.03;
+        }
 
         // Calculate using authoritative service
         return $this->calculationService->calculate($calculationItems, [
@@ -483,11 +505,12 @@ class InvoiceService
             ];
         }
 
-        // Get company configuration (defaults for now)
-        $vatEnabled = true;
-        $vatRate = 16.00;
-        $platformFeeEnabled = true;
-        $platformFeeRate = 0.03;
+        // Get company configuration (company-specific rates)
+        $company = $invoice->company;
+        $vatEnabled = $company->isVatEnabled();
+        $vatRate = $company->getVatRateDecimal();
+        $platformFeeEnabled = $company->isPlatformFeeEnabled();
+        $platformFeeRate = $company->getPlatformFeeRateDecimal();
 
         // Calculate using authoritative service
         $calculationResult = $this->calculationService->calculate($calculationItems, [

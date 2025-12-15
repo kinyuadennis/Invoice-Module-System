@@ -34,11 +34,19 @@ class Company extends Model
         'client_invoice_format',
         'use_client_specific_numbering',
         'settings',
+        'default_vat_rate',
+        'vat_enabled',
+        'platform_fee_rate',
+        'platform_fee_enabled',
     ];
 
     protected $casts = [
         'settings' => 'array',
         'use_client_specific_numbering' => 'boolean',
+        'default_vat_rate' => 'decimal:2',
+        'vat_enabled' => 'boolean',
+        'platform_fee_rate' => 'decimal:4',
+        'platform_fee_enabled' => 'boolean',
     ];
 
     /**

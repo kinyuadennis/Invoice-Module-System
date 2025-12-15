@@ -129,7 +129,25 @@ trait FormatsInvoiceData
         $currency = $data['company']['currency'] ?? 'KES';
         $data['amount_in_words'] = NumberToWords::convert($data['grand_total'], $currency);
 
-        $data['items'] = $invoice->invoiceItems->map(function ($item) {
+        // Pre-calculate item discounts to avoid calculations in views
+        $totalDiscount = (float) ($invoice->discount ?? 0);
+        $discountType = $invoice->discount_type ?? 'fixed';
+
+        $data['items'] = $invoice->invoiceItems->map(function ($item) use ($totalDiscount, $discountType) {
+            $itemTotal = (float) $item->total_price;
+            $itemDiscount = 0;
+
+            // Calculate item discount if total discount exists
+            if ($totalDiscount > 0 && $discountType) {
+                if ($discountType === 'percentage') {
+                    $itemDiscount = $itemTotal * ($totalDiscount / 100);
+                } else {
+                    // Fixed discount: distribute evenly across items
+                    $itemCount = $item->invoice->invoiceItems->count();
+                    $itemDiscount = $itemCount > 0 ? ($totalDiscount / $itemCount) : 0;
+                }
+            }
+
             return [
                 'id' => $item->id,
                 'description' => $item->description,
@@ -137,6 +155,7 @@ trait FormatsInvoiceData
                 'unit_price' => (float) $item->unit_price,
                 'total_price' => (float) $item->total_price,
                 'total' => (float) $item->total_price, // Keep for backward compatibility
+                'discount' => round($itemDiscount, 2), // Pre-calculated discount per item
             ];
         });
 
