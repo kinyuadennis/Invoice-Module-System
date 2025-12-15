@@ -21,10 +21,16 @@ class InvoiceService
 
     protected InvoicePrefixService $prefixService;
 
-    public function __construct(PlatformFeeService $platformFeeService, InvoicePrefixService $prefixService)
-    {
+    protected InvoiceCalculationService $calculationService;
+
+    public function __construct(
+        PlatformFeeService $platformFeeService,
+        InvoicePrefixService $prefixService,
+        InvoiceCalculationService $calculationService
+    ) {
         $this->platformFeeService = $platformFeeService;
         $this->prefixService = $prefixService;
+        $this->calculationService = $calculationService;
     }
 
     /**
@@ -145,47 +151,47 @@ class InvoiceService
             $data['issue_date'] = now()->toDateString();
         }
 
-        // Calculate totals BEFORE creating invoice (required fields)
+        // Calculate totals using calculation service (authoritative source)
         $items = $request->input('items', []);
-        $subtotal = 0;
-
-        foreach ($items as $item) {
-            $itemTotal = $item['total_price'] ?? (($item['quantity'] ?? 1) * ($item['unit_price'] ?? $item['rate'] ?? 0));
-            $subtotal += $itemTotal;
-        }
-
-        // Apply discount
-        $discount = $request->input('discount', 0);
-        $discountType = $request->input('discount_type', 'fixed');
-        $discountAmount = 0;
-        if ($discount > 0) {
-            if ($discountType === 'percentage') {
-                $discountAmount = $subtotal * ($discount / 100);
-            } else {
-                $discountAmount = $discount;
-            }
-        }
-        $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
-
-        // Calculate VAT only if VAT registered
         $vatRegistered = $request->input('vat_registered', false);
-        $vatAmount = 0;
-        if ($vatRegistered) {
-            $vatAmount = $subtotalAfterDiscount * 0.16; // 16% VAT (Kenyan standard)
+
+        // Prepare items for calculation service
+        $calculationItems = [];
+        foreach ($items as $item) {
+            $calculationItems[] = [
+                'quantity' => $item['quantity'] ?? 1,
+                'unit_price' => $item['unit_price'] ?? $item['rate'] ?? 0,
+                'vat_included' => $item['vat_included'] ?? false,
+                'vat_rate' => $item['vat_rate'] ?? 16.00,
+            ];
         }
 
-        $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
-        $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
-        $grandTotal = $totalBeforeFee + $platformFee;
+        // Get company configuration (defaults for now, will be company-specific in Phase 2+)
+        $company = Company::findOrFail($companyId);
+        $vatEnabled = true; // Will be replaced with company setting
+        $vatRate = 16.00; // Will be replaced with company rate
+        $platformFeeEnabled = true; // Will be replaced with company setting
+        $platformFeeRate = 0.03; // Will be replaced with company rate
+
+        // Calculate using authoritative service
+        $calculationResult = $this->calculationService->calculate($calculationItems, [
+            'vat_enabled' => $vatEnabled,
+            'vat_rate' => $vatRate,
+            'vat_registered' => $vatRegistered,
+            'platform_fee_enabled' => $platformFeeEnabled,
+            'platform_fee_rate' => $platformFeeRate,
+            'discount' => $request->input('discount', 0),
+            'discount_type' => $request->input('discount_type', 'fixed'),
+        ]);
 
         // Add calculated totals to invoice data
-        $data['subtotal'] = $subtotal;
-        $data['discount'] = $discountAmount;
-        $data['tax'] = $vatAmount; // Keep for backward compatibility
-        $data['vat_amount'] = $vatAmount;
-        $data['platform_fee'] = $platformFee;
-        $data['total'] = $totalBeforeFee; // Keep for backward compatibility
-        $data['grand_total'] = $grandTotal;
+        $data['subtotal'] = $calculationResult['subtotal'];
+        $data['discount'] = $calculationResult['discount'];
+        $data['tax'] = $calculationResult['vat_amount']; // Keep for backward compatibility
+        $data['vat_amount'] = $calculationResult['vat_amount'];
+        $data['platform_fee'] = $calculationResult['platform_fee'];
+        $data['total'] = $calculationResult['total']; // Keep for backward compatibility
+        $data['grand_total'] = $calculationResult['grand_total'];
 
         // Start creating invoice entry with all required fields
         $invoice = Invoice::create($data);
@@ -321,26 +327,43 @@ class InvoiceService
             // Delete existing items
             $invoice->invoiceItems()->delete();
 
-            // Calculate totals
+            // Calculate totals using calculation service (authoritative source)
             $items = $request->input('items', []);
-            $subtotal = 0;
 
+            // Prepare items for calculation service
+            $calculationItems = [];
             foreach ($items as $item) {
-                $itemTotal = $item['total_price'] ?? (($item['quantity'] ?? 1) * ($item['unit_price'] ?? $item['rate'] ?? 0));
-                $subtotal += $itemTotal;
+                $calculationItems[] = [
+                    'quantity' => $item['quantity'] ?? 1,
+                    'unit_price' => $item['unit_price'] ?? $item['rate'] ?? 0,
+                    'vat_included' => $item['vat_included'] ?? false,
+                    'vat_rate' => $item['vat_rate'] ?? 16.00,
+                ];
             }
 
-            $vatAmount = $subtotal * 0.16;
-            $totalBeforeFee = $subtotal + $vatAmount;
-            $platformFee = $totalBeforeFee * 0.008;
-            $grandTotal = $totalBeforeFee + $platformFee;
+            // Get company configuration (defaults for now)
+            $vatEnabled = true;
+            $vatRate = 16.00;
+            $platformFeeEnabled = true;
+            $platformFeeRate = 0.03; // Fixed: was 0.008 (inconsistent)
 
-            $data['subtotal'] = $subtotal;
-            $data['tax'] = $vatAmount;
-            $data['vat_amount'] = $vatAmount;
-            $data['platform_fee'] = $platformFee;
-            $data['total'] = $totalBeforeFee;
-            $data['grand_total'] = $grandTotal;
+            // Calculate using authoritative service
+            $calculationResult = $this->calculationService->calculate($calculationItems, [
+                'vat_enabled' => $vatEnabled,
+                'vat_rate' => $vatRate,
+                'vat_registered' => $invoice->vat_registered ?? false,
+                'platform_fee_enabled' => $platformFeeEnabled,
+                'platform_fee_rate' => $platformFeeRate,
+                'discount' => $invoice->discount ?? 0,
+                'discount_type' => $invoice->discount_type ?? 'fixed',
+            ]);
+
+            $data['subtotal'] = $calculationResult['subtotal'];
+            $data['tax'] = $calculationResult['vat_amount'];
+            $data['vat_amount'] = $calculationResult['vat_amount'];
+            $data['platform_fee'] = $calculationResult['platform_fee'];
+            $data['total'] = $calculationResult['total'];
+            $data['grand_total'] = $calculationResult['grand_total'];
 
             // Create new items and track services
             foreach ($items as $item) {
@@ -385,7 +408,7 @@ class InvoiceService
 
         $invoice->update($data);
 
-        // Update totals
+        // Update totals (only if draft - enforced in updateTotals method)
         $this->updateTotals($invoice);
 
         // Update platform fee
@@ -397,25 +420,92 @@ class InvoiceService
     }
 
     /**
-     * Update invoice totals based on items
+     * Calculate preview totals (for draft/preview scenarios).
+     * Uses authoritative calculation service.
+     *
+     * @param  array  $items  Line items
+     * @param  array  $options  Options (vat_registered, discount, discount_type)
+     * @return array Calculation results
+     */
+    public function calculatePreviewTotals(array $items, array $options = []): array
+    {
+        // Prepare items for calculation service
+        $calculationItems = [];
+        foreach ($items as $item) {
+            $calculationItems[] = [
+                'quantity' => $item['quantity'] ?? 1,
+                'unit_price' => $item['unit_price'] ?? 0,
+                'vat_included' => $item['vat_included'] ?? false,
+                'vat_rate' => $item['vat_rate'] ?? 16.00,
+            ];
+        }
+
+        // Get company configuration (defaults for now)
+        $vatEnabled = true;
+        $vatRate = 16.00;
+        $platformFeeEnabled = true;
+        $platformFeeRate = 0.03;
+
+        // Calculate using authoritative service
+        return $this->calculationService->calculate($calculationItems, [
+            'vat_enabled' => $vatEnabled,
+            'vat_rate' => $vatRate,
+            'vat_registered' => $options['vat_registered'] ?? false,
+            'platform_fee_enabled' => $platformFeeEnabled,
+            'platform_fee_rate' => $platformFeeRate,
+            'discount' => $options['discount'] ?? 0,
+            'discount_type' => $options['discount_type'] ?? 'fixed',
+        ]);
+    }
+
+    /**
+     * Update invoice totals based on items.
+     * Cannot be called on finalized invoices (calculations are frozen).
      */
     public function updateTotals(Invoice $invoice): void
     {
-        $subtotal = $invoice->invoiceItems->sum(function ($item) {
-            return $item->total_price;
-        });
+        // Prevent recalculation on finalized invoices (calculations are frozen)
+        if ($invoice->isFinalized()) {
+            $invoiceNumber = $invoice->invoice_number ?? $invoice->id;
+            throw new \DomainException(
+                "Cannot recalculate totals for finalized invoice #{$invoiceNumber}. Calculations are frozen at finalization."
+            );
+        }
 
-        $vatAmount = $subtotal * 0.16; // 16% VAT (Kenyan standard)
-        $totalBeforeFee = $subtotal + $vatAmount;
-        $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
-        $grandTotal = $totalBeforeFee + $platformFee;
+        // Prepare items for calculation service
+        $calculationItems = [];
+        foreach ($invoice->invoiceItems as $item) {
+            $calculationItems[] = [
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'vat_included' => $item->vat_included ?? false,
+                'vat_rate' => $item->vat_rate ?? 16.00,
+            ];
+        }
 
-        $invoice->subtotal = $subtotal;
-        $invoice->tax = $vatAmount; // Keep for backward compatibility
-        $invoice->vat_amount = $vatAmount;
-        $invoice->platform_fee = $platformFee;
-        $invoice->total = $totalBeforeFee; // Keep for backward compatibility
-        $invoice->grand_total = $grandTotal;
+        // Get company configuration (defaults for now)
+        $vatEnabled = true;
+        $vatRate = 16.00;
+        $platformFeeEnabled = true;
+        $platformFeeRate = 0.03;
+
+        // Calculate using authoritative service
+        $calculationResult = $this->calculationService->calculate($calculationItems, [
+            'vat_enabled' => $vatEnabled,
+            'vat_rate' => $vatRate,
+            'vat_registered' => $invoice->vat_registered ?? false,
+            'platform_fee_enabled' => $platformFeeEnabled,
+            'platform_fee_rate' => $platformFeeRate,
+            'discount' => $invoice->discount ?? 0,
+            'discount_type' => $invoice->discount_type ?? 'fixed',
+        ]);
+
+        $invoice->subtotal = $calculationResult['subtotal'];
+        $invoice->tax = $calculationResult['vat_amount']; // Keep for backward compatibility
+        $invoice->vat_amount = $calculationResult['vat_amount'];
+        $invoice->platform_fee = $calculationResult['platform_fee'];
+        $invoice->total = $calculationResult['total']; // Keep for backward compatibility
+        $invoice->grand_total = $calculationResult['grand_total'];
         $invoice->save();
 
         // Update platform fee if invoice already has one

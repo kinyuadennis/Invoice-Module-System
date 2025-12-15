@@ -951,13 +951,41 @@ $companies = \App\Models\Company::orderBy('name')->get(['id', 'name']);
 - Snapshot contains all data needed for PDF rendering
 - Company, client, items, totals all captured in snapshot
 - Template and branding data included
-- Note: PDF views not yet updated (Phase 2+)
+- Note: PDF views not yet updated (Phase 3)
 
 ### Financial Truth Capture: ✅ ESTABLISHED
 - Complete financial truth definition documented
 - Snapshot builder extracts all necessary data
 - Explicit values stored (not formulas)
 - Historical accuracy preserved
+
+---
+
+## Phase 2 Resolution Status
+
+### Centralized Calculation Service: ✅ IMPLEMENTED
+- `InvoiceCalculationService` created as single authoritative source
+- Pure logic, deterministic, no side effects
+- All calculations go through this service
+
+### Duplicate Calculation Paths: ✅ ELIMINATED
+- Removed calculations from `InvoiceController::preview()`
+- Removed calculations from `InvoiceController::previewFrame()`
+- Refactored `InvoiceService::createInvoice()` to use calculation service
+- Refactored `InvoiceService::updateInvoice()` to use calculation service
+- Refactored `InvoiceService::updateTotals()` to use calculation service
+- Fixed inconsistent platform fee rate (0.8% → 3%)
+
+### Snapshot Data Derived from Single Source of Truth: ✅ ESTABLISHED
+- `InvoiceSnapshotBuilder` uses calculation service for totals
+- `InvoiceSnapshotBuilder` uses calculation service for line item VAT
+- Snapshot stores results, not formulas
+
+### Financial Consistency Guaranteed: ✅ ENFORCED
+- Same invoice calculated in multiple paths → same totals (tested)
+- Snapshot totals exactly match calculation service output (tested)
+- Calculation service is deterministic (tested)
+- Calculations frozen at finalization (enforced in `updateTotals()`)
 
 ---
 

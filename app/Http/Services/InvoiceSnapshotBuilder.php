@@ -15,9 +15,17 @@ use App\Models\Invoice;
  * - No side effects
  * - Accepts fully-loaded invoice
  * - Returns snapshot payload (array)
+ * - Uses calculation service for totals (does not calculate itself)
  */
 class InvoiceSnapshotBuilder
 {
+    protected InvoiceCalculationService $calculationService;
+
+    public function __construct(InvoiceCalculationService $calculationService)
+    {
+        $this->calculationService = $calculationService;
+    }
+
     /**
      * Build snapshot payload from a fully-loaded invoice.
      *
@@ -148,35 +156,50 @@ class InvoiceSnapshotBuilder
 
     /**
      * Extract line items data.
+     * Uses calculation service to get line-level breakdowns.
      */
     protected function extractItemsData($items, Invoice $invoice): array
     {
-        $itemsData = [];
-
+        // Prepare items for calculation service
+        $calculationItems = [];
         foreach ($items as $item) {
-            // Calculate VAT amount for this line item
-            // This is explicit, not derived from totals
-            $itemSubtotal = (float) $item->total_price;
-            $itemVatAmount = 0.00;
+            $calculationItems[] = [
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'vat_included' => $item->vat_included ?? false,
+                'vat_rate' => $item->vat_rate ?? 16.00,
+            ];
+        }
 
-            if ($invoice->vat_registered && $item->vat_rate) {
-                if ($item->vat_included) {
-                    // VAT included in price
-                    $itemVatAmount = $itemSubtotal * ($item->vat_rate / (100 + $item->vat_rate));
-                } else {
-                    // VAT added to price
-                    $itemVatAmount = $itemSubtotal * ($item->vat_rate / 100);
-                }
-            }
+        // Get company configuration (defaults for now)
+        $vatEnabled = true;
+        $vatRate = 16.00;
+        $platformFeeEnabled = true;
+        $platformFeeRate = 0.03;
 
+        // Use calculation service to get line-level breakdowns
+        $calculationResult = $this->calculationService->calculate($calculationItems, [
+            'vat_enabled' => $vatEnabled,
+            'vat_rate' => $vatRate,
+            'vat_registered' => $invoice->vat_registered ?? false,
+            'platform_fee_enabled' => $platformFeeEnabled,
+            'platform_fee_rate' => $platformFeeRate,
+            'discount' => 0, // Items don't have discount, invoice does
+            'discount_type' => null,
+        ]);
+
+        // Map calculation service results to snapshot format
+        $itemsData = [];
+        foreach ($calculationResult['items'] as $index => $calculatedItem) {
+            $originalItem = $items[$index];
             $itemsData[] = [
-                'description' => $item->description,
-                'quantity' => (int) $item->quantity,
-                'unit_price' => (float) $item->unit_price,
-                'total_price' => (float) $item->total_price,
-                'vat_included' => (bool) $item->vat_included,
-                'vat_rate' => (float) ($item->vat_rate ?? 16.00),
-                'vat_amount' => round($itemVatAmount, 2),
+                'description' => $originalItem->description,
+                'quantity' => (int) $calculatedItem['quantity'],
+                'unit_price' => $calculatedItem['unit_price'],
+                'total_price' => $calculatedItem['total_price'],
+                'vat_included' => $calculatedItem['vat_included'],
+                'vat_rate' => $calculatedItem['vat_rate'],
+                'vat_amount' => $calculatedItem['vat_amount'], // From calculation service
             ];
         }
 
@@ -184,41 +207,51 @@ class InvoiceSnapshotBuilder
     }
 
     /**
-     * Extract totals data (explicit values, not formulas).
+     * Extract totals data using calculation service.
+     * Snapshot builder no longer "figures things out" - it records outcomes.
      */
     protected function extractTotalsData(Invoice $invoice, $platformFee): array
     {
-        $subtotal = (float) $invoice->subtotal;
-        $discount = (float) ($invoice->discount ?? 0);
-        $discountType = $invoice->discount_type ?? null;
-
-        // Calculate subtotal after discount
-        $subtotalAfterDiscount = $subtotal;
-        if ($discount > 0) {
-            if ($discountType === 'percentage') {
-                $subtotalAfterDiscount = $subtotal - ($subtotal * ($discount / 100));
-            } else {
-                $subtotalAfterDiscount = $subtotal - $discount;
-            }
+        // Prepare items for calculation service
+        $calculationItems = [];
+        foreach ($invoice->invoiceItems as $item) {
+            $calculationItems[] = [
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'vat_included' => $item->vat_included ?? false,
+                'vat_rate' => $item->vat_rate ?? 16.00,
+            ];
         }
-        $subtotalAfterDiscount = max(0, $subtotalAfterDiscount);
 
-        $vatAmount = (float) ($invoice->vat_amount ?? $invoice->tax ?? 0);
-        $total = (float) ($invoice->total ?? ($subtotalAfterDiscount + $vatAmount));
-        $platformFeeAmount = (float) ($platformFee?->fee_amount ?? $invoice->platform_fee ?? 0);
-        $grandTotal = (float) ($invoice->grand_total ?? ($total + $platformFeeAmount));
+        // Get company configuration (defaults for now)
+        $vatEnabled = true;
+        $vatRate = 16.00;
+        $platformFeeEnabled = true;
+        $platformFeeRate = 0.03;
 
+        // Use calculation service to get totals (authoritative source)
+        $calculationResult = $this->calculationService->calculate($calculationItems, [
+            'vat_enabled' => $vatEnabled,
+            'vat_rate' => $vatRate,
+            'vat_registered' => $invoice->vat_registered ?? false,
+            'platform_fee_enabled' => $platformFeeEnabled,
+            'platform_fee_rate' => $platformFeeRate,
+            'discount' => $invoice->discount ?? 0,
+            'discount_type' => $invoice->discount_type ?? 'fixed',
+        ]);
+
+        // Return calculation service results (explicit values, not formulas)
         return [
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'discount_type' => $discountType,
-            'subtotal_after_discount' => round($subtotalAfterDiscount, 2),
-            'vat_amount' => $vatAmount,
-            'tax' => $vatAmount, // Alias for backward compatibility
-            'platform_fee' => $platformFeeAmount,
-            'platform_fee_calculation_base' => $total,
-            'total' => $total,
-            'grand_total' => $grandTotal,
+            'subtotal' => $calculationResult['subtotal'],
+            'discount' => $calculationResult['discount'],
+            'discount_type' => $calculationResult['discount_type'],
+            'subtotal_after_discount' => $calculationResult['subtotal_after_discount'],
+            'vat_amount' => $calculationResult['vat_amount'],
+            'tax' => $calculationResult['vat_amount'], // Alias for backward compatibility
+            'platform_fee' => $calculationResult['platform_fee'],
+            'platform_fee_calculation_base' => $calculationResult['platform_fee_calculation_base'],
+            'total' => $calculationResult['total'],
+            'grand_total' => $calculationResult['grand_total'],
         ];
     }
 

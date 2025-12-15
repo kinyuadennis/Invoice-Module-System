@@ -453,34 +453,21 @@ class InvoiceController extends Controller
             // Get company
             $company = Company::findOrFail($companyId);
 
-            // Calculate totals
-            $subtotal = 0;
-            foreach ($validated['items'] as $item) {
-                $subtotal += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
-            }
+            // Calculate totals using service (authoritative source)
+            $calculationResult = $this->invoiceService->calculatePreviewTotals($validated['items'], [
+                'vat_registered' => $validated['vat_registered'] ?? false,
+                'discount' => $validated['discount'] ?? 0,
+                'discount_type' => $validated['discount_type'] ?? 'fixed',
+            ]);
 
-            // Apply discount
-            $discount = $validated['discount'] ?? 0;
-            $discountType = $validated['discount_type'] ?? 'fixed';
-            $discountAmount = 0;
-            if ($discount > 0) {
-                if ($discountType === 'percentage') {
-                    $discountAmount = $subtotal * ($discount / 100);
-                } else {
-                    $discountAmount = $discount;
-                }
-            }
-            $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
-
-            // Calculate VAT
-            $vatAmount = 0;
-            if ($validated['vat_registered'] ?? false) {
-                $vatAmount = $subtotalAfterDiscount * 0.16; // 16% VAT
-            }
-
-            $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
-            $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
-            $grandTotal = $totalBeforeFee + $platformFee;
+            // Extract values for backward compatibility
+            $subtotal = $calculationResult['subtotal'];
+            $discountAmount = $calculationResult['discount'];
+            $subtotalAfterDiscount = $calculationResult['subtotal_after_discount'];
+            $vatAmount = $calculationResult['vat_amount'];
+            $totalBeforeFee = $calculationResult['total'];
+            $platformFee = $calculationResult['platform_fee'];
+            $grandTotal = $calculationResult['grand_total'];
 
             // Format invoice data for preview - include ALL fields
             $issueDate = $validated['issue_date'] ?? now()->toDateString();
@@ -621,34 +608,22 @@ class InvoiceController extends Controller
                 'payment_details' => 'nullable|string',
             ]);
 
-            // Calculate totals
-            $subtotal = 0;
-            foreach ($validated['items'] as $item) {
-                $subtotal += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
-            }
+            // Calculate totals using service (authoritative source)
+            $calculationResult = $this->invoiceService->calculatePreviewTotals($validated['items'], [
+                'vat_registered' => $validated['vat_registered'] ?? false,
+                'discount' => $validated['discount'] ?? 0,
+                'discount_type' => $validated['discount_type'] ?? 'fixed',
+            ]);
 
-            // Apply discount
-            $discount = $validated['discount'] ?? 0;
-            $discountType = $validated['discount_type'] ?? 'fixed';
-            $discountAmount = 0;
-            if ($discount > 0) {
-                if ($discountType === 'percentage') {
-                    $discountAmount = $subtotal * ($discount / 100);
-                } else {
-                    $discountAmount = $discount;
-                }
-            }
-            $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
-
-            // Calculate VAT
-            $vatAmount = 0;
-            if ($validated['vat_registered'] ?? false) {
-                $vatAmount = $subtotalAfterDiscount * 0.16;
-            }
-
-            $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
-            $platformFee = $totalBeforeFee * 0.03;
-            $grandTotal = $totalBeforeFee + $platformFee;
+            // Extract values for backward compatibility
+            $subtotal = $calculationResult['subtotal'];
+            $discountAmount = $calculationResult['discount'];
+            $discountType = $calculationResult['discount_type'];
+            $subtotalAfterDiscount = $calculationResult['subtotal_after_discount'];
+            $vatAmount = $calculationResult['vat_amount'];
+            $totalBeforeFee = $calculationResult['total'];
+            $platformFee = $calculationResult['platform_fee'];
+            $grandTotal = $calculationResult['grand_total'];
 
             // Format invoice data for preview - include ALL fields
             $issueDate = $validated['issue_date'] ?? now()->toDateString();

@@ -16,9 +16,14 @@ class InvoiceFinalizationService
 {
     protected InvoiceSnapshotBuilder $snapshotBuilder;
 
-    public function __construct(InvoiceSnapshotBuilder $snapshotBuilder)
-    {
+    protected InvoiceCalculationService $calculationService;
+
+    public function __construct(
+        InvoiceSnapshotBuilder $snapshotBuilder,
+        InvoiceCalculationService $calculationService
+    ) {
         $this->snapshotBuilder = $snapshotBuilder;
+        $this->calculationService = $calculationService;
     }
 
     /**
