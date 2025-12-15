@@ -1015,3 +1015,10 @@ Current InvoiceHub codebase has **27 identified violations** across 6 categories
 
 This gap analysis provides the surgical map needed for disciplined, phase-by-phase implementation.
 
+Phase 3 status: complete
+All Phase 3 objectives met. The system now:
+Uses snapshot data for finalized invoice PDFs (no DB queries in views)
+Uses company-specific VAT and platform fee rates
+Pre-resolves all PDF data in controllers
+Removes all calculation logic from PDF views
+Logs PDF generation events for audit
