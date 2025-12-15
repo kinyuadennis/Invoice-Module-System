@@ -7,9 +7,10 @@ namespace App\Http\Services;
  *
  * Validates and sanitizes KRA PINs for ETIMS compliance.
  * Kenyan KRA PIN format:
- * - Individual: P-XXXXX-XXXXX-X (e.g., P051234567A)
- * - Company: A-XXXXX-XXXXX-X (e.g., A051234567A)
- * - Format: [Letter]-[5 digits]-[5 digits]-[1 alphanumeric]
+ * - Individual: P-XXXXX-XXXX-X (e.g., P051234567A = 11 characters)
+ * - Company: A-XXXXX-XXXX-X (e.g., A051234567A = 11 characters)
+ * - Format: [Letter]-[5 digits]-[4 digits]-[1 alphanumeric]
+ * - When sanitized (hyphens removed): [Letter][9 digits][1 alphanumeric] = 11 characters total
  */
 class KraPinValidator
 {
@@ -28,9 +29,9 @@ class KraPinValidator
         // Sanitize first
         $sanitized = $this->sanitize($kraPin);
 
-        // KRA PIN pattern: Letter-5digits-5digits-1alphanumeric
-        // Examples: P051234567A, A051234567A
-        $pattern = '/^[A-Z]\d{5}\d{5}[A-Z0-9]$/';
+        // KRA PIN pattern: Letter + 9 digits + 1 alphanumeric = 11 characters total
+        // Examples: P051234567A (P + 9 digits + A), A051234567A (A + 9 digits + A)
+        $pattern = '/^[A-Z]\d{9}[A-Z0-9]$/';
 
         return (bool) preg_match($pattern, $sanitized);
     }
@@ -81,7 +82,7 @@ class KraPinValidator
 
         $errors = [];
         if (! $isValid) {
-            $errors[] = 'KRA PIN format is invalid. Expected format: P-XXXXX-XXXXX-X or A-XXXXX-XXXXX-X (e.g., P051234567A).';
+            $errors[] = 'KRA PIN format is invalid. Expected format: P-XXXXX-XXXX-X or A-XXXXX-XXXX-X (e.g., P051234567A = 11 characters when sanitized).';
         }
 
         return [
