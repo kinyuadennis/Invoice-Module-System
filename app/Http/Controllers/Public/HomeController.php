@@ -196,7 +196,7 @@ class HomeController extends Controller
                 'popular' => false,
                 'features' => [
                     'Everything in Starter',
-                    'KRA eTIMS export',
+                    'KRA eTIMS export (ready)',
                     'Recurring billing',
                     'Advanced analytics',
                     'API access',

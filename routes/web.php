@@ -78,6 +78,8 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('invoices', InvoiceController::class);
         Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
+        Route::get('/invoices/{id}/export/etims', [InvoiceController::class, 'exportEtims'])->name('invoices.export-etims');
+        Route::get('/invoices/{id}/export/etims/xml', [InvoiceController::class, 'exportEtimsXml'])->name('invoices.export-etims-xml');
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
 

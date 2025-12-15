@@ -78,7 +78,7 @@
             <!-- Security Badges -->
             <div class="mt-8 pt-8 border-t border-slate-200">
                 <div class="flex flex-wrap items-center justify-center gap-6 mb-6">
-                    <x-trust.trust-badge text="KRA eTIMS Compliant" icon="shield-check" size="sm" />
+                    <x-trust.trust-badge text="KRA eTIMS Ready" icon="shield-check" size="sm" />
                     <x-trust.trust-badge text="Bank-Level Security" icon="lock-closed" size="sm" />
                     <x-trust.trust-badge text="GDPR Ready" icon="shield-check" size="sm" />
                 </div>

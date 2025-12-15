@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
+use App\Http\Services\InvoiceEtimsExportService;
 use App\Http\Services\InvoiceService;
 use App\Http\Services\InvoiceSnapshotFormatter;
 use App\Models\Client;
@@ -22,10 +23,16 @@ class InvoiceController extends Controller
 
     protected InvoiceSnapshotFormatter $snapshotFormatter;
 
-    public function __construct(InvoiceService $invoiceService, InvoiceSnapshotFormatter $snapshotFormatter)
-    {
+    protected InvoiceEtimsExportService $etimsExportService;
+
+    public function __construct(
+        InvoiceService $invoiceService,
+        InvoiceSnapshotFormatter $snapshotFormatter,
+        InvoiceEtimsExportService $etimsExportService
+    ) {
         $this->invoiceService = $invoiceService;
         $this->snapshotFormatter = $snapshotFormatter;
+        $this->etimsExportService = $etimsExportService;
     }
 
     public function index(Request $request)
@@ -423,6 +430,112 @@ class InvoiceController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Export invoice to ETIMS-compliant JSON format.
+     * Only available for finalized invoices with snapshots.
+     */
+    public function exportEtims($id)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        // Ensure invoice belongs to user's active company
+        $invoice = Invoice::where('company_id', $companyId)
+            ->with('snapshot')
+            ->findOrFail($id);
+
+        // Only finalized invoices with snapshots can be exported
+        if (! $invoice->isFinalized()) {
+            abort(404, 'Invoice must be finalized to export for ETIMS.');
+        }
+
+        if (! $invoice->snapshot) {
+            abort(404, 'Invoice snapshot not found. Cannot export for ETIMS.');
+        }
+
+        try {
+            // Generate ETIMS-compliant JSON export
+            $etimsData = $this->etimsExportService->exportToJson($invoice->snapshot);
+
+            // Log export event (for audit trail)
+            \Log::info('ETIMS export generated', [
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
+                'user_id' => auth()->id(),
+                'company_id' => $companyId,
+                'timestamp' => now()->toIso8601String(),
+            ]);
+
+            // Return JSON response with download headers
+            $filename = 'invoice-'.($invoice->invoice_number ?? $invoice->id).'-etims.json';
+
+            return response()->json($etimsData, 200, [
+                'Content-Type' => 'application/json',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            ]);
+        } catch (\RuntimeException $e) {
+            \Log::error('ETIMS export failed', [
+                'invoice_id' => $invoice->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'ETIMS export failed: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Export invoice to ETIMS-compliant XML format.
+     * Only available for finalized invoices with snapshots.
+     */
+    public function exportEtimsXml($id)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        // Ensure invoice belongs to user's active company
+        $invoice = Invoice::where('company_id', $companyId)
+            ->with('snapshot')
+            ->findOrFail($id);
+
+        // Only finalized invoices with snapshots can be exported
+        if (! $invoice->isFinalized()) {
+            abort(404, 'Invoice must be finalized to export for ETIMS.');
+        }
+
+        if (! $invoice->snapshot) {
+            abort(404, 'Invoice snapshot not found. Cannot export for ETIMS.');
+        }
+
+        try {
+            // Generate ETIMS-compliant XML export
+            $xmlContent = $this->etimsExportService->exportToXml($invoice->snapshot);
+
+            // Log export event (for audit trail)
+            \Log::info('ETIMS XML export generated', [
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
+                'user_id' => auth()->id(),
+                'company_id' => $companyId,
+                'timestamp' => now()->toIso8601String(),
+            ]);
+
+            // Return XML response with download headers
+            $filename = 'invoice-'.($invoice->invoice_number ?? $invoice->id).'-etims.xml';
+
+            return response($xmlContent, 200, [
+                'Content-Type' => 'application/xml',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            ]);
+        } catch (\RuntimeException $e) {
+            \Log::error('ETIMS XML export failed', [
+                'invoice_id' => $invoice->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'ETIMS XML export failed: '.$e->getMessage());
+        }
     }
 
     /**

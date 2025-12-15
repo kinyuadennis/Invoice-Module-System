@@ -6,7 +6,7 @@
     <!-- HERO SECTION -->
     <x-hero-enhanced
         title="Stop Chasing Payments. Get Paid in 7 Days, Not 30."
-        subtitle="Send invoices, accept M-Pesa payments, track overdue accounts. KRA eTIMS compliant. Trusted by 500+ Kenyan SMEs, freelancers, and agencies."
+        subtitle="Send invoices, accept M-Pesa payments, track overdue accounts. KRA eTIMS ready. Trusted by 500+ Kenyan SMEs, freelancers, and agencies."
         ctaPrimary="Start Free"
         ctaSecondary="Explore Features"
         :stats="$stats"

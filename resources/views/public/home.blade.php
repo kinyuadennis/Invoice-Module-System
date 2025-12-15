@@ -6,7 +6,7 @@
     <!-- HERO SECTION -->
     <x-hero.hero-split
         title="{{ $heroHeading ?? 'Professional invoicing for Kenyan businesses — compliant, simple, reliable.' }}"
-        subtitle="Send professional invoices, accept M-Pesa payments, track everything. KRA eTIMS compliant. Trusted by 500+ Kenyan businesses."
+        subtitle="Send professional invoices, accept M-Pesa payments, track everything. KRA eTIMS ready. Trusted by 500+ Kenyan businesses."
         ctaPrimary="Start Free"
         ctaPrimaryHref="{{ route('register') }}"
         ctaSecondary="Explore Features"
@@ -254,8 +254,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                     </div>
-                    <h4 class="font-bold text-slate-900 mb-2">KRA eTIMS Compliant</h4>
-                    <p class="text-sm text-slate-600">Fully compliant with Kenyan tax regulations. All invoices meet KRA requirements automatically.</p>
+                    <h4 class="font-bold text-slate-900 mb-2">KRA eTIMS Ready</h4>
+                    <p class="text-sm text-slate-600">Export invoices in eTIMS-compatible format. Ready for KRA eTIMS submission.</p>
                 </div>
                 
                 <div class="text-center p-6 bg-blue-50 rounded-lg border border-blue-100">
