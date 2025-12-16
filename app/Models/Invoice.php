@@ -129,6 +129,14 @@ class Invoice extends Model
     }
 
     /**
+     * The reminder logs for this invoice.
+     */
+    public function reminderLogs(): HasMany
+    {
+        return $this->hasMany(InvoiceReminderLog::class);
+    }
+
+    /**
      * The platform fees charged on this invoice.
      */
     public function platformFees(): HasMany

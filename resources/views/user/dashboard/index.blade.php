@@ -67,7 +67,7 @@
 
     <!-- KPI Cards -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <x-card padding="sm">
+        <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'paid']) }}'">
             <div class="flex items-center">
                 <div class="flex-shrink-0 bg-[#2B6EF6] rounded-lg p-3">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +83,7 @@
             </div>
         </x-card>
 
-        <x-card padding="sm">
+        <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'sent']) }}'">
             <div class="flex items-center">
                 <div class="flex-shrink-0 bg-yellow-500 rounded-lg p-3">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,12 +94,13 @@
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Outstanding</dt>
                         <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($stats['outstanding'] ?? 0, 2) }}</dd>
+                        <dd class="text-xs text-gray-500 mt-1">{{ $stats['outstandingCount'] ?? 0 }} invoice(s)</dd>
                     </dl>
                 </div>
             </div>
         </x-card>
 
-        <x-card padding="sm">
+        <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'overdue']) }}'">
             <div class="flex items-center">
                 <div class="flex-shrink-0 bg-red-500 rounded-lg p-3">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,12 +111,13 @@
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Overdue</dt>
                         <dd class="text-lg font-semibold text-gray-900">{{ $stats['overdueCount'] ?? 0 }}</dd>
+                        <dd class="text-xs text-red-600 mt-1">KES {{ number_format($stats['overdue'] ?? 0, 2) }}</dd>
                     </dl>
                 </div>
             </div>
         </x-card>
 
-        <x-card padding="sm">
+        <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'paid']) }}'">
             <div class="flex items-center">
                 <div class="flex-shrink-0 bg-green-500 rounded-lg p-3">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,6 +133,45 @@
             </div>
         </x-card>
     </div>
+    
+    <!-- Status Distribution & Quick Filters -->
+    @if(isset($statusDistribution) && count($statusDistribution) > 0)
+        <x-card>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Invoice Status Overview</h2>
+                <div class="flex gap-2">
+                    <a href="{{ route('user.invoices.index', ['status' => 'draft']) }}" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        Draft
+                    </a>
+                    <a href="{{ route('user.invoices.index', ['status' => 'sent']) }}" class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200">
+                        Sent
+                    </a>
+                    <a href="{{ route('user.invoices.index', ['status' => 'paid']) }}" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200">
+                        Paid
+                    </a>
+                    <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200">
+                        Overdue
+                    </a>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                @foreach($statusDistribution as $status)
+                    @if($status['count'] > 0)
+                        <div class="text-center p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                            <div class="text-2xl font-bold mb-1" style="color: {{ $status['color'] }}">
+                                {{ $status['count'] }}
+                            </div>
+                            <div class="text-sm font-medium text-gray-700 mb-1">{{ $status['name'] }}</div>
+                            <div class="text-xs text-gray-500">{{ $status['percentage'] }}%</div>
+                            <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full" style="background-color: {{ $status['color'] }}; width: {{ $status['percentage'] }}%"></div>
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </x-card>
+    @endif
 
     <!-- Alerts -->
     @if(($stats['overdueCount'] ?? 0) > 0)
@@ -179,15 +220,13 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
-                                $statusVariant = match(strtolower($invoice['status'] ?? 'draft')) {
-                                    'paid' => 'success',
-                                    'sent' => 'info',
-                                    'overdue' => 'danger',
-                                    'pending' => 'warning',
-                                    default => 'default'
-                                };
+                                $statusService = new \App\Http\Services\InvoiceStatusService();
+                                $statusVariant = $statusService::getStatusVariant($invoice['status'] ?? 'draft');
+                                $statusInfo = $statusService::getStatuses()[$invoice['status'] ?? 'draft'] ?? ['label' => ucfirst($invoice['status'] ?? 'draft')];
                             @endphp
-                            <x-badge :variant="$statusVariant">{{ ucfirst($invoice['status'] ?? 'draft') }}</x-badge>
+                            <x-badge :variant="$statusVariant" title="{{ $statusInfo['description'] ?? '' }}">
+                                {{ $statusInfo['label'] ?? ucfirst($invoice['status'] ?? 'draft') }}
+                            </x-badge>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $invoice['due_date'] ? \Carbon\Carbon::parse($invoice['due_date'])->format('M d, Y') : 'N/A' }}

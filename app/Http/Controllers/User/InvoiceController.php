@@ -192,8 +192,12 @@ class InvoiceController extends Controller
             ->with(['client', 'invoiceItems', 'payments', 'company'])
             ->findOrFail($id);
 
+        $paymentService = new \App\Http\Services\PaymentService(new \App\Http\Services\InvoiceStatusService);
+        $paymentSummary = $paymentService->getPaymentSummary($invoice);
+
         return view('user.invoices.show', [
             'invoice' => $this->invoiceService->formatInvoiceForShow($invoice),
+            'paymentSummary' => $paymentSummary,
         ]);
     }
 
@@ -230,8 +234,26 @@ class InvoiceController extends Controller
             ->with(['client', 'invoiceItems', 'company'])
             ->findOrFail($id);
 
-        // Update invoice using service
-        $this->invoiceService->updateInvoice($invoice, $request);
+        // Handle status updates separately with validation
+        if ($request->has('status')) {
+            $statusService = new \App\Http\Services\InvoiceStatusService;
+            $newStatus = $request->input('status');
+
+            if (! $statusService->updateStatus($invoice, $newStatus)) {
+                return back()->withErrors([
+                    'status' => 'Invalid status transition from '.$invoice->status.' to '.$newStatus.'.',
+                ]);
+            }
+
+            // If marking as paid, also record payment if amount provided
+            if ($newStatus === 'paid' && $request->has('payment_amount')) {
+                $paymentService = new \App\Http\Services\PaymentService(new \App\Http\Services\InvoiceStatusService);
+                $paymentService->recordPayment($invoice, $request);
+            }
+        } else {
+            // Update invoice using service (for other fields)
+            $this->invoiceService->updateInvoice($invoice, $request);
+        }
 
         // Clear dashboard cache when invoice is updated
         Cache::forget("dashboard_data_{$companyId}");
@@ -536,20 +558,51 @@ class InvoiceController extends Controller
     /**
      * Send invoice via email
      */
-    public function sendEmail($id)
+    public function sendEmail(Request $request, $id)
     {
         $companyId = CurrentCompanyService::requireId();
 
         // Ensure invoice belongs to user's company
         $invoice = Invoice::where('company_id', $companyId)
-            ->with(['client', 'invoiceItems'])
+            ->with(['client', 'invoiceItems', 'company'])
             ->findOrFail($id);
 
-        // TODO: Implement email sending
-        // Queue email job for later implementation
+        // Validate invoice can be sent
+        if ($invoice->status === 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot send an invoice that is already paid.',
+            ], 422);
+        }
+
+        if (! $invoice->client) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invoice must have a client before sending.',
+            ], 422);
+        }
+
+        if (! $invoice->client->email) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Client must have an email address to send invoice.',
+            ], 422);
+        }
+
+        // Update status to 'sent' if it's currently 'draft'
+        if ($invoice->status === 'draft') {
+            $statusService = new \App\Http\Services\InvoiceStatusService;
+            $statusService->markAsSent($invoice);
+            $invoice->refresh();
+        }
+
+        // Queue email job with PDF attachment
+        \App\Jobs\SendInvoiceEmailJob::dispatch($invoice);
+
         return response()->json([
             'success' => true,
-            'message' => 'Email queued for sending',
+            'message' => 'Invoice email has been queued for sending.',
+            'status' => $invoice->status,
         ]);
     }
 
@@ -1108,5 +1161,47 @@ class InvoiceController extends Controller
                 'error' => 'An error occurred while saving the draft: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Record a payment for an invoice.
+     */
+    public function recordPayment(Request $request, $id)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        // Ensure invoice belongs to user's company
+        $invoice = Invoice::where('company_id', $companyId)
+            ->with(['client', 'payments'])
+            ->findOrFail($id);
+
+        // Validate invoice can receive payment
+        if ($invoice->status === 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This invoice is already fully paid.',
+            ], 422);
+        }
+
+        if ($invoice->status === 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot record payment for a cancelled invoice.',
+            ], 422);
+        }
+
+        $paymentService = new \App\Http\Services\PaymentService(new \App\Http\Services\InvoiceStatusService);
+        $payment = $paymentService->recordPayment($invoice, $request);
+
+        // Clear dashboard cache
+        Cache::forget("dashboard_data_{$companyId}");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment recorded successfully.',
+            'payment' => $payment,
+            'payment_summary' => $paymentService->getPaymentSummary($invoice->fresh()),
+            'invoice_status' => $invoice->fresh()->status,
+        ]);
     }
 }

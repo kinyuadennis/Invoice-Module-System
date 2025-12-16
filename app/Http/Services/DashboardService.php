@@ -39,6 +39,7 @@ class DashboardService
                     'recentInvoices' => $this->getRecentInvoices($companyId),
                     'statusDistribution' => $this->getStatusDistribution($companyId),
                     'alerts' => $this->getAlerts($companyId, $stats), // Pass stats to avoid recalculation
+                    'statusBreakdown' => $this->getStatusBreakdown($companyId),
                 ];
             } catch (\Exception $e) {
                 return $this->getEmptyData();
@@ -169,6 +170,30 @@ class DashboardService
                 'bgColor' => $colors['bgColor'],
             ];
         })->values()->toArray();
+    }
+
+    /**
+     * Get status breakdown with counts and amounts
+     *
+     * @param  int  $companyId  Company ID to scope invoices
+     */
+    protected function getStatusBreakdown(int $companyId): array
+    {
+        $breakdown = [];
+        $statuses = ['draft', 'sent', 'paid', 'overdue', 'cancelled'];
+
+        foreach ($statuses as $status) {
+            $query = Invoice::where('company_id', $companyId)->where('status', $status);
+            $count = $query->count();
+            $amount = (float) (clone $query)->sum('grand_total');
+
+            $breakdown[$status] = [
+                'count' => $count,
+                'amount' => $amount,
+            ];
+        }
+
+        return $breakdown;
     }
 
     /**

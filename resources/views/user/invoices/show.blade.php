@@ -10,13 +10,70 @@
             <h1 class="text-3xl font-bold text-gray-900">Invoice {{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}</h1>
             <p class="mt-1 text-sm text-gray-600">View and manage invoice details</p>
         </div>
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 flex-wrap gap-2">
+            <!-- Primary Actions -->
             <a href="{{ route('user.invoices.pdf', $invoice['id']) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
                 Download PDF
             </a>
+            
+            <!-- Status-based Actions -->
+            @if(($invoice['status'] ?? 'draft') === 'draft')
+                <a href="{{ route('user.invoices.edit', $invoice['id']) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit
+                </a>
+                @if(isset($invoice['client']) && isset($invoice['client']['email']))
+                    <button 
+                        onclick="sendInvoiceEmail({{ $invoice['id'] }})"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Send Invoice
+                    </button>
+                @endif
+            @elseif(($invoice['status'] ?? 'draft') === 'sent' || ($invoice['status'] ?? 'draft') === 'overdue')
+                <button 
+                    onclick="sendInvoiceEmail({{ $invoice['id'] }})"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    title="Resend invoice email"
+                >
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Resend
+                </button>
+                <form method="POST" action="{{ route('user.invoices.update', $invoice['id']) }}" class="inline">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="status" value="paid">
+                    <x-button type="submit" variant="primary">
+                        <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Mark as Paid
+                    </x-button>
+                </form>
+                <form method="POST" action="{{ route('user.invoices.update', $invoice['id']) }}" class="inline">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="status" value="cancelled">
+                    <x-button type="submit" variant="outline" onclick="return confirm('Are you sure you want to cancel this invoice?')">
+                        <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancel
+                    </x-button>
+                </form>
+            @endif
+            
+            <!-- Secondary Actions -->
             <form method="POST" action="{{ route('user.invoices.duplicate', $invoice['id']) }}" class="inline">
                 @csrf
                 <x-button type="submit" variant="outline" title="Create a copy of this invoice">
@@ -26,20 +83,75 @@
                     Duplicate
                 </x-button>
             </form>
-            @if(($invoice['status'] ?? 'draft') === 'draft')
-                <a href="{{ route('user.invoices.edit', $invoice['id']) }}">
-                    <x-button variant="outline">Edit</x-button>
-                </a>
-            @endif
-            @if(($invoice['status'] ?? 'draft') !== 'paid')
-                <form method="POST" action="{{ route('user.invoices.update', $invoice['id']) }}" class="inline">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="status" value="paid">
-                    <x-button type="submit" variant="primary">Mark as Paid</x-button>
-                </form>
-            @endif
         </div>
+        
+        @push('scripts')
+        <script>
+        function sendInvoiceEmail(invoiceId) {
+            if (!confirm('Send this invoice via email to the client?')) return;
+            
+            fetch(`/app/invoices/${invoiceId}/send-email`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Invoice sent successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to send invoice'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to send invoice. Please try again.');
+            });
+        }
+        
+        function openRecordPaymentModal() {
+            document.getElementById('record-payment-modal').classList.remove('hidden');
+        }
+        
+        function closeRecordPaymentModal() {
+            document.getElementById('record-payment-modal').classList.add('hidden');
+            document.getElementById('record-payment-form').reset();
+        }
+        
+        function recordPayment(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const invoiceId = {{ $invoice['id'] }};
+            
+            fetch(`/app/invoices/${invoiceId}/record-payment`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Payment recorded successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to record payment'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to record payment. Please try again.');
+            });
+        }
+        </script>
+        @endpush
     </div>
 
     <!-- Invoice Details -->
@@ -53,15 +165,20 @@
                         <p class="text-sm text-gray-600">Invoice #{{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}</p>
                     </div>
                     @php
-                        $statusVariant = match(strtolower($invoice['status'] ?? 'draft')) {
-                            'paid' => 'success',
-                            'sent' => 'info',
-                            'overdue' => 'danger',
-                            'pending' => 'warning',
-                            default => 'default'
-                        };
+                        $statusService = new \App\Http\Services\InvoiceStatusService();
+                        $statusVariant = $statusService::getStatusVariant($invoice['status'] ?? 'draft');
+                        $statusInfo = $statusService::getStatuses()[$invoice['status'] ?? 'draft'] ?? ['label' => ucfirst($invoice['status'] ?? 'draft')];
                     @endphp
-                    <x-badge :variant="$statusVariant">{{ ucfirst($invoice['status'] ?? 'draft') }}</x-badge>
+                    <div class="flex items-center gap-2">
+                        <x-badge :variant="$statusVariant" title="{{ $statusInfo['description'] ?? '' }}">
+                            {{ $statusInfo['label'] ?? ucfirst($invoice['status'] ?? 'draft') }}
+                        </x-badge>
+                        @if(($invoice['status'] ?? 'draft') === 'overdue')
+                            <span class="text-xs text-red-600 font-medium">
+                                {{ \Carbon\Carbon::parse($invoice['due_date'])->diffForHumans() }}
+                            </span>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-6 mb-6">
@@ -155,23 +272,182 @@
                 </x-card>
             @endif
 
-            <!-- Payments -->
-            @if(isset($invoice['payments']) && count($invoice['payments']) > 0)
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Payments</h2>
-                    <div class="space-y-3">
-                        @foreach($invoice['payments'] as $payment)
-                            <div class="flex items-center justify-between text-sm">
-                                <div>
-                                    <p class="font-medium text-gray-900">KES {{ number_format($payment['amount'] ?? 0, 2) }}</p>
-                                    <p class="text-gray-600">{{ $payment['payment_date'] ? \Carbon\Carbon::parse($payment['payment_date'])->format('M d, Y') : 'N/A' }}</p>
-                                </div>
-                                <x-badge variant="success">Paid</x-badge>
-                            </div>
-                        @endforeach
+            <!-- Payment Summary & Recording -->
+            @php
+                $paymentSummary = $paymentSummary ?? null;
+                $totalPaid = $paymentSummary['total_paid'] ?? 0;
+                $invoiceTotal = $paymentSummary['invoice_total'] ?? ($invoice['grand_total'] ?? 0);
+                $remaining = $paymentSummary['remaining'] ?? max(0, $invoiceTotal - $totalPaid);
+                $isFullyPaid = $paymentSummary['is_fully_paid'] ?? ($totalPaid >= $invoiceTotal);
+            @endphp
+            
+            <x-card>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Payment Summary</h2>
+                    @if(!$isFullyPaid && ($invoice['status'] ?? 'draft') !== 'cancelled' && ($invoice['status'] ?? 'draft') !== 'draft')
+                        <button 
+                            onclick="openRecordPaymentModal()"
+                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Record Payment
+                        </button>
+                    @endif
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Payment Progress -->
+                    <div>
+                        <div class="flex items-center justify-between text-sm mb-2">
+                            <span class="text-gray-600">Total Paid</span>
+                            <span class="font-semibold text-gray-900">KES {{ number_format($totalPaid, 2) }} / KES {{ number_format($invoiceTotal, 2) }}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div 
+                                class="h-full rounded-full transition-all duration-300 {{ $isFullyPaid ? 'bg-green-500' : 'bg-blue-500' }}"
+                                style="width: {{ $invoiceTotal > 0 ? min(100, ($totalPaid / $invoiceTotal) * 100) : 0 }}%"
+                            ></div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mt-1">
+                            <span>{{ $paymentSummary['payment_percentage'] ?? 0 }}% paid</span>
+                            @if(!$isFullyPaid)
+                                <span class="text-red-600 font-medium">KES {{ number_format($remaining, 2) }} remaining</span>
+                            @endif
+                        </div>
                     </div>
-                </x-card>
-            @endif
+                    
+                    <!-- Payment History -->
+                    @if(isset($invoice['payments']) && count($invoice['payments']) > 0)
+                        <div class="border-t border-gray-200 pt-4">
+                            <h3 class="text-sm font-semibold text-gray-900 mb-3">Payment History</h3>
+                            <div class="space-y-3">
+                                @foreach($invoice['payments'] as $payment)
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <p class="font-medium text-gray-900">KES {{ number_format($payment['amount'] ?? 0, 2) }}</p>
+                                                @if(isset($payment['payment_method']))
+                                                    <span class="text-xs text-gray-500">via {{ $payment['payment_method'] }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="flex items-center gap-3 text-xs text-gray-500">
+                                                <span>{{ $payment['payment_date'] ? \Carbon\Carbon::parse($payment['payment_date'])->format('M d, Y') : 'N/A' }}</span>
+                                                @if(isset($payment['mpesa_reference']))
+                                                    <span>Ref: {{ $payment['mpesa_reference'] }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <x-badge variant="success">Paid</x-badge>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="text-center py-4 text-sm text-gray-500 border-t border-gray-200">
+                            No payments recorded yet
+                        </div>
+                    @endif
+                </div>
+            </x-card>
+            
+            <!-- Record Payment Modal -->
+            <div 
+                id="record-payment-modal" 
+                class="fixed inset-0 z-50 overflow-y-auto hidden"
+                onclick="if(event.target === this) closeRecordPaymentModal()"
+            >
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
+                    
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <form id="record-payment-form" onsubmit="recordPayment(event)">
+                            @csrf
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900">Record Payment</h3>
+                                    <button type="button" onclick="closeRecordPaymentModal()" class="text-gray-400 hover:text-gray-600">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
+                                        <input 
+                                            type="number"
+                                            name="amount"
+                                            step="0.01"
+                                            min="0.01"
+                                            max="{{ $remaining }}"
+                                            value="{{ $remaining }}"
+                                            required
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        >
+                                        <p class="text-xs text-gray-500 mt-1">Remaining: KES {{ number_format($remaining, 2) }}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
+                                        <input 
+                                            type="date"
+                                            name="payment_date"
+                                            value="{{ date('Y-m-d') }}"
+                                            required
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        >
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                                        <select 
+                                            name="payment_method"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        >
+                                            <option value="">Select method...</option>
+                                            <option value="M-Pesa">M-Pesa</option>
+                                            <option value="Bank Transfer">Bank Transfer</option>
+                                            <option value="Cash">Cash</option>
+                                            <option value="Cheque">Cheque</option>
+                                            <option value="Credit Card">Credit Card</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+                                        <input 
+                                            type="text"
+                                            name="mpesa_reference"
+                                            placeholder="e.g., M-Pesa transaction code"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button 
+                                    type="submit"
+                                    class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                >
+                                    Record Payment
+                                </button>
+                                <button 
+                                    type="button"
+                                    onclick="closeRecordPaymentModal()"
+                                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
