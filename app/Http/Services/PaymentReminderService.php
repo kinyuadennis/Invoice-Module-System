@@ -18,8 +18,15 @@ class PaymentReminderService
     /**
      * Send payment reminders for invoices that are due soon or overdue.
      */
-    public function sendReminders(int $companyId, ?int $daysBeforeDue = 3): int
+    public function sendReminders(int $companyId, ?int $daysBeforeDue = null): int
     {
+        $company = \App\Models\Company::find($companyId);
+        if (! $company) {
+            return 0;
+        }
+
+        // Use company's preference or fallback to default
+        $daysBeforeDue = $daysBeforeDue ?? $company->reminder_days_before_due ?? 3;
         $reminderCount = 0;
         $today = Carbon::today();
         $dueSoonDate = $today->copy()->addDays($daysBeforeDue);
@@ -45,7 +52,8 @@ class PaymentReminderService
             ->get();
 
         foreach ($invoices as $invoice) {
-            if ($this->shouldSendReminder($invoice)) {
+            // sendReminder will check both email and SMS preferences
+            if ($this->shouldSendReminder($invoice, 'email') || $this->shouldSendReminder($invoice, 'sms')) {
                 try {
                     $this->sendReminder($invoice);
                     $reminderCount++;
@@ -61,21 +69,40 @@ class PaymentReminderService
     /**
      * Check if a reminder should be sent for this invoice.
      */
-    protected function shouldSendReminder(Invoice $invoice): bool
+    protected function shouldSendReminder(Invoice $invoice, string $channel = 'email'): bool
     {
-        // Don't send if client has no email
-        if (! $invoice->client || ! $invoice->client->email) {
-            return false;
-        }
+        $company = $invoice->company;
 
         // Don't send if invoice is already paid
         if ($invoice->status === 'paid') {
             return false;
         }
 
-        // Check if reminder was already sent recently (within last 7 days)
+        // Check company preferences
+        if ($channel === 'email' && (! $company->reminder_enable_email ?? true)) {
+            return false;
+        }
+
+        if ($channel === 'sms' && (! $company->reminder_enable_sms ?? false)) {
+            return false;
+        }
+
+        // Validate recipient contact info
+        if ($channel === 'email' && (! $invoice->client || ! $invoice->client->email)) {
+            return false;
+        }
+
+        if ($channel === 'sms' && (! $invoice->client || ! $invoice->client->phone)) {
+            return false;
+        }
+
+        // Check if reminder was already sent recently
         $reminderType = $invoice->due_date && $invoice->due_date->isPast() ? 'overdue' : 'due_soon';
-        if (\App\Models\InvoiceReminderLog::wasSentRecently($invoice->id, $reminderType, 7)) {
+        $frequencyDays = $reminderType === 'overdue'
+            ? ($company->overdue_reminder_frequency_days ?? 3)
+            : ($company->reminder_frequency_days ?? 7);
+
+        if (\App\Models\InvoiceReminderLog::wasSentRecently($invoice->id, $reminderType, $channel, $frequencyDays)) {
             return false;
         }
 
@@ -95,8 +122,17 @@ class PaymentReminderService
             $this->statusService->updateStatus($invoice, 'overdue');
         }
 
-        // Queue email job
-        \App\Jobs\SendPaymentReminderJob::dispatch($invoice, $reminderType);
+        $company = $invoice->company;
+
+        // Send email reminder if enabled
+        if ($this->shouldSendReminder($invoice, 'email')) {
+            \App\Jobs\SendPaymentReminderJob::dispatch($invoice, $reminderType);
+        }
+
+        // Send SMS reminder if enabled
+        if ($this->shouldSendReminder($invoice, 'sms')) {
+            \App\Jobs\SendPaymentReminderSmsJob::dispatch($invoice, $reminderType);
+        }
     }
 
     /**

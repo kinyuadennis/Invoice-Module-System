@@ -34,11 +34,29 @@ class Company extends Model
         'client_invoice_format',
         'use_client_specific_numbering',
         'settings',
+        'email_template_invoice_sent_subject',
+        'email_template_invoice_sent_body',
+        'email_template_payment_reminder_subject',
+        'email_template_payment_reminder_body',
+        'use_custom_email_templates',
+        'reminder_days_before_due',
+        'reminder_enable_email',
+        'reminder_enable_sms',
+        'reminder_frequency_days',
+        'overdue_reminder_frequency_days',
+        'reminder_send_time',
     ];
 
     protected $casts = [
         'settings' => 'array',
         'use_client_specific_numbering' => 'boolean',
+        'use_custom_email_templates' => 'boolean',
+        'reminder_enable_email' => 'boolean',
+        'reminder_enable_sms' => 'boolean',
+        'reminder_days_before_due' => 'integer',
+        'reminder_frequency_days' => 'integer',
+        'overdue_reminder_frequency_days' => 'integer',
+        'reminder_send_time' => 'datetime',
     ];
 
     /**

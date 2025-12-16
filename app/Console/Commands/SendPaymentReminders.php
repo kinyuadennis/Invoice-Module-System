@@ -12,7 +12,7 @@ class SendPaymentReminders extends Command
      *
      * @var string
      */
-    protected $signature = 'invoices:send-reminders {--days=3 : Number of days before due date to send reminder}';
+    protected $signature = 'invoices:send-reminders {--days= : Number of days before due date to send reminder (uses company preference if not specified)}';
 
     /**
      * The console command description.
@@ -26,9 +26,13 @@ class SendPaymentReminders extends Command
      */
     public function handle(PaymentReminderService $reminderService): int
     {
-        $daysBeforeDue = (int) $this->option('days');
+        $daysBeforeDue = $this->option('days') !== null ? (int) $this->option('days') : null;
 
-        $this->info("Sending payment reminders (reminding {$daysBeforeDue} days before due date)...");
+        if ($daysBeforeDue !== null) {
+            $this->info("Sending payment reminders (reminding {$daysBeforeDue} days before due date)...");
+        } else {
+            $this->info('Sending payment reminders (using company-specific preferences)...');
+        }
 
         // First, check and update overdue invoices (null means all companies)
         $overdueCount = $reminderService->checkAndUpdateOverdue(null);
@@ -36,7 +40,7 @@ class SendPaymentReminders extends Command
             $this->info("Updated {$overdueCount} invoices to overdue status.");
         }
 
-        // Send reminders for all companies
+        // Send reminders for all companies (will use company preferences if daysBeforeDue is null)
         $results = $reminderService->sendRemindersForAllCompanies($daysBeforeDue);
         $totalSent = array_sum($results);
 

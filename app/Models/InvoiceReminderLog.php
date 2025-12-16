@@ -11,8 +11,10 @@ class InvoiceReminderLog extends Model
         'invoice_id',
         'company_id',
         'reminder_type',
+        'channel',
         'sent_at',
         'recipient_email',
+        'recipient_phone',
         'sent_successfully',
         'error_message',
     ];
@@ -41,10 +43,11 @@ class InvoiceReminderLog extends Model
     /**
      * Check if a reminder was sent recently (within X days).
      */
-    public static function wasSentRecently(int $invoiceId, string $reminderType, int $days = 7): bool
+    public static function wasSentRecently(int $invoiceId, string $reminderType, string $channel = 'email', int $days = 7): bool
     {
         return self::where('invoice_id', $invoiceId)
             ->where('reminder_type', $reminderType)
+            ->where('channel', $channel)
             ->where('sent_successfully', true)
             ->where('sent_at', '>=', now()->subDays($days))
             ->exists();
