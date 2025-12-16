@@ -45,6 +45,14 @@
         </p>
         @endif
 
+        @if(isset($accessUrl) && $accessUrl)
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ $accessUrl }}" style="display: inline-block; background-color: #2B6EF6; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                View & Pay Invoice Online
+            </a>
+        </div>
+        @endif
+
         <p>If you have any questions about this invoice, please don't hesitate to contact us.</p>
 
         <p>Thank you for your business!</p>

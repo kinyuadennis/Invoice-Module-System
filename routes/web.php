@@ -18,6 +18,21 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes (no prefix)
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Webhooks (no CSRF protection needed)
+Route::prefix('webhooks')->name('webhooks.')->group(function () {
+    Route::post('/stripe', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'stripe'])->name('stripe');
+    Route::post('/mpesa/callback', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'mpesa'])->name('mpesa');
+});
+
+// Customer Portal (token-based access, no authentication required)
+Route::prefix('invoice')->name('customer.invoices.')->group(function () {
+    Route::get('/{token}', [\App\Http\Controllers\Customer\InvoiceController::class, 'show'])->name('show');
+    Route::post('/{token}/pay/stripe', [\App\Http\Controllers\Customer\InvoiceController::class, 'payStripe'])->name('pay.stripe');
+    Route::post('/{token}/pay/mpesa', [\App\Http\Controllers\Customer\InvoiceController::class, 'payMpesa'])->name('pay.mpesa');
+    Route::get('/{token}/payment-status', [\App\Http\Controllers\Customer\InvoiceController::class, 'paymentStatus'])->name('payment-status');
+});
+
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
 
@@ -104,6 +119,24 @@ Route::middleware('auth')->group(function () {
         Route::post('/recurring-invoices/{recurringInvoice}/resume', [\App\Http\Controllers\User\RecurringInvoiceController::class, 'resume'])->name('recurring-invoices.resume');
         Route::post('/recurring-invoices/{recurringInvoice}/cancel', [\App\Http\Controllers\User\RecurringInvoiceController::class, 'cancel'])->name('recurring-invoices.cancel');
         Route::post('/recurring-invoices/{recurringInvoice}/generate', [\App\Http\Controllers\User\RecurringInvoiceController::class, 'generate'])->name('recurring-invoices.generate');
+
+        // Reports
+        Route::get('/reports', [\App\Http\Controllers\User\ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/revenue', [\App\Http\Controllers\User\ReportController::class, 'revenue'])->name('reports.revenue');
+        Route::get('/reports/invoices', [\App\Http\Controllers\User\ReportController::class, 'invoices'])->name('reports.invoices');
+        Route::get('/reports/payments', [\App\Http\Controllers\User\ReportController::class, 'payments'])->name('reports.payments');
+        Route::get('/reports/export/invoices-csv', [\App\Http\Controllers\User\ReportController::class, 'exportInvoicesCsv'])->name('reports.export.invoices-csv');
+        Route::get('/reports/export/revenue-csv', [\App\Http\Controllers\User\ReportController::class, 'exportRevenueCsv'])->name('reports.export.revenue-csv');
+
+        // Payment Gateway
+        Route::post('/invoices/{invoice}/pay/stripe', [\App\Http\Controllers\User\PaymentGatewayController::class, 'initiateStripe'])->name('invoices.pay.stripe');
+        Route::post('/invoices/{invoice}/pay/mpesa', [\App\Http\Controllers\User\PaymentGatewayController::class, 'initiateMpesa'])->name('invoices.pay.mpesa');
+        Route::get('/invoices/{invoice}/payment-status', [\App\Http\Controllers\User\PaymentGatewayController::class, 'checkStatus'])->name('invoices.payment-status');
+
+        // eTIMS Export
+        Route::get('/invoices/{invoice}/etims/export', [\App\Http\Controllers\User\EtimsController::class, 'export'])->name('invoices.etims.export');
+        Route::post('/invoices/{invoice}/etims/generate-qr', [\App\Http\Controllers\User\EtimsController::class, 'generateQrCode'])->name('invoices.etims.generate-qr');
+        Route::post('/invoices/{invoice}/etims/submit', [\App\Http\Controllers\User\EtimsController::class, 'submit'])->name('invoices.etims.submit');
 
         Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
         Route::get('/clients/search', [\App\Http\Controllers\User\ClientController::class, 'search'])->name('clients.search');

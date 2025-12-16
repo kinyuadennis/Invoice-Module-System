@@ -15,12 +15,18 @@ class Payment extends Model
         'payment_method',
         'mpesa_reference',
         'paid_at',
+        'gateway',
+        'gateway_transaction_id',
+        'gateway_payment_intent_id',
+        'gateway_metadata',
+        'gateway_status',
     ];
 
     protected $casts = [
         'payment_date' => 'date',
         'paid_at' => 'datetime',
         'amount' => 'decimal:2',
+        'gateway_metadata' => 'array',
     ];
 
     /**

@@ -39,6 +39,10 @@ class Invoice extends Model
         'total',
         'grand_total',
         'uuid',
+        'etims_control_number',
+        'etims_qr_code',
+        'etims_submitted_at',
+        'etims_metadata',
     ];
 
     /**
@@ -59,6 +63,8 @@ class Invoice extends Model
             'platform_fee' => 'decimal:2',
             'total' => 'decimal:2',
             'grand_total' => 'decimal:2',
+            'etims_submitted_at' => 'datetime',
+            'etims_metadata' => 'array',
         ];
     }
 
@@ -135,6 +141,14 @@ class Invoice extends Model
     public function reminderLogs(): HasMany
     {
         return $this->hasMany(InvoiceReminderLog::class);
+    }
+
+    /**
+     * Access tokens for this invoice.
+     */
+    public function accessTokens(): HasMany
+    {
+        return $this->hasMany(InvoiceAccessToken::class);
     }
 
     /**

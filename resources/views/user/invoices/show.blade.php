@@ -86,7 +86,12 @@
         </div>
         
         @push('scripts')
+        <script src="https://js.stripe.com/v3/"></script>
         <script>
+        @if(config('services.stripe.key'))
+        const stripe = Stripe('{{ config('services.stripe.key') }}');
+        @endif
+
         function sendInvoiceEmail(invoiceId) {
             if (!confirm('Send this invoice via email to the client?')) return;
             
@@ -149,6 +154,154 @@
                 console.error('Error:', error);
                 alert('Failed to record payment. Please try again.');
             });
+        }
+
+        @if(config('services.stripe.key'))
+        function initiateStripePayment(invoiceId) {
+            const button = document.getElementById('stripe-pay-button');
+            if (!button) return;
+            
+            button.disabled = true;
+            const originalHTML = button.innerHTML;
+            button.innerHTML = 'Processing...';
+
+            fetch(`/app/invoices/${invoiceId}/pay/stripe`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.client_secret) {
+                    // Show payment modal
+                    showStripePaymentModal(data.client_secret, invoiceId, button, originalHTML);
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to initiate payment'));
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+            });
+        }
+
+        function showStripePaymentModal(clientSecret, invoiceId, button, originalHTML) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+            modal.id = 'stripe-payment-modal';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                    <h3 class="text-lg font-semibold mb-4">Complete Payment</h3>
+                    <div id="stripe-card-element" class="mb-4 p-3 border rounded"></div>
+                    <div id="stripe-card-errors" class="text-red-600 text-sm mb-4"></div>
+                    <div class="flex gap-2">
+                        <button id="stripe-submit" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Pay Now</button>
+                        <button onclick="document.getElementById('stripe-payment-modal').remove(); ${button ? `button.disabled = false; button.innerHTML = originalHTML;` : ''}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            const elements = stripe.elements();
+            const cardElement = elements.create('card');
+            cardElement.mount('#stripe-card-element');
+
+            document.getElementById('stripe-submit').addEventListener('click', function() {
+                this.disabled = true;
+                this.textContent = 'Processing...';
+                
+                stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                    }
+                }).then(function(result) {
+                    if (result.error) {
+                        document.getElementById('stripe-card-errors').textContent = result.error.message;
+                        document.getElementById('stripe-submit').disabled = false;
+                        document.getElementById('stripe-submit').textContent = 'Pay Now';
+                    } else {
+                        modal.remove();
+                        alert('Payment successful!');
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+        @endif
+
+        function initiateMpesaPayment(invoiceId) {
+            const phoneNumber = prompt('Enter your M-Pesa phone number (e.g., 0712345678):');
+            if (!phoneNumber) return;
+
+            const button = document.getElementById('mpesa-pay-button');
+            if (!button) return;
+            
+            button.disabled = true;
+            const originalHTML = button.innerHTML;
+            button.innerHTML = 'Sending STK Push...';
+
+            fetch(`/app/invoices/${invoiceId}/pay/mpesa`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ phone_number: phoneNumber }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'STK Push sent to your phone. Please complete the payment on your phone.');
+                    // Poll for payment status
+                    pollPaymentStatus(invoiceId);
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to initiate payment'));
+                    button.disabled = false;
+                    button.innerHTML = originalHTML;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+            });
+        }
+
+        function pollPaymentStatus(invoiceId) {
+            let attempts = 0;
+            const maxAttempts = 30; // Poll for 30 seconds
+
+            const interval = setInterval(() => {
+                attempts++;
+                fetch(`/app/invoices/${invoiceId}/payment-status`, {
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.payment && data.payment.gateway_status === 'completed') {
+                        clearInterval(interval);
+                        alert('Payment successful!');
+                        window.location.reload();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        alert('Payment is still processing. Please refresh the page to check status.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking payment status:', error);
+                });
+            }, 1000); // Check every second
         }
         </script>
         @endpush
@@ -296,6 +449,48 @@
                         </button>
                     @endif
                 </div>
+
+                <!-- Payment Gateway Buttons -->
+                @if(!$isFullyPaid && ($invoice['status'] ?? 'draft') !== 'cancelled' && ($invoice['status'] ?? 'draft') !== 'draft')
+                    @php
+                        $stripeEnabled = config('services.stripe.key') && config('services.stripe.secret');
+                        $mpesaEnabled = config('services.mpesa.consumer_key') && config('services.mpesa.consumer_secret') && config('services.mpesa.shortcode') && config('services.mpesa.passkey');
+                    @endphp
+                    @if($stripeEnabled || $mpesaEnabled)
+                        <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <h3 class="text-sm font-medium text-gray-900 mb-3">Pay Online</h3>
+                            <div class="space-y-2">
+                                <!-- Stripe Payment Button -->
+                                @if($stripeEnabled)
+                                <button 
+                                    id="stripe-pay-button"
+                                    onclick="initiateStripePayment({{ $invoice['id'] }})"
+                                    class="w-full px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l-2.788 6.916c-.767 1.456-1.915 2.178-3.424 2.178-.76 0-1.427-.18-1.988-.535l.576-4.415c.255-.921.394-1.31 1.424-1.661zm-2.543-4.94c-1.98-.81-3.356-1.9-3.356-3.282 0-1.044.911-1.528 2.125-1.528 1.667 0 3.376.858 4.536 1.631l-2.788 6.916c-.73 1.456-1.96 2.178-3.41 2.178-.76 0-1.427-.18-1.988-.535L5.149 4.21z"/>
+                                    </svg>
+                                    Pay with Card (Stripe)
+                                </button>
+                                @endif
+
+                                <!-- M-Pesa Payment Button -->
+                                @if($mpesaEnabled)
+                                <button 
+                                    id="mpesa-pay-button"
+                                    onclick="initiateMpesaPayment({{ $invoice['id'] }})"
+                                    class="w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                    </svg>
+                                    Pay with M-Pesa
+                                </button>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                @endif
                 
                 <div class="space-y-4">
                     <!-- Payment Progress -->

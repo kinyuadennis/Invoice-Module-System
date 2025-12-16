@@ -49,4 +49,25 @@ return [
         ],
     ],
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+
+    'mpesa' => [
+        'consumer_key' => env('MPESA_CONSUMER_KEY'),
+        'consumer_secret' => env('MPESA_CONSUMER_SECRET'),
+        'shortcode' => env('MPESA_SHORTCODE'),
+        'passkey' => env('MPESA_PASSKEY'),
+        'environment' => env('MPESA_ENVIRONMENT', 'sandbox'), // 'sandbox' or 'production'
+        'callback_url' => env('MPESA_CALLBACK_URL', env('APP_URL').'/webhooks/mpesa/callback'),
+    ],
+
+    'etims' => [
+        'api_url' => env('ETIMS_API_URL'),
+        'api_key' => env('ETIMS_API_KEY'),
+        'mode' => env('ETIMS_MODE', 'local'), // 'local' or 'api' - local generates QR codes, api submits to KRA
+    ],
+
 ];

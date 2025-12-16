@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Services\InvoiceAccessTokenService;
 use App\Http\Services\InvoiceService;
 use App\Mail\InvoiceSentMail;
 use App\Models\Invoice;
@@ -44,9 +45,14 @@ class SendInvoiceEmailJob implements ShouldQueue
             // Generate PDF
             $pdfPath = $this->generatePdf($invoiceService);
 
+            // Generate access token for customer portal
+            $tokenService = app(InvoiceAccessTokenService::class);
+            $accessToken = $tokenService->generateToken($this->invoice);
+            $accessUrl = $tokenService->getAccessUrl($accessToken);
+
             // Send email
             Mail::to($this->invoice->client->email)
-                ->send(new InvoiceSentMail($this->invoice, $pdfPath));
+                ->send(new InvoiceSentMail($this->invoice, $pdfPath, $accessUrl));
 
             // Log successful send
             InvoiceReminderLog::create([

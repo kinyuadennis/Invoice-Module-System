@@ -19,7 +19,8 @@ class InvoiceSentMail extends Mailable
      */
     public function __construct(
         public Invoice $invoice,
-        public string $pdfPath
+        public string $pdfPath,
+        public ?string $accessUrl = null
     ) {}
 
     /**
@@ -61,6 +62,7 @@ class InvoiceSentMail extends Mailable
             'invoiceNumber' => $invoiceNumber,
             'total' => $total,
             'dueDate' => $dueDate,
+            'accessUrl' => $this->accessUrl,
         ];
 
         if ($company && $company->use_custom_email_templates && $company->email_template_invoice_sent_body) {
