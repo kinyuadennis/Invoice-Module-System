@@ -3,50 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Services\DashboardService;
-use App\Models\Client;
+use App\Http\Services\AdminDashboardService;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\PlatformFee;
-use App\Models\User;
 
 class DashboardController extends Controller
 {
-    public function __invoke(DashboardService $dashboardService)
+    public function __invoke(AdminDashboardService $adminDashboardService)
     {
-        // Get admin-specific stats (all data)
-        $stats = [
-            'totalCompanies' => Company::count(),
-            'totalUsers' => User::count(),
-            'totalClients' => Client::count(),
-            'totalInvoices' => Invoice::count(),
-            'totalRevenue' => Invoice::where('status', 'paid')->sum('grand_total'),
-            'pendingInvoices' => Invoice::where('status', 'sent')->count(),
-            'overdueInvoices' => Invoice::where('status', 'overdue')->count(),
-            'platformFeesCollected' => PlatformFee::where('fee_status', 'paid')->sum('fee_amount'),
-        ];
+        // Get comprehensive dashboard statistics
+        $dashboardData = $adminDashboardService->getDashboardStats();
 
         // Top companies by revenue
-        $topCompanies = Company::with('owner')
-            ->withCount(['users', 'clients', 'invoices'])
-            ->get()
-            ->map(function ($company) {
-                $revenue = $company->invoices()
-                    ->where('status', 'paid')
-                    ->sum('grand_total');
-
-                return [
-                    'id' => $company->id,
-                    'name' => $company->name,
-                    'logo' => $company->logo,
-                    'revenue' => (float) $revenue,
-                    'invoices_count' => $company->invoices_count,
-                    'users_count' => $company->users_count,
-                ];
-            })
-            ->sortByDesc('revenue')
-            ->take(5)
-            ->values();
+        $topCompanies = $adminDashboardService->getTopCompanies(5);
 
         // Recent companies
         $recentCompanies = Company::with('owner')
@@ -63,6 +33,7 @@ class DashboardController extends Controller
                 ];
             });
 
+        // Recent invoices
         $recentInvoices = Invoice::with(['client', 'user', 'company'])
             ->latest()
             ->limit(10)
@@ -85,10 +56,17 @@ class DashboardController extends Controller
             });
 
         return view('admin.dashboard.index', [
-            'stats' => $stats,
+            'stats' => $dashboardData['overview'],
+            'revenue' => $dashboardData['revenue'],
+            'invoices' => $dashboardData['invoices'],
+            'companies' => $dashboardData['companies'],
+            'users' => $dashboardData['users'],
+            'monthlyTrends' => $dashboardData['monthlyTrends'],
+            'invoiceStatusDistribution' => $dashboardData['invoiceStatusDistribution'],
             'topCompanies' => $topCompanies,
             'recentCompanies' => $recentCompanies,
             'recentInvoices' => $recentInvoices,
+            'platformFeesCollected' => PlatformFee::where('fee_status', 'paid')->sum('fee_amount'),
         ]);
     }
 }

@@ -63,13 +63,47 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, $id)
     {
+        $user = User::findOrFail($id);
+
+        // Prevent changing admin role if it's the last admin
+        if ($request->has('role') && $user->role === 'admin' && $request->role !== 'admin') {
+            $adminCount = User::where('role', 'admin')->count();
+            if ($adminCount <= 1) {
+                return back()->withErrors([
+                    'role' => 'Cannot remove the last admin user.',
+                ]);
+            }
+        }
+
+        // Prevent changing your own role
+        if ($user->id === auth()->id() && $request->has('role') && $request->role !== auth()->user()->role) {
+            return back()->withErrors([
+                'role' => 'You cannot change your own role.',
+            ]);
+        }
+
+        $oldValues = $user->toArray();
         $user = $this->userService->updateUser($id, $request->validated());
+        $newValues = $user->fresh()->toArray();
+
+        // Log the user update
+        \App\Models\AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'updated',
+            'model_type' => User::class,
+            'model_id' => $user->id,
+            'description' => "Updated user {$user->name} (ID: {$user->id})",
+            'old_values' => $oldValues,
+            'new_values' => $newValues,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
@@ -80,7 +114,31 @@ class UserController extends Controller
             ]);
         }
 
+        // Prevent deleting the last admin
+        if ($user->role === 'admin') {
+            $adminCount = User::where('role', 'admin')->count();
+            if ($adminCount <= 1) {
+                return back()->withErrors([
+                    'message' => 'Cannot delete the last admin user.',
+                ]);
+            }
+        }
+
+        $userData = $user->toArray();
         $user->delete();
+
+        // Log the user deletion
+        \App\Models\AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'model_type' => User::class,
+            'model_id' => $id,
+            'description' => "Deleted user {$userData['name']} (ID: {$id})",
+            'old_values' => $userData,
+            'new_values' => null,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User deleted successfully.');

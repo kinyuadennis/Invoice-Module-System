@@ -2,6 +2,10 @@
 
 @section('title', 'Admin Dashboard')
 
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@endpush
+
 @section('content')
 <div class="space-y-6">
     <!-- Page Header -->
@@ -91,10 +95,94 @@
                 </div>
             </div>
         </x-card>
+
+        @if(isset($revenue))
+        <x-card padding="sm">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-emerald-500 rounded-md p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">This Month Revenue</dt>
+                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($revenue['thisMonth'] ?? 0, 2) }}</dd>
+                        @if(isset($revenue['monthOverMonth']))
+                        <dd class="text-xs {{ $revenue['monthOverMonth'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                            {{ $revenue['monthOverMonth'] >= 0 ? '+' : '' }}{{ number_format($revenue['monthOverMonth'], 1) }}% vs last month
+                        </dd>
+                        @endif
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+        @endif
+
+        <x-card padding="sm">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">Overdue Invoices</dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ $stats['overdueInvoices'] ?? 0 }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+
+        <x-card padding="sm">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-orange-500 rounded-md p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">Pending Invoices</dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ $stats['pendingInvoices'] ?? 0 }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Monthly Revenue Trend -->
+        @if(isset($monthlyTrends) && count($monthlyTrends) > 0)
+        <x-card>
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Monthly Revenue Trend</h2>
+                <p class="text-sm text-gray-600">Last 12 months</p>
+            </div>
+            <div class="p-6">
+                <canvas id="revenueChart" height="100"></canvas>
+            </div>
+        </x-card>
+        @endif
+
+        <!-- Invoice Status Distribution -->
+        @if(isset($invoiceStatusDistribution) && count($invoiceStatusDistribution) > 0)
+        <x-card>
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Invoice Status Distribution</h2>
+                <p class="text-sm text-gray-600">Current invoice statuses</p>
+            </div>
+            <div class="p-6">
+                <canvas id="statusChart" height="100"></canvas>
+            </div>
+        </x-card>
+        @endif
     </div>
 
     <!-- Top Companies -->
-    @if(isset($topCompanies) && $topCompanies->count() > 0)
+    @if(isset($topCompanies) && count($topCompanies) > 0)
         <x-card padding="none">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <div>
@@ -108,7 +196,7 @@
                     <div class="px-6 py-4 hover:bg-gray-50">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
-                                @if($company['logo'])
+                                @if(isset($company['logo']) && $company['logo'])
                                     <img src="{{ Storage::url($company['logo']) }}" alt="{{ $company['name'] }}" class="h-10 w-10 rounded-full object-cover">
                                 @else
                                     <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -119,11 +207,11 @@
                                     <a href="{{ route('admin.companies.show', $company['id']) }}" class="text-sm font-medium text-gray-900 hover:text-indigo-600">
                                         {{ $company['name'] }}
                                     </a>
-                                    <p class="text-xs text-gray-500">{{ $company['invoices_count'] }} invoices, {{ $company['users_count'] }} users</p>
+                                    <p class="text-xs text-gray-500">{{ $company['invoices_count'] ?? 0 }} invoices, {{ $company['users_count'] ?? 0 }} users</p>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm font-semibold text-gray-900">KES {{ number_format($company['revenue'], 2) }}</p>
+                                <p class="text-sm font-semibold text-gray-900">KES {{ number_format($company['revenue'] ?? 0, 2) }}</p>
                             </div>
                         </div>
                     </div>
@@ -237,5 +325,94 @@
         @endif
     </x-card>
 </div>
-@endsection
 
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Monthly Revenue Chart
+    @if(isset($monthlyTrends) && count($monthlyTrends) > 0)
+    const revenueCtx = document.getElementById('revenueChart');
+    if (revenueCtx) {
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: @json(array_column($monthlyTrends, 'month')),
+                datasets: [{
+                    label: 'Revenue (KES)',
+                    data: @json(array_column($monthlyTrends, 'revenue')),
+                    borderColor: 'rgb(99, 102, 241)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'KES ' + new Intl.NumberFormat('en-KE').format(context.parsed.y);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'KES ' + new Intl.NumberFormat('en-KE').format(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    @endif
+
+    // Invoice Status Distribution Chart
+    @if(isset($invoiceStatusDistribution) && count($invoiceStatusDistribution) > 0)
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        const statusData = @json($invoiceStatusDistribution);
+        const statusColors = {
+            'draft': 'rgb(156, 163, 175)',
+            'sent': 'rgb(59, 130, 246)',
+            'paid': 'rgb(34, 197, 94)',
+            'overdue': 'rgb(239, 68, 68)',
+            'cancelled': 'rgb(168, 85, 247)',
+            'void': 'rgb(107, 114, 128)',
+            'uncollectible': 'rgb(249, 115, 22)'
+        };
+
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(statusData),
+                datasets: [{
+                    data: Object.values(statusData),
+                    backgroundColor: Object.keys(statusData).map(status => statusColors[status.toLowerCase()] || 'rgb(156, 163, 175)')
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    @endif
+});
+</script>
+@endpush
+@endsection

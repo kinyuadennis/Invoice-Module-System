@@ -124,6 +124,37 @@ class Company extends Model
     }
 
     /**
+     * The subscriptions for this company.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(CompanySubscription::class);
+    }
+
+    /**
+     * Get the active subscription.
+     */
+    public function activeSubscription(): ?CompanySubscription
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('ends_at')
+                    ->orWhere('ends_at', '>', now());
+            })
+            ->latest()
+            ->first();
+    }
+
+    /**
+     * Billing history for this company.
+     */
+    public function billingHistory(): HasMany
+    {
+        return $this->hasMany(BillingHistory::class);
+    }
+
+    /**
      * All invoice prefixes for this company.
      */
     public function invoicePrefixes(): HasMany

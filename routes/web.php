@@ -154,5 +154,15 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class)->except(['create', 'store']);
         Route::get('/platform-fees', [PlatformFeeController::class, 'index'])->name('platform-fees.index');
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::get('/system-settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'index'])->name('system-settings.index');
+        Route::put('/system-settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'update'])->name('system-settings.update');
+        Route::resource('audit-logs', \App\Http\Controllers\Admin\AuditLogController::class)->only(['index', 'show']);
+        Route::get('/billing/plans', [\App\Http\Controllers\Admin\BillingController::class, 'plans'])->name('billing.plans');
+        Route::get('/billing/subscriptions', [\App\Http\Controllers\Admin\BillingController::class, 'subscriptions'])->name('billing.subscriptions');
+        Route::get('/billing/subscriptions/{id}', [\App\Http\Controllers\Admin\BillingController::class, 'showSubscription'])->name('billing.subscriptions.show');
+        Route::get('/billing/history', [\App\Http\Controllers\Admin\BillingController::class, 'history'])->name('billing.history');
+        Route::get('/system-settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'index'])->name('system-settings.index');
+        Route::put('/system-settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'update'])->name('system-settings.update');
+        Route::resource('audit-logs', \App\Http\Controllers\Admin\AuditLogController::class)->only(['index', 'show']);
     });
 });
