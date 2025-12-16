@@ -78,7 +78,7 @@
                             </a>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $billing->plan->name }}
+                            {{ $billing->plan->name ?? 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{ $billing->currency }} {{ number_format($billing->amount, 2) }}

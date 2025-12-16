@@ -14,6 +14,7 @@ class Invoice extends Model
         'template_id',
         'client_id',
         'user_id',
+        'recurring_invoice_id',
         'status',
         'invoice_reference',
         'prefix_used',
@@ -150,6 +151,14 @@ class Invoice extends Model
     public function template(): BelongsTo
     {
         return $this->belongsTo(InvoiceTemplate::class, 'template_id');
+    }
+
+    /**
+     * The recurring invoice template that generated this invoice.
+     */
+    public function recurringInvoice(): BelongsTo
+    {
+        return $this->belongsTo(RecurringInvoice::class);
     }
 
     /**

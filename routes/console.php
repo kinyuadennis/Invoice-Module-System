@@ -19,4 +19,11 @@ return function (Schedule $schedule): void {
         ->timezone('Africa/Nairobi')
         ->withoutOverlapping()
         ->runInBackground();
+
+    // Generate recurring invoices daily at 8:00 AM
+    $schedule->command('invoices:generate-recurring')
+        ->dailyAt('08:00')
+        ->timezone('Africa/Nairobi')
+        ->withoutOverlapping()
+        ->runInBackground();
 };

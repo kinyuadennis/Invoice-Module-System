@@ -98,6 +98,13 @@ Route::middleware('auth')->group(function () {
         Route::delete('/invoices/templates/{id}', [InvoiceController::class, 'deleteTemplate'])->name('invoices.templates.delete');
         Route::post('/invoices/templates/{id}/toggle-favorite', [InvoiceController::class, 'toggleFavorite'])->name('invoices.templates.toggle-favorite');
 
+        // Recurring invoices
+        Route::resource('recurring-invoices', \App\Http\Controllers\User\RecurringInvoiceController::class);
+        Route::post('/recurring-invoices/{recurringInvoice}/pause', [\App\Http\Controllers\User\RecurringInvoiceController::class, 'pause'])->name('recurring-invoices.pause');
+        Route::post('/recurring-invoices/{recurringInvoice}/resume', [\App\Http\Controllers\User\RecurringInvoiceController::class, 'resume'])->name('recurring-invoices.resume');
+        Route::post('/recurring-invoices/{recurringInvoice}/cancel', [\App\Http\Controllers\User\RecurringInvoiceController::class, 'cancel'])->name('recurring-invoices.cancel');
+        Route::post('/recurring-invoices/{recurringInvoice}/generate', [\App\Http\Controllers\User\RecurringInvoiceController::class, 'generate'])->name('recurring-invoices.generate');
+
         Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
         Route::get('/clients/search', [\App\Http\Controllers\User\ClientController::class, 'search'])->name('clients.search');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
