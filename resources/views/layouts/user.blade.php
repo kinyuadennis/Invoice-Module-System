@@ -100,41 +100,76 @@
 
                     <div class="flex-1"></div>
 
-                    <!-- Company Switcher -->
-                    @if(isset($companies) && $companies->count() > 1)
-                        <div class="flex items-center space-x-4 mr-4" x-data="{ open: false }">
+                    <!-- Enhanced Company Switcher - Always visible -->
+                    @if(isset($activeCompany) && isset($companies))
+                        <div class="flex items-center space-x-4 mr-4" 
+                             x-data="{ 
+                                 open: false,
+                                 init() {
+                                     // Keyboard shortcut: Cmd/Ctrl + K
+                                     document.addEventListener('keydown', (e) => {
+                                         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                                             e.preventDefault();
+                                             this.open = !this.open;
+                                         }
+                                     });
+                                 }
+                             }"
+                             id="company-switcher">
                             <div class="relative">
-                                <button @click="open = !open" class="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus-visible:outline-2 focus-visible:outline-[#2B6EF6] focus-visible:outline-offset-2 transition-colors duration-150">
+                                <button 
+                                    @click="open = !open" 
+                                    class="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:border-[#2B6EF6] hover:bg-blue-50 focus:outline-none focus-visible:outline-2 focus-visible:outline-[#2B6EF6] focus-visible:outline-offset-2 transition-all duration-150 shadow-sm hover:shadow-md"
+                                    title="Switch Company (⌘K / Ctrl+K)">
                                     @if($activeCompany?->logo)
-                                        <img src="{{ Storage::url($activeCompany->logo) }}" alt="{{ $activeCompany->name }}" class="h-6 w-6 rounded object-contain">
+                                        <img src="{{ Storage::url($activeCompany->logo) }}" alt="{{ $activeCompany->name }}" class="h-7 w-7 rounded object-contain ring-2 ring-gray-100">
                                     @else
-                                        <div class="h-6 w-6 rounded bg-[#2B6EF6] flex items-center justify-center text-white text-xs font-semibold">
+                                        <div class="h-7 w-7 rounded bg-[#2B6EF6] flex items-center justify-center text-white text-xs font-semibold ring-2 ring-blue-100">
                                             {{ strtoupper(substr($activeCompany?->name ?? 'C', 0, 1)) }}
                                         </div>
                                     @endif
-                                    <span class="hidden md:block">{{ $activeCompany?->name ?? 'Select Company' }}</span>
+                                    <span class="hidden md:block font-semibold">{{ $activeCompany?->name ?? 'Select Company' }}</span>
                                     <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
+                                    @if($companies->count() > 1)
+                                        <span class="hidden lg:inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $companies->count() }}
+                                        </span>
+                                    @endif
                                 </button>
 
-                                <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200 max-h-96 overflow-y-auto">
+                                <div 
+                                    x-show="open" 
+                                    @click.away="open = false" 
+                                    x-cloak 
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-200 max-h-96 overflow-y-auto">
                                     <div class="px-4 py-2 border-b border-gray-200">
+                                        <div class="flex items-center justify-between">
                                         <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Switch Company</p>
+                                            <span class="text-xs text-gray-400">⌘K / Ctrl+K</span>
+                                        </div>
                                     </div>
+                                    @if($companies->count() > 0)
                                     @foreach($companies as $company)
                                         <form method="POST" action="{{ route('user.company.switch') }}" class="company-switch-form">
                                             @csrf
                                             <input type="hidden" name="company_id" value="{{ $company->id }}">
-                                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 {{ $company->id === $activeCompany?->id ? 'bg-blue-50 text-[#2B6EF6]' : '' }}">
+                                                <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3 {{ $company->id === $activeCompany?->id ? 'bg-blue-50 text-[#2B6EF6] border-l-2 border-[#2B6EF6]' : '' }}">
                                                 @if($company->logo)
-                                                    <img src="{{ Storage::url($company->logo) }}" alt="{{ $company->name }}" class="h-5 w-5 rounded object-contain">
+                                                        <img src="{{ Storage::url($company->logo) }}" alt="{{ $company->name }}" class="h-6 w-6 rounded object-contain">
                                                 @else
-                                                    <div class="h-5 w-5 rounded bg-[#2B6EF6] flex items-center justify-center text-white text-xs font-semibold">
+                                                        <div class="h-6 w-6 rounded bg-[#2B6EF6] flex items-center justify-center text-white text-xs font-semibold">
                                                         {{ strtoupper(substr($company->name, 0, 1)) }}
                                                     </div>
                                                 @endif
-                                                <span class="flex-1">{{ $company->name }}</span>
+                                                    <span class="flex-1 font-medium">{{ $company->name }}</span>
                                                 @if($company->id === $activeCompany?->id)
                                                     <svg class="h-4 w-4 text-[#2B6EF6]" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -143,8 +178,18 @@
                                             </button>
                                         </form>
                                     @endforeach
-                                    <div class="px-4 py-2 border-t border-gray-200">
-                                        <a href="{{ route('user.companies.index') }}" class="block px-2 py-1.5 text-xs font-semibold text-[#2B6EF6] hover:text-[#2563EB]">Manage Companies</a>
+                                    @else
+                                        <div class="px-4 py-3 text-sm text-gray-500 text-center">
+                                            No companies found
+                                        </div>
+                                    @endif
+                                    <div class="px-4 py-2 border-t border-gray-200 space-y-1">
+                                        <a href="{{ route('user.companies.create') }}" class="block px-2 py-1.5 text-xs font-semibold text-[#2B6EF6] hover:text-[#2563EB] hover:bg-blue-50 rounded">
+                                            + Add New Company
+                                        </a>
+                                        <a href="{{ route('user.companies.index') }}" class="block px-2 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded">
+                                            Manage Companies
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -234,6 +279,8 @@
             </div>
         </div>
     </div>
+    
+    @stack('scripts')
 </body>
 </html>
 

@@ -267,6 +267,158 @@ class InvoiceController extends Controller
     }
 
     /**
+     * Duplicate an existing invoice as a new draft.
+     */
+    public function duplicate($id)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        // Ensure invoice belongs to user's active company
+        $originalInvoice = Invoice::where('company_id', $companyId)
+            ->with(['client', 'invoiceItems', 'company'])
+            ->findOrFail($id);
+
+        // Create a new draft invoice with copied data
+        $newInvoice = $originalInvoice->replicate();
+        $newInvoice->status = 'draft';
+        $newInvoice->invoice_reference = null; // Will be regenerated
+        $newInvoice->invoice_number = null;
+        $newInvoice->full_number = null;
+        $newInvoice->prefix_used = null;
+        $newInvoice->serial_number = null;
+        $newInvoice->client_sequence = null;
+        $newInvoice->issue_date = now()->toDateString();
+        $newInvoice->due_date = now()->addDays(30)->toDateString();
+        $newInvoice->save();
+
+        // Copy invoice items
+        foreach ($originalInvoice->invoiceItems as $item) {
+            $newItem = $item->replicate();
+            $newItem->invoice_id = $newInvoice->id;
+            $newItem->save();
+        }
+
+        // Clear dashboard cache
+        Cache::forget("dashboard_data_{$companyId}");
+
+        // Redirect to edit the new invoice
+        return redirect()->route('user.invoices.edit', $newInvoice->id)
+            ->with('success', 'Invoice duplicated successfully. You can now edit the new draft.');
+    }
+
+    /**
+     * Save current invoice as a template.
+     */
+    public function saveAsTemplate(Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'template_data' => 'required|array',
+            'is_favorite' => 'nullable|boolean',
+        ]);
+
+        $template = \App\Models\UserInvoiceTemplate::create([
+            'user_id' => $user->id,
+            'company_id' => $companyId,
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'template_data' => $validated['template_data'],
+            'is_favorite' => $validated['is_favorite'] ?? false,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Template saved successfully.',
+            'template' => $template,
+        ]);
+    }
+
+    /**
+     * Get all templates for the current company.
+     */
+    public function getTemplates(Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+        $user = $request->user();
+
+        $templates = \App\Models\UserInvoiceTemplate::forCompany($companyId)
+            ->where('user_id', $user->id)
+            ->orderBy('is_favorite', 'desc')
+            ->mostUsed()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'templates' => $templates,
+        ]);
+    }
+
+    /**
+     * Load a template.
+     */
+    public function loadTemplate($id)
+    {
+        $companyId = CurrentCompanyService::requireId();
+        $user = $request->user();
+
+        $template = \App\Models\UserInvoiceTemplate::forCompany($companyId)
+            ->where('user_id', $user->id)
+            ->findOrFail($id);
+
+        // Record usage
+        $template->recordUsage();
+
+        return response()->json([
+            'success' => true,
+            'template_data' => $template->template_data,
+        ]);
+    }
+
+    /**
+     * Delete a template.
+     */
+    public function deleteTemplate($id)
+    {
+        $companyId = CurrentCompanyService::requireId();
+        $user = $request->user();
+
+        $template = \App\Models\UserInvoiceTemplate::forCompany($companyId)
+            ->where('user_id', $user->id)
+            ->findOrFail($id);
+
+        $template->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Template deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Toggle favorite status of a template.
+     */
+    public function toggleFavorite($id)
+    {
+        $companyId = CurrentCompanyService::requireId();
+        $user = $request->user();
+
+        $template = \App\Models\UserInvoiceTemplate::forCompany($companyId)
+            ->where('user_id', $user->id)
+            ->findOrFail($id);
+
+        $template->update(['is_favorite' => ! $template->is_favorite]);
+
+        return response()->json([
+            'success' => true,
+            'is_favorite' => $template->is_favorite,
+        ]);
+    }
+
+    /**
      * Generate PDF for invoice
      */
     public function generatePdf($id)

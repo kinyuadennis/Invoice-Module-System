@@ -86,8 +86,16 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('invoices', InvoiceController::class);
         Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
+        Route::post('/invoices/{id}/duplicate', [InvoiceController::class, 'duplicate'])->name('invoices.duplicate');
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
+
+        // Template routes
+        Route::post('/invoices/save-as-template', [InvoiceController::class, 'saveAsTemplate'])->name('invoices.save-as-template');
+        Route::get('/invoices/templates', [InvoiceController::class, 'getTemplates'])->name('invoices.templates');
+        Route::get('/invoices/templates/{id}/load', [InvoiceController::class, 'loadTemplate'])->name('invoices.templates.load');
+        Route::delete('/invoices/templates/{id}', [InvoiceController::class, 'deleteTemplate'])->name('invoices.templates.delete');
+        Route::post('/invoices/templates/{id}/toggle-favorite', [InvoiceController::class, 'toggleFavorite'])->name('invoices.templates.toggle-favorite');
 
         Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
         Route::get('/clients/search', [\App\Http\Controllers\User\ClientController::class, 'search'])->name('clients.search');

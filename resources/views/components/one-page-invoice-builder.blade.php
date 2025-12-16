@@ -6,20 +6,71 @@
     @keydown.ctrl.s.prevent="saveDraft()"
     @keydown.meta.s.prevent="saveDraft()"
 >
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <!-- Enhanced Header with Quick Actions -->
+    <div class="flex items-center justify-between mb-6 bg-white rounded-lg border border-gray-200 shadow-sm p-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">New Invoice</h1>
+            <p class="text-sm text-gray-500 mt-1">Create and send professional invoices in minutes</p>
         </div>
-        <div class="flex items-center gap-3">
-            <span x-show="autosaveStatus === 'saving'" class="text-sm text-gray-500 flex items-center gap-2">
+        <div class="flex items-center gap-4">
+            <!-- Enhanced Autosave Status -->
+            <div class="flex items-center gap-2">
+                <span x-show="autosaveStatus === 'saving'" class="text-sm text-gray-500 flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg">
                 <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Saving...
+                    Saving draft...
             </span>
-            <span x-show="autosaveStatus === 'saved'" class="text-sm text-green-600">✓ Saved</span>
+                <span x-show="autosaveStatus === 'saved'" class="text-sm text-green-600 flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-lg">
+                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Draft saved
+                </span>
+                <span x-show="autosaveStatus === 'idle' && draftId" class="text-xs text-gray-400 px-3 py-1.5">
+                    Draft #<span x-text="draftId"></span>
+                </span>
+            </div>
+            
+            <!-- Quick Actions Toolbar -->
+            <div class="flex items-center gap-2 border-l border-gray-200 pl-4">
+                <button 
+                    @click="openTemplateLibrary()" 
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    title="Load Template"
+                >
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Templates
+                </button>
+                <button 
+                    @click="saveDraft()" 
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    title="Save Draft (Ctrl+S / Cmd+S)"
+                >
+                    Save Draft
+                </button>
+                <button 
+                    @click="showPreview = !showPreview; if (showPreview) updatePreview()" 
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    title="Toggle Preview (Ctrl+P / Cmd+P)"
+                >
+                    <span x-show="!showPreview">Preview</span>
+                    <span x-show="showPreview">Hide Preview</span>
+                </button>
+                <button 
+                    @click="openSaveTemplateModal()" 
+                    class="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                    title="Save as Template"
+                >
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save Template
+                </button>
+            </div>
         </div>
     </div>
 
@@ -130,7 +181,7 @@
                         <input 
                             type="date"
                             x-model="formData.due_date"
-                            @change="if (showPreview) updatePreview()"
+                            @change="triggerAutosave(); if (showPreview) updatePreview()"
                             :min="formData.issue_date"
                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             required
@@ -148,17 +199,24 @@
                             </button>
                         </div>
                         <div class="flex gap-2">
+                            <div class="flex-1 relative">
                             <input 
                                 type="text"
                                 x-model="formData.invoice_number"
                                 :placeholder="!formData.invoice_number ? (formData.client_id ? 'Generating invoice number...' : '{{ $nextInvoiceNumber }}') : ''"
                                 readonly
-                                class="flex-1 rounded-lg border-gray-300 bg-gray-50 shadow-sm"
+                                    class="w-full rounded-lg border-gray-300 bg-gray-50 shadow-sm pr-10"
                             >
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20" x-show="formData.invoice_number">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
                             <button 
                                 type="button"
                                 @click="$dispatch('open-invoice-config')"
-                                class="px-3 py-2 text-gray-600 hover:text-gray-700 border border-gray-300 rounded-lg"
+                                class="px-3 py-2 text-gray-600 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                                 title="Configure Invoice Number"
                             >
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +225,20 @@
                                 </svg>
                             </button>
                         </div>
-                        <p class="mt-1 text-xs text-gray-500">Auto-generated</p>
+                        <div class="mt-1 flex items-center justify-between">
+                            <p class="text-xs text-gray-500">
+                                <span x-show="formData.invoice_number" class="text-green-600 font-medium">Preview: <span x-text="formData.invoice_number"></span></span>
+                                <span x-show="!formData.invoice_number" class="text-gray-500">Auto-generated when finalized</span>
+                            </p>
+                            <button 
+                                type="button"
+                                @click="refreshInvoiceNumber()"
+                                class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                title="Refresh invoice number"
+                            >
+                                Refresh
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Order Number</label>
@@ -209,6 +280,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-8"></th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
@@ -218,7 +290,20 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <template x-for="(item, index) in formData.items" :key="index">
-                                <tr>
+                                <tr 
+                                    draggable="true"
+                                    @dragstart="draggedItemIndex = index"
+                                    @dragover.prevent="handleDragOver($event, index)"
+                                    @drop.prevent="handleDrop($event, index)"
+                                    @dragend="draggedItemIndex = null"
+                                    :class="{ 'opacity-50': draggedItemIndex === index }"
+                                    class="cursor-move hover:bg-gray-50 transition-colors"
+                                >
+                                    <td class="px-4 py-3 text-gray-400 cursor-grab active:cursor-grabbing">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                                        </svg>
+                                    </td>
                                     <td class="px-4 py-3">
                                         <div class="relative">
                                             <input 
@@ -266,7 +351,7 @@
                                         <input 
                                             type="number"
                                             x-model="item.quantity"
-                                            @input="calculateItemTotal(index); if (showPreview) updatePreview()"
+                                            @input="calculateItemTotal(index); triggerAutosave(); if (showPreview) updatePreview()"
                                             min="0.01"
                                             step="0.01"
                                             class="w-20 border-0 focus:ring-0 p-0 text-sm text-right"
@@ -277,7 +362,7 @@
                                         <input 
                                             type="number"
                                             x-model="item.unit_price"
-                                            @input="calculateItemTotal(index); if (showPreview) updatePreview()"
+                                            @input="calculateItemTotal(index); triggerAutosave(); if (showPreview) updatePreview()"
                                             min="0"
                                             step="0.01"
                                             class="w-24 border-0 focus:ring-0 p-0 text-sm text-right"
@@ -472,6 +557,72 @@
     
     <!-- Listen for invoice config updates -->
     <div @invoice-config-updated.window="refreshInvoiceNumber()"></div>
+    
+    <!-- Template Library Modal -->
+    <div 
+        x-show="showTemplateLibrary" 
+        x-cloak
+        class="fixed inset-0 z-50 overflow-y-auto"
+        @click.away="showTemplateLibrary = false"
+    >
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="showTemplateLibrary = false"></div>
+            
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Invoice Templates</h3>
+                        <button @click="showTemplateLibrary = false" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                        <template x-for="template in templates" :key="template.id">
+                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="font-medium text-gray-900" x-text="template.name"></h4>
+                                    <button 
+                                        @click="toggleFavorite(template.id)"
+                                        class="text-yellow-400 hover:text-yellow-500"
+                                        :class="{ 'text-yellow-500': template.is_favorite }"
+                                    >
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-500 mb-3" x-text="template.description || 'No description'"></p>
+                                <div class="flex items-center justify-between text-xs text-gray-400 mb-3">
+                                    <span>Used <span x-text="template.usage_count"></span> times</span>
+                                    <span x-text="template.last_used_at ? new Date(template.last_used_at).toLocaleDateString() : 'Never'"></span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button 
+                                        @click="loadTemplate(template.id)"
+                                        class="flex-1 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                                    >
+                                        Load
+                                    </button>
+                                    <button 
+                                        @click="deleteTemplate(template.id)"
+                                        class="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="templates.length === 0" class="col-span-full text-center py-8 text-gray-500">
+                            No templates saved yet. Create one by clicking "Save Template" in the toolbar.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -558,11 +709,30 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
         },
 
         startAutosave() {
+            // Periodic autosave (every 30 seconds as backup)
             this.autosaveInterval = setInterval(() => {
                 if (this.formData.items.length > 0 && this.formData.items[0].description) {
                     this.autosave();
                 }
-            }, 15000); // Every 15 seconds
+            }, 30000); // Every 30 seconds
+            
+            // Enhanced: Autosave on field changes (debounced)
+            // This is handled by @input.debounce on individual fields
+        },
+        
+        // Debounced autosave trigger (called from field changes)
+        triggerAutosave() {
+            // Clear any existing timeout
+            if (this.autosaveTimeout) {
+                clearTimeout(this.autosaveTimeout);
+            }
+            
+            // Set new timeout for debounced autosave (2 seconds after last change)
+            this.autosaveTimeout = setTimeout(() => {
+                if (this.formData.items.length > 0 && this.formData.items[0].description) {
+                    this.autosave();
+                }
+            }, 2000);
         },
 
         async searchClients() {
@@ -1021,6 +1191,193 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
                 }
             } catch (error) {
                 console.error('Error refreshing invoice number:', error);
+            }
+        },
+        
+        // Drag and Drop handlers
+        handleDragOver(event, index) {
+            if (this.draggedItemIndex === null || this.draggedItemIndex === index) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+        },
+        
+        handleDrop(event, targetIndex) {
+            event.preventDefault();
+            if (this.draggedItemIndex === null || this.draggedItemIndex === targetIndex) return;
+            
+            // Reorder items
+            const items = [...this.formData.items];
+            const draggedItem = items[this.draggedItemIndex];
+            items.splice(this.draggedItemIndex, 1);
+            items.splice(targetIndex, 0, draggedItem);
+            this.formData.items = items;
+            
+            // Trigger autosave and recalculate
+            this.calculateTotals();
+            this.triggerAutosave();
+            if (this.showPreview) this.updatePreview();
+            
+            this.draggedItemIndex = null;
+        },
+        
+        // Template functions
+        async openTemplateLibrary() {
+            this.showTemplateLibrary = true;
+            await this.loadTemplates();
+        },
+        
+        async loadTemplates() {
+            try {
+                const csrfToken = this.getCsrfToken();
+                const response = await fetch('{{ route("user.invoices.templates") }}', {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.templates = data.templates || [];
+                }
+            } catch (error) {
+                console.error('Error loading templates:', error);
+            }
+        },
+        
+        async loadTemplate(templateId) {
+            try {
+                const csrfToken = this.getCsrfToken();
+                const response = await fetch(`{{ route("user.invoices.templates.load", ":id") }}`.replace(':id', templateId), {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.template_data) {
+                        // Load template data into form
+                        if (data.template_data.items) {
+                            this.formData.items = data.template_data.items;
+                        }
+                        if (data.template_data.client_id) {
+                            this.formData.client_id = data.template_data.client_id;
+                            // Find and select client
+                            const client = this.clients.find(c => c.id === data.template_data.client_id);
+                            if (client) this.selectClient(client);
+                        }
+                        if (data.template_data.notes) {
+                            this.formData.notes = data.template_data.notes;
+                        }
+                        if (data.template_data.terms_and_conditions) {
+                            this.formData.terms_and_conditions = data.template_data.terms_and_conditions;
+                        }
+                        if (data.template_data.po_number) {
+                            this.formData.po_number = data.template_data.po_number;
+                        }
+                        if (data.template_data.vat_registered !== undefined) {
+                            this.formData.vat_registered = data.template_data.vat_registered;
+                        }
+                        
+                        // Recalculate totals
+                        this.calculateTotals();
+                        this.showTemplateLibrary = false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading template:', error);
+                alert('Failed to load template. Please try again.');
+            }
+        },
+        
+        openSaveTemplateModal() {
+            this.showSaveTemplateModal = true;
+        },
+        
+        async saveAsTemplate() {
+            const name = prompt('Enter template name:');
+            if (!name || !name.trim()) return;
+            
+            const description = prompt('Enter template description (optional):') || '';
+            
+            try {
+                const csrfToken = this.getCsrfToken();
+                const response = await fetch('{{ route("user.invoices.save-as-template") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name.trim(),
+                        description: description.trim(),
+                        template_data: {
+                            items: this.formData.items.filter(item => item.description && item.description.trim() !== ''),
+                            client_id: this.formData.client_id,
+                            notes: this.formData.notes,
+                            terms_and_conditions: this.formData.terms_and_conditions,
+                            po_number: this.formData.po_number,
+                            vat_registered: this.formData.vat_registered,
+                        },
+                    }),
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert('Template saved successfully!');
+                    this.showSaveTemplateModal = false;
+                    await this.loadTemplates();
+                } else {
+                    const error = await response.json();
+                    alert('Failed to save template: ' + (error.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving template:', error);
+                alert('Failed to save template. Please try again.');
+            }
+        },
+        
+        async deleteTemplate(templateId) {
+            if (!confirm('Are you sure you want to delete this template?')) return;
+            
+            try {
+                const csrfToken = this.getCsrfToken();
+                const response = await fetch(`{{ route("user.invoices.templates.delete", ":id") }}`.replace(':id', templateId), {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    await this.loadTemplates();
+                }
+            } catch (error) {
+                console.error('Error deleting template:', error);
+                alert('Failed to delete template. Please try again.');
+            }
+        },
+        
+        async toggleFavorite(templateId) {
+            try {
+                const csrfToken = this.getCsrfToken();
+                const response = await fetch(`{{ route("user.invoices.templates.toggle-favorite", ":id") }}`.replace(':id', templateId), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    await this.loadTemplates();
+                }
+            } catch (error) {
+                console.error('Error toggling favorite:', error);
             }
         }
     }

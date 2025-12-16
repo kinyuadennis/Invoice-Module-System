@@ -129,13 +129,19 @@
                         </td>
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
-                                <a href="{{ route('user.invoices.show', $invoice['id']) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
-                                <a href="{{ route('user.invoices.edit', $invoice['id']) }}" class="text-gray-600 hover:text-gray-900">Edit</a>
+                                <a href="{{ route('user.invoices.show', $invoice['id']) }}" class="text-indigo-600 hover:text-indigo-900" title="View">View</a>
+                                @if(($invoice['status'] ?? 'draft') === 'draft')
+                                    <a href="{{ route('user.invoices.edit', $invoice['id']) }}" class="text-gray-600 hover:text-gray-900" title="Edit">Edit</a>
+                                @endif
+                                <form method="POST" action="{{ route('user.invoices.duplicate', $invoice['id']) }}" class="inline">
+                                    @csrf
+                                    <button type="submit" class="text-blue-600 hover:text-blue-900" title="Duplicate invoice">Duplicate</button>
+                                </form>
                                 @if(($invoice['status'] ?? 'draft') === 'draft')
                                     <form method="POST" action="{{ route('user.invoices.destroy', $invoice['id']) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this invoice?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                        <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">Delete</button>
                                     </form>
                                 @endif
                             </div>
