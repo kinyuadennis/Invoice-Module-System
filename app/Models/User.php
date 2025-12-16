@@ -22,6 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'company_id',
         'active_company_id',
+        'onboarding_completed',
     ];
 
     protected $hidden = [
@@ -34,6 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'onboarding_completed' => 'boolean',
         ];
     }
 

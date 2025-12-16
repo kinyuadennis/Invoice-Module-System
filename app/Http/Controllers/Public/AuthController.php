@@ -26,6 +26,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'company_name' => 'nullable|string|max:255',
         ]);
 
         $user = User::create([
@@ -35,6 +36,29 @@ class AuthController extends Controller
             'role' => 'user',
             'email_verified_at' => null, // Explicitly set to null
         ]);
+
+        // Create company if company name provided during registration
+        if (! empty($validated['company_name'])) {
+            $company = \App\Models\Company::create([
+                'owner_user_id' => $user->id,
+                'name' => $validated['company_name'],
+                'currency' => 'KES',
+                'timezone' => 'Africa/Nairobi',
+                'invoice_prefix' => 'INV',
+                'next_invoice_sequence' => 1,
+            ]);
+
+            // Set as active company
+            \Illuminate\Support\Facades\Session::put('active_company_id', $company->id);
+            $user->update([
+                'active_company_id' => $company->id,
+                'company_id' => $company->id, // Legacy compatibility
+            ]);
+
+            // Create default invoice prefix
+            $prefixService = app(\App\Services\InvoicePrefixService::class);
+            $prefixService->createDefaultPrefix($company, $user->id);
+        }
 
         // Send verification email using Laravel's standard method
         try {
@@ -247,6 +271,8 @@ class AuthController extends Controller
             $redirect = route('user.dashboard');
             if ($user->role === 'admin') {
                 $redirect = route('admin.dashboard');
+            } elseif (! $user->onboarding_completed) {
+                $redirect = route('user.onboarding.index');
             } elseif (! $user->company_id) {
                 $redirect = route('company.setup');
             }
@@ -369,6 +395,12 @@ class AuthController extends Controller
         if ($user->role === 'admin') {
             return redirect()->route('admin.dashboard')
                 ->with('status', 'Email verified successfully!');
+        }
+
+        // Redirect to onboarding if not completed, otherwise to company setup or dashboard
+        if (! $user->onboarding_completed) {
+            return redirect()->route('user.onboarding.index')
+                ->with('status', 'Email verified successfully! Let\'s get you set up.');
         }
 
         // Redirect to company setup if user doesn't have a company

@@ -52,6 +52,19 @@
                     required
                 />
 
+                <div class="border-t border-slate-200 pt-6">
+                    <p class="text-sm font-medium text-slate-700 mb-4">Optional: Quick Company Setup</p>
+                    <p class="text-xs text-slate-500 mb-4">You can set up your company now or complete it later during onboarding.</p>
+                    <x-input 
+                        type="text" 
+                        name="company_name" 
+                        label="Company Name (Optional)" 
+                        value="{{ old('company_name') }}"
+                        placeholder="Enter your company name"
+                    />
+                    <p class="mt-1 text-xs text-slate-500">This will create your first company automatically</p>
+                </div>
+
                 <div class="flex items-start">
                     <input id="terms" name="terms" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded mt-1" required>
                     <label for="terms" class="ml-2 block text-sm text-slate-700">

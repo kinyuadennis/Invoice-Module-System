@@ -26,8 +26,8 @@ class EnsureUserHasCompany
             return redirect()->route('login');
         }
 
-        // Allow company setup and management routes
-        if ($request->routeIs('company.setup', 'company.store', 'user.companies.*', 'user.company.switch')) {
+        // Allow company setup, management, and onboarding routes
+        if ($request->routeIs('company.setup', 'company.store', 'user.companies.*', 'user.company.switch', 'user.onboarding.*')) {
             return $next($request);
         }
 

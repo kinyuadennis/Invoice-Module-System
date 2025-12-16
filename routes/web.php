@@ -66,6 +66,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/company', [CompanyController::class, 'store'])->name('company.store');
     });
 
+    // Onboarding wizard (requires email verification, but NOT company)
+    Route::middleware('verified')->group(function () {
+        Route::get('/onboarding', [\App\Http\Controllers\User\OnboardingController::class, 'index'])->name('user.onboarding.index');
+        Route::get('/onboarding/step/{step}', [\App\Http\Controllers\User\OnboardingController::class, 'showStep'])->name('user.onboarding.step');
+        Route::post('/onboarding', [\App\Http\Controllers\User\OnboardingController::class, 'store'])->name('user.onboarding.store');
+        Route::post('/onboarding/complete', [\App\Http\Controllers\User\OnboardingController::class, 'complete'])->name('user.onboarding.complete');
+    });
+
     // User area (prefix: /app)
     Route::prefix('app')->middleware(['verified', \App\Http\Middleware\EnsureUserHasCompany::class, \App\Http\Middleware\EnsureActiveCompany::class])->name('user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
