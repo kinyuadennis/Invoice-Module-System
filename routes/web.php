@@ -46,6 +46,7 @@ Route::post('/api/calculate-invoice-preview', [HomeController::class, 'calculate
 
 // Public API endpoint for reviews
 Route::get('/api/reviews', [\App\Http\Controllers\Public\ReviewController::class, 'index'])->name('api.reviews');
+Route::get('/testimonials', [\App\Http\Controllers\Public\ReviewController::class, 'publicIndex'])->name('testimonials');
 
 // Authentication (public)
 Route::middleware('guest')->group(function () {
@@ -92,6 +93,9 @@ Route::middleware('auth')->group(function () {
     // User area (prefix: /app)
     Route::prefix('app')->middleware(['verified', \App\Http\Middleware\EnsureUserHasCompany::class, \App\Http\Middleware\EnsureActiveCompany::class])->name('user.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
+
+        // Feedback
+        Route::post('/feedback', [\App\Http\Controllers\User\FeedbackController::class, 'store'])->name('feedback.store');
 
         // Invoice routes - must be before resource route to avoid conflicts
         Route::post('/invoices/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
@@ -144,6 +148,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
         // Company management routes
         Route::resource('companies', \App\Http\Controllers\User\CompanyManagementController::class);
         Route::post('/company/switch', [\App\Http\Controllers\User\CompanyManagementController::class, 'switchCompany'])->name('company.switch');

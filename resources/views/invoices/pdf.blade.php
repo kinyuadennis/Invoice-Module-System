@@ -14,10 +14,10 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'DejaVu Sans', 'Helvetica', Arial, sans-serif;
-            font-size: 12pt;
+            font-family: 'DejaVu Sans', 'Helvetica', Arial, 'Calibri', sans-serif;
+            font-size: 11pt;
             color: #333333;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         .container {
             max-width: 100%;
@@ -47,13 +47,14 @@
             text-align: right;
         }
         .invoice-title {
-            font-size: 28pt;
+            font-size: 16pt;
             font-weight: bold;
             color: #1A73E8;
             margin-bottom: 8pt;
+            letter-spacing: 0.5pt;
         }
         .invoice-number {
-            font-size: 18pt;
+            font-size: 14pt;
             font-weight: bold;
             color: #1A73E8;
             margin-bottom: 8pt;

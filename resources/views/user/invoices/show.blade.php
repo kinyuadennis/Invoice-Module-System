@@ -49,16 +49,16 @@
                     </svg>
                     Resend
                 </button>
-                <form method="POST" action="{{ route('user.invoices.update', $invoice['id']) }}" class="inline">
+                <form method="POST" action="{{ route('user.invoices.update', $invoice['id']) }}" class="inline" onsubmit="return confirm('Mark this invoice as paid? This action cannot be easily undone.');">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="status" value="paid">
-                    <x-button type="submit" variant="primary">
-                        <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="submit" class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         Mark as Paid
-                    </x-button>
+                    </button>
                 </form>
                 <form method="POST" action="{{ route('user.invoices.update', $invoice['id']) }}" class="inline">
                     @csrf
@@ -319,17 +319,37 @@
                     </div>
                     @php
                         $statusService = new \App\Http\Services\InvoiceStatusService();
-                        $statusVariant = $statusService::getStatusVariant($invoice['status'] ?? 'draft');
-                        $statusInfo = $statusService::getStatuses()[$invoice['status'] ?? 'draft'] ?? ['label' => ucfirst($invoice['status'] ?? 'draft')];
+                        $invoiceStatus = $invoice['status'] ?? 'draft';
+                        $statusVariant = $statusService::getStatusVariant($invoiceStatus);
+                        $statusInfo = $statusService::getStatuses()[$invoiceStatus] ?? ['label' => ucfirst($invoiceStatus)];
+                        
+                        // Create clear status labels
+                        $statusLabels = [
+                            'draft' => 'Draft (Editable)',
+                            'sent' => 'Sent / Open',
+                            'paid' => 'Paid',
+                            'overdue' => 'Overdue',
+                            'cancelled' => 'Cancelled',
+                        ];
+                        $displayLabel = $statusLabels[$invoiceStatus] ?? $statusInfo['label'] ?? ucfirst($invoiceStatus);
                     @endphp
-                    <div class="flex items-center gap-2">
-                        <x-badge :variant="$statusVariant" title="{{ $statusInfo['description'] ?? '' }}">
-                            {{ $statusInfo['label'] ?? ucfirst($invoice['status'] ?? 'draft') }}
-                        </x-badge>
-                        @if(($invoice['status'] ?? 'draft') === 'overdue')
-                            <span class="text-xs text-red-600 font-medium">
-                                {{ \Carbon\Carbon::parse($invoice['due_date'])->diffForHumans() }}
-                            </span>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <x-badge :variant="$statusVariant" title="{{ $statusInfo['description'] ?? '' }}">
+                                {{ $displayLabel }}
+                            </x-badge>
+                            @if($invoiceStatus === 'overdue')
+                                <span class="text-xs text-red-600 font-medium">
+                                    {{ \Carbon\Carbon::parse($invoice['due_date'])->diffForHumans() }}
+                                </span>
+                            @endif
+                        </div>
+                        @if($invoiceStatus === 'draft')
+                            <span class="text-xs text-gray-500 italic">Fully editable</span>
+                        @elseif(in_array($invoiceStatus, ['sent', 'overdue']))
+                            <span class="text-xs text-gray-500 italic">Limited editing</span>
+                        @elseif($invoiceStatus === 'paid')
+                            <span class="text-xs text-green-600 font-medium">✓ Payment received</span>
                         @endif
                     </div>
                 </div>

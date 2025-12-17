@@ -47,4 +47,23 @@ class ReviewController extends Controller
             'count' => $reviews->count(),
         ]);
     }
+
+    /**
+     * Display public testimonials page.
+     */
+    public function publicIndex(Request $request)
+    {
+        $query = Review::approved();
+
+        // Filter by rating if provided
+        if ($request->has('rating') && $request->rating) {
+            $query->where('rating', (int) $request->rating);
+        }
+
+        $reviews = $query->latest()->paginate(12);
+
+        return view('public.testimonials', [
+            'reviews' => $reviews,
+        ]);
+    }
 }

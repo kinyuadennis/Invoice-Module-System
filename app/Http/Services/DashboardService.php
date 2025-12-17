@@ -34,12 +34,16 @@ class DashboardService
                 // Calculate stats once and reuse to avoid double calculation
                 $stats = $this->getStats($companyId);
 
+                $insightsService = new BusinessInsightsService;
+                $insights = $insightsService->getAllInsights($companyId);
+
                 return [
                     'stats' => $stats,
                     'recentInvoices' => $this->getRecentInvoices($companyId),
                     'statusDistribution' => $this->getStatusDistribution($companyId),
                     'alerts' => $this->getAlerts($companyId, $stats), // Pass stats to avoid recalculation
                     'statusBreakdown' => $this->getStatusBreakdown($companyId),
+                    'insights' => $insights,
                 ];
             } catch (\Exception $e) {
                 return $this->getEmptyData();

@@ -210,6 +210,20 @@ class InvoiceController extends Controller
             ->with(['client', 'invoiceItems'])
             ->findOrFail($id);
 
+        // Restrict editing based on status
+        // Draft: fully editable
+        // Sent/Overdue: limited editing (redirect to show page with message)
+        // Paid/Cancelled: not editable (redirect to show page)
+        if ($invoice->status === 'paid' || $invoice->status === 'cancelled') {
+            return redirect()->route('user.invoices.show', $invoice->id)
+                ->with('error', 'Paid and cancelled invoices cannot be edited.');
+        }
+
+        if (in_array($invoice->status, ['sent', 'overdue'])) {
+            return redirect()->route('user.invoices.show', $invoice->id)
+                ->with('warning', 'Sent invoices have limited editing to maintain bookkeeping integrity. Only draft invoices can be fully edited.');
+        }
+
         $clients = Client::where('company_id', $companyId)
             ->select('id', 'name', 'email', 'phone', 'address')
             ->get();
@@ -251,8 +265,33 @@ class InvoiceController extends Controller
                 $paymentService->recordPayment($invoice, $request);
             }
         } else {
-            // Update invoice using service (for other fields)
-            $this->invoiceService->updateInvoice($invoice, $request);
+            // Restrict full editing based on status
+            // Draft: fully editable
+            // Sent/Overdue: allow minor adjustments only (notes, payment details)
+            // Paid/Cancelled: no editing
+            if (in_array($invoice->status, ['paid', 'cancelled'])) {
+                return back()->withErrors([
+                    'status' => 'Paid and cancelled invoices cannot be edited.',
+                ]);
+            }
+
+            if (in_array($invoice->status, ['sent', 'overdue'])) {
+                // Allow limited editing (notes, payment details) but prevent major changes
+                $allowedFields = ['notes', 'terms_and_conditions', 'payment_details'];
+                $requestData = $request->only($allowedFields);
+
+                if ($request->hasAny(['client_id', 'items', 'subtotal', 'tax', 'discount'])) {
+                    return back()->withErrors([
+                        'message' => 'Sent invoices have limited editing. Only notes and payment details can be modified. To make major changes, cancel this invoice and create a new one.',
+                    ]);
+                }
+
+                // Update only allowed fields
+                $invoice->update($requestData);
+            } else {
+                // Draft: full editing allowed
+                $this->invoiceService->updateInvoice($invoice, $request);
+            }
         }
 
         // Clear dashboard cache when invoice is updated

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Services\PlatformFeeService;
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\Review;
 use App\Traits\FormatsInvoiceNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -207,8 +208,11 @@ class HomeController extends Controller
             ],
         ];
 
-        // Reviews are now loaded dynamically via API endpoint /api/reviews
-        // No need to pass testimonials to the view
+        // Get featured testimonial for hero section (top rated, approved)
+        $featuredTestimonial = Review::approved()
+            ->orderBy('rating', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
         // Hero heading variants for A/B testing
         $heroHeadingVariants = [
@@ -229,6 +233,7 @@ class HomeController extends Controller
             'features' => $features,
             'plans' => $plans,
             'heroHeading' => $heroHeading,
+            'featuredTestimonial' => $featuredTestimonial,
         ]);
     }
 
@@ -251,7 +256,64 @@ class HomeController extends Controller
 
     public function about()
     {
-        return view('public.about');
+        // Team members data
+        $teamMembers = [
+            [
+                'name' => 'Dennis Muthomi',
+                'role' => 'Founder & Lead Developer',
+                'photo' => asset('images/team/dennis.jpg'),
+                'bio' => 'Passionate about building solutions that simplify business operations for Kenyan entrepreneurs.',
+            ],
+        ];
+
+        // Company timeline/story
+        $companyStory = [
+            [
+                'year' => '2024',
+                'title' => 'Launch',
+                'description' => 'InvoiceHub launched with a mission to simplify invoicing for Kenyan businesses. Our platform was built with KRA compliance and M-Pesa integration from day one.',
+            ],
+            [
+                'year' => '2024',
+                'title' => '500+ Businesses',
+                'description' => 'We reached a milestone of 500+ businesses using InvoiceHub to manage their invoicing, payments, and compliance.',
+            ],
+            [
+                'year' => 'Ongoing',
+                'title' => 'Continuous Innovation',
+                'description' => 'We continue to improve InvoiceHub based on user feedback, adding new features and ensuring full KRA eTIMS compliance.',
+            ],
+        ];
+
+        // Company values/personality
+        $values = [
+            [
+                'title' => 'Simplicity',
+                'description' => 'We believe invoicing should be simple, fast, and stress-free. No complicated setups, no steep learning curves.',
+                'icon' => '⚡',
+            ],
+            [
+                'title' => 'Compliance',
+                'description' => 'Full KRA eTIMS compliance built-in. Stay compliant without the hassle of manual paperwork.',
+                'icon' => '✅',
+            ],
+            [
+                'title' => 'Reliability',
+                'description' => 'Your business depends on our platform. We take reliability seriously with 99.9% uptime.',
+                'icon' => '🔒',
+            ],
+            [
+                'title' => 'Customer First',
+                'description' => 'Your success is our success. We listen to feedback and continuously improve based on your needs.',
+                'icon' => '💙',
+            ],
+        ];
+
+        return view('public.about', [
+            'teamMembers' => $teamMembers,
+            'companyStory' => $companyStory,
+            'values' => $values,
+        ]);
     }
 
     public function pricing()

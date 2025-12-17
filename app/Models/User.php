@@ -23,6 +23,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'company_id',
         'active_company_id',
         'onboarding_completed',
+
+        'profile_photo_path',
     ];
 
     protected $hidden = [

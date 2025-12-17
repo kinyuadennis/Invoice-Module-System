@@ -154,23 +154,116 @@
                     </a>
                 </div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                @foreach($statusDistribution as $status)
-                    @if($status['count'] > 0)
-                        <div class="text-center p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                            <div class="text-2xl font-bold mb-1" style="color: {{ $status['color'] }}">
-                                {{ $status['count'] }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Status Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    @foreach($statusDistribution as $status)
+                        @if($status['count'] > 0)
+                            <div class="text-center p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                                <div class="text-2xl font-bold mb-1" style="color: {{ $status['color'] }}">
+                                    {{ $status['count'] }}
+                                </div>
+                                <div class="text-sm font-medium text-gray-700 mb-1">{{ $status['name'] }}</div>
+                                <div class="text-xs text-gray-500">{{ $status['percentage'] }}%</div>
+                                <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full" style="background-color: {{ $status['color'] }}; width: {{ $status['percentage'] }}%"></div>
+                                </div>
                             </div>
-                            <div class="text-sm font-medium text-gray-700 mb-1">{{ $status['name'] }}</div>
-                            <div class="text-xs text-gray-500">{{ $status['percentage'] }}%</div>
-                            <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full" style="background-color: {{ $status['color'] }}; width: {{ $status['percentage'] }}%"></div>
-                            </div>
-                        </div>
-                    @endif
-                @endforeach
+                        @endif
+                    @endforeach
+                </div>
+                <!-- Status Pie Chart -->
+                <div style="position: relative; height: 250px; max-width: 100%;">
+                    <canvas id="statusChart"></canvas>
+                </div>
             </div>
         </x-card>
+    @endif
+
+    <!-- Business Insights -->
+    @if(isset($insights))
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Revenue Trends Chart -->
+            @if(isset($insights['revenue_trends']) && count($insights['revenue_trends']) > 0)
+                <x-card>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Revenue Trends (Last 12 Months)</h2>
+                    <div style="position: relative; height: 300px; max-width: 100%;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </x-card>
+            @endif
+
+            <!-- Invoice Aging Report -->
+            @if(isset($insights['invoice_aging']))
+                <x-card>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Invoice Aging Report</h2>
+                    <div class="space-y-4">
+                        @foreach($insights['invoice_aging'] as $ageGroup => $data)
+                            @if($data['count'] > 0)
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{ $ageGroup }} Days</p>
+                                        <p class="text-xs text-gray-500">{{ $data['count'] }} invoice(s)</p>
+                                    </div>
+                                    <p class="text-sm font-semibold text-gray-900">KES {{ number_format($data['amount'], 2) }}</p>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </x-card>
+            @endif
+        </div>
+
+        <!-- DSO & Top Clients -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- DSO Metrics -->
+            @if(isset($insights['dso']))
+                <x-card>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Days Sales Outstanding (DSO)</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">30-Day DSO</span>
+                            <span class="text-2xl font-bold text-gray-900">{{ number_format($insights['dso'], 1) }} days</span>
+                        </div>
+                        @if(isset($insights['dso_90']))
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                <span class="text-sm text-gray-600">90-Day DSO</span>
+                                <span class="text-2xl font-bold text-gray-900">{{ number_format($insights['dso_90'], 1) }} days</span>
+                            </div>
+                        @endif
+                        @if(isset($insights['avg_payment_time']))
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                <span class="text-sm text-gray-600">Average Payment Time</span>
+                                <span class="text-2xl font-bold text-gray-900">{{ number_format($insights['avg_payment_time'], 1) }} days</span>
+                            </div>
+                        @endif
+                    </div>
+                </x-card>
+            @endif
+
+            <!-- Top Clients -->
+            @if(isset($insights['top_clients']) && count($insights['top_clients']) > 0)
+                <x-card>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Top Clients by Revenue</h2>
+                    <div class="space-y-3">
+                        @foreach(array_slice($insights['top_clients'], 0, 5) as $client)
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">{{ $client['client_name'] }}</p>
+                                    <p class="text-xs text-gray-500">{{ $client['invoice_count'] }} invoice(s)</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-gray-900">KES {{ number_format($client['revenue'], 2) }}</p>
+                                    @if($client['avg_payment_time'])
+                                        <p class="text-xs text-gray-500">{{ number_format($client['avg_payment_time'], 1) }} days avg</p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </x-card>
+            @endif
+        </div>
     @endif
 
     <!-- Alerts -->
@@ -255,6 +348,126 @@
 </div>
 
 @push('scripts')
+    @if(isset($insights) && isset($insights['revenue_trends']) && count($insights['revenue_trends']) > 0)
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <script>
+            (function() {
+                // Store chart instances to prevent re-initialization
+                let revenueChartInstance = null;
+                let statusChartInstance = null;
+
+                function initCharts() {
+                    // Revenue Chart
+                    const ctx = document.getElementById('revenueChart');
+                    if (ctx && !revenueChartInstance) {
+                        try {
+                            const revenueData = @json($insights['revenue_trends']);
+                            revenueChartInstance = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: revenueData.map(item => item.month),
+                                    datasets: [{
+                                        label: 'Revenue (KES)',
+                                        data: revenueData.map(item => item.revenue),
+                                        borderColor: 'rgb(43, 110, 246)',
+                                        backgroundColor: 'rgba(43, 110, 246, 0.1)',
+                                        tension: 0.4,
+                                        fill: true
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: true,
+                                    aspectRatio: 2,
+                                    animation: {
+                                        duration: 1000,
+                                        easing: 'easeInOutQuart'
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                callback: function(value) {
+                                                    return 'KES ' + value.toLocaleString();
+                                                }
+                                            }
+                                        }
+                                    },
+                                    layout: {
+                                        padding: {
+                                            top: 10,
+                                            bottom: 10,
+                                            left: 10,
+                                            right: 10
+                                        }
+                                    }
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Error initializing revenue chart:', error);
+                        }
+                    }
+
+                    // Status Distribution Pie Chart
+                    const statusCtx = document.getElementById('statusChart');
+                    if (statusCtx && !statusChartInstance) {
+                        try {
+                            const statusData = @json($statusDistribution ?? []);
+                            statusChartInstance = new Chart(statusCtx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: statusData.map(item => item.name),
+                                    datasets: [{
+                                        data: statusData.map(item => item.count),
+                                        backgroundColor: statusData.map(item => item.bgColor),
+                                        borderWidth: 2,
+                                        borderColor: '#ffffff'
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: true,
+                                    aspectRatio: 1,
+                                    animation: {
+                                        duration: 1000,
+                                        easing: 'easeInOutQuart'
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    },
+                                    layout: {
+                                        padding: {
+                                            top: 10,
+                                            bottom: 10,
+                                            left: 10,
+                                            right: 10
+                                        }
+                                    }
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Error initializing status chart:', error);
+                        }
+                    }
+                }
+
+                // Initialize charts when DOM is ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initCharts);
+                } else {
+                    initCharts();
+                }
+            })();
+        </script>
+    @endif
+
 <script>
     // Dashboard Tour
     (function() {
@@ -375,5 +588,7 @@
     })();
 </script>
 @endpush
+    <!-- Feedback Form Component -->
+    <x-feedback-form />
 @endsection
 

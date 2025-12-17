@@ -22,6 +22,43 @@
         </div>
     </div>
 
+    <!-- Team Section -->
+    @if(isset($teamMembers) && count($teamMembers) > 0)
+        <div class="max-w-5xl mx-auto mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">Our Team</h2>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                    Meet the people behind InvoiceHub
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($teamMembers as $member)
+                    <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow text-center">
+                        <div class="mb-4">
+                            @if(isset($member['photo']) && file_exists(public_path(str_replace(asset(''), '', $member['photo']))))
+                                <img 
+                                    src="{{ $member['photo'] }}" 
+                                    alt="{{ $member['name'] }}"
+                                    class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-slate-200"
+                                >
+                            @else
+                                <div class="w-32 h-32 rounded-full mx-auto bg-blue-500 flex items-center justify-center text-white text-4xl font-bold border-4 border-slate-200">
+                                    {{ strtoupper(substr($member['name'], 0, 1)) }}
+                                </div>
+                            @endif
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1">{{ $member['name'] }}</h3>
+                        <p class="text-blue-600 font-semibold mb-3">{{ $member['role'] }}</p>
+                        @if(isset($member['bio']))
+                            <p class="text-sm text-slate-600 leading-relaxed">{{ $member['bio'] }}</p>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <!-- Mission & Vision Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-12 max-w-5xl mx-auto">
         <!-- Our Mission -->
@@ -55,6 +92,46 @@
             </p>
         </div>
     </div>
+
+    <!-- Company Story/Timeline -->
+    @if(isset($companyStory) && count($companyStory) > 0)
+        <div class="max-w-4xl mx-auto mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">Our Story</h2>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                    From launch to today — our journey building InvoiceHub
+                </p>
+            </div>
+            
+            <x-company-timeline :timeline="$companyStory" />
+        </div>
+    @endif
+
+    <!-- Values/Personality Section -->
+    @if(isset($values) && count($values) > 0)
+        <div class="max-w-5xl mx-auto mb-12">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">Our Values</h2>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                    What drives us every day
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @foreach($values as $value)
+                    <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-start gap-4">
+                            <div class="text-4xl flex-shrink-0">{{ $value['icon'] ?? '💡' }}</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900 mb-2">{{ $value['title'] ?? '' }}</h3>
+                                <p class="text-slate-600 leading-relaxed">{{ $value['description'] ?? '' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     <!-- Contact Us Section -->
     <div class="max-w-4xl mx-auto mb-12">
