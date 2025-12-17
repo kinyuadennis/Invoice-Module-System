@@ -28,15 +28,13 @@ class OnboardingController extends Controller
         // Get current step from session or default to 1
         $step = (int) $request->session()->get('onboarding_step', 1);
 
-        return $this->showStep($request, $step);
-
         // If user has companies, skip to step 5 (preferences) or 6 (complete)
         if ($user->ownedCompanies()->count() > 0 && $step < 5) {
             $step = 5;
             $request->session()->put('onboarding_step', $step);
         }
 
-        return $this->renderStep($request, $step);
+        return $this->showStep($request, $step);
     }
 
     /**

@@ -22,7 +22,7 @@ class FeedbackController extends Controller
             'anonymous' => 'nullable|boolean',
         ]);
 
-        $companyId = CurrentCompanyService::getId();
+        $companyId = CurrentCompanyService::id();
 
         $feedback = Feedback::create([
             'user_id' => $validated['anonymous'] ? null : Auth::id(),

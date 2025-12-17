@@ -614,6 +614,13 @@ class InvoiceController extends Controller
             ], 422);
         }
 
+        if ($invoice->status === 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot send a cancelled invoice.',
+            ], 422);
+        }
+
         if (! $invoice->client) {
             return response()->json([
                 'success' => false,

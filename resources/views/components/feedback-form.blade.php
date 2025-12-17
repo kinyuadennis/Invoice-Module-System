@@ -182,8 +182,10 @@
                         setTimeout(() => {
                             this.success = false;
                             this.$dispatch('feedback-submitted');
-                            if (this.$el.closest('[x-data*="open"]')) {
-                                this.$el.closest('[x-data*="open"]').__x.$data.open = false;
+                            // Close the modal by accessing the parent scope
+                            const parentScope = this.$root;
+                            if (parentScope && typeof parentScope.open !== 'undefined') {
+                                parentScope.open = false;
                             }
                         }, 2000);
                     } catch (error) {
