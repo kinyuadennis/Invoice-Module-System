@@ -56,7 +56,7 @@ class InvoiceSnapshotService
                     'description' => $item->description,
                     'quantity' => $item->quantity,
                     'unit_price' => $item->unit_price,
-                    'total' => $item->total,
+                    'total' => $item->total_price ?? ($item->quantity * $item->unit_price),
                     // Add other item fields if necessary
                 ];
             })->toArray(),

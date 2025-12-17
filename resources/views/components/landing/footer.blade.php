@@ -53,10 +53,22 @@
                     <div class="mt-12 md:mt-0">
                         <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">Secure</h3>
                         <div class="mt-4 flex items-center gap-2">
-                             <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                             <span class="text-gray-300 text-sm">SSL Secured</span>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-gray-300 text-sm">KRA Compliant</span>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-gray-300 text-sm">M-PESA Ready</span>
                         </div>
                     </div>
                 </div>

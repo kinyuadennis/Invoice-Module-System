@@ -18,12 +18,12 @@ trait InvoiceStatusHelper
     protected function getStatusColors(): array
     {
         return [
-            'draft' => ['color' => 'bg-gray-400', 'bgColor' => 'bg-gray-500'],
-            'sent' => ['color' => 'bg-blue-400', 'bgColor' => 'bg-blue-500'],
-            'paid' => ['color' => 'bg-green-400', 'bgColor' => 'bg-green-500'],
-            'overdue' => ['color' => 'bg-red-400', 'bgColor' => 'bg-red-500'],
-            'cancelled' => ['color' => 'bg-gray-300', 'bgColor' => 'bg-gray-400'],
-            'default' => ['color' => 'bg-gray-300', 'bgColor' => 'bg-gray-400'],
+            'draft' => ['color' => '#6B7280', 'bgColor' => '#6B7280'], // Gray 500
+            'sent' => ['color' => '#3B82F6', 'bgColor' => '#3B82F6'], // Blue 500
+            'paid' => ['color' => '#10B981', 'bgColor' => '#10B981'], // Green 500
+            'overdue' => ['color' => '#EF4444', 'bgColor' => '#EF4444'], // Red 500
+            'cancelled' => ['color' => '#9CA3AF', 'bgColor' => '#9CA3AF'], // Gray 400
+            'default' => ['color' => '#9CA3AF', 'bgColor' => '#9CA3AF'], // Gray 400
         ];
     }
 
@@ -44,4 +44,3 @@ trait InvoiceStatusHelper
         return '$' . number_format($value, 2);
     }
 }
-

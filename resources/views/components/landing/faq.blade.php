@@ -84,6 +84,46 @@
                         </p>
                     </dd>
                 </div>
+
+                <div x-data="{ open: false }" class="pt-6">
+                    <dt class="text-lg">
+                        <button @click="open = !open" type="button" class="text-left w-full flex justify-between items-start text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-controls="faq-4" aria-expanded="false">
+                            <span class="font-medium text-gray-900">
+                                Will my accountant like this?
+                            </span>
+                            <span class="ml-6 h-7 flex items-center">
+                                <svg class="rotate-0 h-6 w-6 transform" :class="{'rotate-180': open, 'rotate-0': !open}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </span>
+                        </button>
+                    </dt>
+                    <dd x-show="open" class="mt-2 pr-12" id="faq-4" style="display: none;">
+                        <p class="text-base text-gray-500">
+                            Yes. Provide your accountant access (multi-user) and they’ll appreciate the audit trail and reporting. We also integrate with popular accounting tools if needed.
+                        </p>
+                    </dd>
+                </div>
+
+                <div x-data="{ open: false }" class="pt-6">
+                    <dt class="text-lg">
+                        <button @click="open = !open" type="button" class="text-left w-full flex justify-between items-start text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-controls="faq-5" aria-expanded="false">
+                            <span class="font-medium text-gray-900">
+                                What support do you offer?
+                            </span>
+                            <span class="ml-6 h-7 flex items-center">
+                                <svg class="rotate-0 h-6 w-6 transform" :class="{'rotate-180': open, 'rotate-0': !open}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </span>
+                        </button>
+                    </dt>
+                    <dd x-show="open" class="mt-2 pr-12" id="faq-5" style="display: none;">
+                        <p class="text-base text-gray-500">
+                            Email and phone support (Kenya hours), plus an online help center. Our team includes Kenyan tax experts.
+                        </p>
+                    </dd>
+                </div>
             </dl>
         </div>
     </div>

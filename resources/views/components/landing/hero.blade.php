@@ -26,7 +26,7 @@
                             </a>
                         </div>
                     </div>
-                    
+
                     <!-- Trust Badges -->
                     <div class="mt-8 flex items-center gap-4 text-sm text-gray-500 sm:justify-center lg:justify-start">
                         <div class="flex items-center gap-2">
