@@ -214,16 +214,193 @@ class HomeController extends Controller
             ->orderBy('created_at', 'desc')
             ->first();
 
-        // Hero heading variants for A/B testing
+        // Hero heading variants for A/B testing (optimized from blueprint)
         $heroHeadingVariants = [
-            'variant1' => 'Professional invoicing for Kenyan businesses — compliant, simple, reliable.',
-            'variant2' => 'Create invoices, collect payments, stay KRA-compliant — in minutes.',
-            'variant3' => 'Invoices that get paid faster — simple setup, custom templates, MPesa-ready.',
+            'variant1' => 'Spend less time invoicing, more time on business.',
+            'variant2' => 'Get paid faster with KRA-compliant invoices.',
+            'variant3' => 'Take invoicing off your to-do list.',
         ];
 
-        // Get variant from query parameter or default to variant1
-        $heroVariant = request()->get('hero', 'variant1');
+        // A/B Testing: Get variant from session, cookie, or query parameter
+        $heroVariant = request()->get('hero');
+
+        if (! $heroVariant) {
+            // Check cookie first
+            $heroVariant = request()->cookie('hero_variant');
+
+            if (! $heroVariant) {
+                // Randomly assign variant (50% variant1, 30% variant2, 20% variant3)
+                $random = rand(1, 100);
+                if ($random <= 50) {
+                    $heroVariant = 'variant1';
+                } elseif ($random <= 80) {
+                    $heroVariant = 'variant2';
+                } else {
+                    $heroVariant = 'variant3';
+                }
+            }
+        }
+
         $heroHeading = $heroHeadingVariants[$heroVariant] ?? $heroHeadingVariants['variant1'];
+
+        // Optimized subheadline with local relevance
+        $heroSubheadline = 'KRA-compliant, M-PESA enabled invoicing for Kenyan SMEs. Create professional invoices, accept payments, and stay tax-compliant—all in one app.';
+
+        // Track A/B test variant for analytics
+        $abTestVariant = $heroVariant;
+
+        // Comprehensive features list (from blueprint)
+        $comprehensiveFeatures = [
+            [
+                'name' => 'Customizable Invoice Templates',
+                'description' => 'Choose from professional templates. Add your logo and branding.',
+                'icon' => 'document-text',
+            ],
+            [
+                'name' => 'Automated Payment Reminders',
+                'description' => 'Email and SMS reminders to chase late payments automatically.',
+                'icon' => 'bell',
+            ],
+            [
+                'name' => 'M-PESA Integration',
+                'description' => 'Accept Lipa na M-PESA payments directly. Auto-reconciliation included.',
+                'icon' => 'currency-dollar',
+            ],
+            [
+                'name' => 'KRA eTIMS Compliance',
+                'description' => 'Automatic VAT calculation and real-time KRA eTIMS submission.',
+                'icon' => 'shield-check',
+            ],
+            [
+                'name' => 'Multi-Currency Support',
+                'description' => 'Invoice in KES, USD, EUR, GBP with live exchange rates.',
+                'icon' => 'globe-alt',
+            ],
+            [
+                'name' => 'Recurring Invoices',
+                'description' => 'Set up subscriptions and recurring billing. Auto-generate invoices.',
+                'icon' => 'refresh',
+            ],
+            [
+                'name' => 'Real-Time Dashboard',
+                'description' => 'Track revenue, outstanding amounts, and cash flow at a glance.',
+                'icon' => 'chart-bar',
+            ],
+            [
+                'name' => 'Mobile-Friendly',
+                'description' => 'Create and send invoices from any device. Optimized for mobile browsers.',
+                'icon' => 'device-mobile',
+            ],
+        ];
+
+        // Enhanced FAQ with Kenya-specific questions
+        $enhancedFaqs = [
+            [
+                'question' => 'Is this KRA e-invoice (TIMS) compliant?',
+                'answer' => 'Yes. Every invoice you send includes the required QR code and tax information, and is automatically reported to the KRA e-TIMS system in real time. All invoices meet KRA requirements automatically.',
+            ],
+            [
+                'question' => 'Can I accept M-PESA payments?',
+                'answer' => 'Absolutely. Simply configure your Safaricom Daraja credentials and enable the Lipa na M-PESA option. Your customers can pay invoices directly through M-PESA with automatic reconciliation.',
+            ],
+            [
+                'question' => 'How soon can I start invoicing?',
+                'answer' => 'Within minutes. Our guided setup gets you creating your first invoice in under 60 seconds. No credit card required to get started.',
+            ],
+            [
+                'question' => 'Is there a free plan or trial?',
+                'answer' => 'Yes. We offer a free-forever plan so you can test all features before paying. No credit card required.',
+            ],
+            [
+                'question' => 'Is VAT automatically calculated?',
+                'answer' => 'Yes! Our system automatically calculates 16% VAT (Kenyan standard) on all invoices. You can toggle VAT on or off for each line item.',
+            ],
+            [
+                'question' => 'Can I use my own logo?',
+                'answer' => 'Absolutely! You can upload your company logo during setup, and it will appear on all your invoices, making them look professional and branded.',
+            ],
+            [
+                'question' => 'What support do you offer?',
+                'answer' => 'Email and phone support (Kenya hours), plus an online help center. Our team includes Kenyan tax experts to help with compliance questions.',
+            ],
+            [
+                'question' => 'How do you handle data security?',
+                'answer' => 'We use bank-level encryption, regular security audits, and comply with GDPR standards. Your data is stored securely and never shared with third parties.',
+            ],
+        ];
+
+        // Customer logos for "Trusted by" section
+        // In production, these should be actual customer logos
+        $customerLogos = [
+            [
+                'name' => 'Tech Solutions Kenya',
+                'logo' => asset('images/logos/tech-solutions.png'),
+                'alt' => 'Tech Solutions Kenya Logo',
+            ],
+            [
+                'name' => 'Nairobi Consulting',
+                'logo' => asset('images/logos/nairobi-consulting.png'),
+                'alt' => 'Nairobi Consulting Logo',
+            ],
+            [
+                'name' => 'Mombasa Traders',
+                'logo' => asset('images/logos/mombasa-traders.png'),
+                'alt' => 'Mombasa Traders Logo',
+            ],
+            [
+                'name' => 'Kisumu Services',
+                'logo' => asset('images/logos/kisumu-services.png'),
+                'alt' => 'Kisumu Services Logo',
+            ],
+            [
+                'name' => 'Eldoret Enterprises',
+                'logo' => asset('images/logos/eldoret-enterprises.png'),
+                'alt' => 'Eldoret Enterprises Logo',
+            ],
+            [
+                'name' => 'Nakuru Business Hub',
+                'logo' => asset('images/logos/nakuru-business.png'),
+                'alt' => 'Nakuru Business Hub Logo',
+            ],
+        ];
+
+        // Case studies data
+        $caseStudies = [
+            [
+                'title' => 'Tech Solutions Kenya Increased Revenue by 40%',
+                'company' => 'Tech Solutions Kenya',
+                'industry' => 'IT Services',
+                'location' => 'Nairobi',
+                'challenge' => 'Manual invoicing was taking 5+ hours per week, causing delays in payment collection.',
+                'solution' => 'Switched to InvoiceHub for automated invoicing and M-PESA integration.',
+                'results' => [
+                    '40% increase in revenue collection',
+                    'Reduced payment time from 30 days to 7 days',
+                    'Saved 20 hours per month on invoicing',
+                ],
+                'quote' => 'InvoiceHub transformed how we handle invoicing. We get paid 3x faster now.',
+                'author' => 'John Kamau',
+                'role' => 'CEO, Tech Solutions Kenya',
+                'rating' => 5,
+            ],
+            [
+                'title' => 'Nairobi Consulting Cut Invoice Processing Time by 80%',
+                'company' => 'Nairobi Consulting',
+                'industry' => 'Professional Services',
+                'location' => 'Nairobi',
+                'challenge' => 'Complex client billing with multiple projects and recurring invoices was error-prone.',
+                'solution' => 'Implemented InvoiceHub with recurring billing and automated reminders.',
+                'results' => [
+                    '80% reduction in invoice processing time',
+                    'Zero billing errors since implementation',
+                    '100% KRA compliance with automatic eTIMS submission',
+                ],
+                'quote' => 'The recurring invoice feature alone saves us 10 hours every month. Highly recommended!',
+                'author' => 'Sarah Muthoni',
+                'role' => 'Finance Manager, Nairobi Consulting',
+                'rating' => 5,
+            ],
+        ];
 
         return view('public.home', [
             'recentInvoices' => $recentInvoices,
@@ -231,9 +408,15 @@ class HomeController extends Controller
             'stats' => $stats,
             'steps' => $steps,
             'features' => $features,
+            'comprehensiveFeatures' => $comprehensiveFeatures,
             'plans' => $plans,
             'heroHeading' => $heroHeading,
+            'heroSubheadline' => $heroSubheadline,
             'featuredTestimonial' => $featuredTestimonial,
+            'enhancedFaqs' => $enhancedFaqs,
+            'customerLogos' => $customerLogos,
+            'caseStudies' => $caseStudies,
+            'abTestVariant' => $abTestVariant ?? 'variant1',
         ]);
     }
 

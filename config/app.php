@@ -136,4 +136,17 @@ return [
 
     'log_slow_queries' => (bool) env('LOG_SLOW_QUERIES', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo Video URL
+    |--------------------------------------------------------------------------
+    |
+    | URL for the demo video embed (YouTube, Vimeo, etc.)
+    | Set DEMO_VIDEO_URL in your .env file
+    | Example: https://www.youtube.com/embed/YOUR_VIDEO_ID
+    |
+    */
+
+    'demo_video_url' => env('DEMO_VIDEO_URL', null),
+
 ];

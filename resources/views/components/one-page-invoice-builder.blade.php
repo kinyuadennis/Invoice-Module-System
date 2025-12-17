@@ -666,6 +666,10 @@ function onePageInvoiceBuilder(clients, services, company, nextInvoiceNumber) {
         autosaveStatus: 'idle', // 'idle', 'saving', 'saved'
         draftId: null,
         autosaveInterval: null,
+        draggedItemIndex: null, // For drag and drop reordering
+        showTemplateLibrary: false, // Template library modal visibility
+        templates: [], // Array of saved templates
+        showSaveTemplateModal: false, // Save template modal visibility
         
         getCsrfToken() {
             const meta = document.querySelector('meta[name="csrf-token"]');

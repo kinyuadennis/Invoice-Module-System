@@ -8,7 +8,8 @@ use App\Mail\InvoiceSentMail;
 use App\Models\Invoice;
 use App\Models\InvoiceReminderLog;
 use App\Services\CurrentCompanyService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\InvoiceSnapshotService;
+use App\Services\PdfInvoiceRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -31,8 +32,11 @@ class SendInvoiceEmailJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(InvoiceService $invoiceService): void
-    {
+    public function handle(
+        InvoiceService $invoiceService,
+        InvoiceSnapshotService $snapshotService,
+        PdfInvoiceRenderer $pdfRenderer
+    ): void {
         try {
             // Ensure invoice has required relationships
             $this->invoice->load(['client', 'invoiceItems', 'company', 'user']);
@@ -43,7 +47,7 @@ class SendInvoiceEmailJob implements ShouldQueue
             }
 
             // Generate PDF
-            $pdfPath = $this->generatePdf($invoiceService);
+            $pdfPath = $this->generatePdf($snapshotService, $pdfRenderer);
 
             // Generate access token for customer portal
             $tokenService = app(InvoiceAccessTokenService::class);
@@ -92,48 +96,31 @@ class SendInvoiceEmailJob implements ShouldQueue
     /**
      * Generate PDF for the invoice.
      */
-    protected function generatePdf(InvoiceService $invoiceService): string
+    /**
+     * Generate PDF for the invoice.
+     */
+    protected function generatePdf(InvoiceSnapshotService $snapshotService, PdfInvoiceRenderer $pdfRenderer): string
     {
         // Set company context for PDF generation
         CurrentCompanyService::setId($this->invoice->company_id);
 
-        // Format invoice data
-        $formattedInvoice = $invoiceService->formatInvoiceForShow($this->invoice);
-
-        // Get template
-        $template = $this->invoice->getInvoiceTemplate();
-        $templateView = $template->view_path;
-        if (! view()->exists($templateView)) {
-            $templateView = 'invoices.templates.modern-clean';
+        // Find existing snapshot or create one (should exist as it's sent)
+        $snapshot = $snapshotService->findLatestSnapshot($this->invoice);
+        
+        if (! $snapshot) {
+            // Fallback: create snapshot if missing (e.g. legacy invoices)
+            $snapshot = $snapshotService->createSnapshot($this->invoice, 'sent');
         }
 
-        // Prepare logo path
-        $logoPath = null;
-        if ($this->invoice->company->logo) {
-            $logoPath = $this->invoice->company->logo;
-            if (! str_starts_with($logoPath, 'http://') && ! str_starts_with($logoPath, 'https://')) {
-                $fullPath = public_path('storage/'.$logoPath);
-                if (file_exists($fullPath)) {
-                    $logoPath = $fullPath;
-                } else {
-                    $logoPath = null;
-                }
-            }
-        }
-
-        // Generate PDF
-        $pdf = Pdf::loadView($templateView, [
-            'invoice' => $formattedInvoice,
-            'template' => $template,
-            'company' => $this->invoice->company,
-        ]);
+        // Render PDF
+        $pdfContent = $pdfRenderer->render($snapshot);
 
         // Save to temporary file
         $tempPath = storage_path('app/temp/invoice-'.$this->invoice->id.'-'.time().'.pdf');
         if (! is_dir(dirname($tempPath))) {
             mkdir(dirname($tempPath), 0755, true);
         }
-        file_put_contents($tempPath, $pdf->output());
+        file_put_contents($tempPath, $pdfContent);
 
         return $tempPath;
     }

@@ -49,6 +49,7 @@
                     <a 
                         href="{{ $ctaPrimaryHref }}"
                         class="inline-flex items-center justify-center px-8 py-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-105 text-lg"
+                        onclick="if(typeof gtag !== 'undefined') gtag('event', 'click', {'event_category': 'CTA', 'event_label': 'Hero Primary - {{ $ctaPrimary }}'});"
                     >
                         {{ $ctaPrimary }}
                     </a>
@@ -57,6 +58,7 @@
                         <a 
                             href="{{ $ctaSecondaryHref }}"
                             class="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white/10 transition-all duration-200 text-lg"
+                            onclick="if(typeof gtag !== 'undefined') gtag('event', 'click', {'event_category': 'CTA', 'event_label': 'Hero Secondary - {{ $ctaSecondary }}'});"
                         >
                             {{ $ctaSecondary }}
                         </a>

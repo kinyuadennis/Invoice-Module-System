@@ -18,10 +18,17 @@ use Illuminate\Support\Facades\Cache;
 class InvoiceController extends Controller
 {
     protected InvoiceService $invoiceService;
+    protected \App\Services\InvoiceSnapshotService $snapshotService;
+    protected \App\Services\PdfInvoiceRenderer $pdfRenderer;
 
-    public function __construct(InvoiceService $invoiceService)
-    {
+    public function __construct(
+        InvoiceService $invoiceService,
+        \App\Services\InvoiceSnapshotService $snapshotService,
+        \App\Services\PdfInvoiceRenderer $pdfRenderer
+    ) {
         $this->invoiceService = $invoiceService;
+        $this->snapshotService = $snapshotService;
+        $this->pdfRenderer = $pdfRenderer;
     }
 
     public function index(Request $request)
@@ -179,6 +186,9 @@ class InvoiceController extends Controller
             ]);
         }
 
+        // Create initial draft snapshot
+        $this->snapshotService->createSnapshot($invoice, 'draft');
+
         return redirect()->route('user.invoices.show', $invoice->id)
             ->with('success', 'Invoice created successfully.');
     }
@@ -259,11 +269,17 @@ class InvoiceController extends Controller
                 ]);
             }
 
+            // Refresh invoice to get updated status
+            $invoice->refresh();
+
             // If marking as paid, also record payment if amount provided
             if ($newStatus === 'paid' && $request->has('payment_amount')) {
                 $paymentService = new \App\Http\Services\PaymentService(new \App\Http\Services\InvoiceStatusService);
                 $paymentService->recordPayment($invoice, $request);
             }
+
+            // Create snapshot for status change (especially for paid)
+            $this->snapshotService->createSnapshot($invoice, $newStatus);
         } else {
             // Restrict full editing based on status
             // Draft: fully editable
@@ -291,6 +307,10 @@ class InvoiceController extends Controller
             } else {
                 // Draft: full editing allowed
                 $this->invoiceService->updateInvoice($invoice, $request);
+                
+                // Create snapshot for draft update
+                $invoice->refresh();
+                $this->snapshotService->createSnapshot($invoice, 'draft');
             }
         }
 
@@ -421,7 +441,7 @@ class InvoiceController extends Controller
     /**
      * Load a template.
      */
-    public function loadTemplate($id)
+    public function loadTemplate(Request $request, $id)
     {
         $companyId = CurrentCompanyService::requireId();
         $user = $request->user();
@@ -442,7 +462,7 @@ class InvoiceController extends Controller
     /**
      * Delete a template.
      */
-    public function deleteTemplate($id)
+    public function deleteTemplate(Request $request, $id)
     {
         $companyId = CurrentCompanyService::requireId();
         $user = $request->user();
@@ -462,7 +482,7 @@ class InvoiceController extends Controller
     /**
      * Toggle favorite status of a template.
      */
-    public function toggleFavorite($id)
+    public function toggleFavorite(Request $request, $id)
     {
         $companyId = CurrentCompanyService::requireId();
         $user = $request->user();
@@ -482,92 +502,41 @@ class InvoiceController extends Controller
     /**
      * Generate PDF for invoice
      */
+    /**
+     * Generate PDF for invoice
+     */
     public function generatePdf($id)
     {
         // Increase execution time for PDF generation
-        set_time_limit(60); // 60 seconds should be enough
+        set_time_limit(60);
 
         $companyId = CurrentCompanyService::requireId();
 
-        // Ensure invoice belongs to user's active company (from session)
+        // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)
-            ->with(['client', 'invoiceItems', 'platformFees', 'user', 'company.invoiceTemplate'])
             ->findOrFail($id);
 
-        // Format invoice data for PDF
-        $formattedInvoice = $this->invoiceService->formatInvoiceForShow($invoice);
+        // Find existing snapshot or create one
+        $snapshot = $this->snapshotService->findLatestSnapshot($invoice);
 
-        // Add platform fee if exists
-        $platformFee = $invoice->platformFees->first();
-        if ($platformFee) {
-            $formattedInvoice['platform_fee'] = (float) $platformFee->fee_amount;
+        if (! $snapshot) {
+            // If no snapshot exists, create one based on current status
+            // For draft, we create a temporary snapshot (or permanent if we want to track history)
+            // For sent/paid, we backfill the snapshot
+            $snapshot = $this->snapshotService->createSnapshot($invoice, $invoice->status);
         }
 
-        // CRITICAL: Use invoice's company, NOT user's active company
-        // The PDF must show the company that created the invoice, not the currently selected company
-        if (! $invoice->company) {
-            throw new \RuntimeException('Invoice company not found. Cannot generate PDF.');
-        }
-
-        // Get template from invoice (if stored) or invoice's company's active template
-        $template = $invoice->getInvoiceTemplate();
-
-        // Fallback to modern-clean if template view doesn't exist
-        $templateView = $template->view_path;
-        if (! view()->exists($templateView)) {
-            // Fallback to default template
-            $templateView = 'invoices.templates.modern-clean';
-            \Log::warning("Template view not found: {$template->view_path}, using fallback: {$templateView}", [
-                'template_id' => $template->id,
-                'invoice_id' => $invoice->id,
-            ]);
-        }
-
-        // Prepare logo path for PDF (resolve before passing to view to avoid blocking)
-        $logoPath = null;
-        if ($invoice->company->logo) {
-            $logoPath = $invoice->company->logo;
-            // Convert storage path to absolute file path
-            if (! str_starts_with($logoPath, 'http://') && ! str_starts_with($logoPath, 'https://')) {
-                $fullPath = public_path('storage/'.$logoPath);
-                if (file_exists($fullPath)) {
-                    $logoPath = $fullPath;
-                } else {
-                    $logoPath = null; // Logo file doesn't exist, skip it
-                }
-            }
-        }
-
-        // Add resolved logo path to formatted invoice
-        if ($logoPath) {
-            $formattedInvoice['company']['logo_path'] = $logoPath;
-        }
-
-        // Generate PDF using selected template
-        // CRITICAL: Pass invoice's company, NOT activeCompany() or getCurrentCompany()
+        // Render PDF from snapshot
         try {
-            $pdf = Pdf::loadView($templateView, [
-                'invoice' => $formattedInvoice,
-                'template' => $template, // Pass template object for CSS file path
-                'company' => $invoice->company, // Pass invoice's company for PDF settings
-            ]);
+            $pdfContent = $this->pdfRenderer->render($snapshot);
+            
+            // Generate filename
+            $filename = 'invoice-'.($snapshot->snapshot_data['invoice_details']['full_number'] ?? $invoice->invoice_number ?? $invoice->id).'.pdf';
 
-            // Set PDF options
-            $pdf->setPaper('a4', 'portrait');
-            $pdf->setOption('enable-local-file-access', true);
-            $pdf->setOption('enable-php', true); // Enable PHP for page numbering
-            $pdf->setOption('isRemoteEnabled', false); // Disable remote to prevent timeouts
-            $pdf->setOption('isHtml5ParserEnabled', true);
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
 
-            // Font options to prevent font errors
-            // Disable font subsetting to avoid glyph bbox errors
-            $pdf->setOption('enable_font_subsetting', false);
-
-            // Suppress font warnings to prevent glyph bbox errors from breaking PDF generation
-            $pdf->setOption('show_warnings', false);
-
-            // Performance options
-            $pdf->setOption('dpi', 96); // Lower DPI for faster rendering
         } catch (\Exception $e) {
             \Log::error('PDF generation error', [
                 'invoice_id' => $invoice->id,
@@ -578,20 +547,6 @@ class InvoiceController extends Controller
             return redirect()->back()
                 ->with('error', 'Failed to generate PDF. Please try again or contact support.');
         }
-
-        // If template has custom CSS, ensure it's accessible
-        if ($template->css_file) {
-            $cssPath = public_path("css/invoice-templates/{$template->css_file}");
-            if (file_exists($cssPath)) {
-                $pdf->setOption('chroot', public_path());
-            }
-        }
-
-        // Generate filename
-        $filename = 'invoice-'.($formattedInvoice['invoice_number'] ?? $invoice->id).'.pdf';
-
-        // Return PDF download
-        return $pdf->download($filename);
     }
 
     /**
@@ -641,6 +596,9 @@ class InvoiceController extends Controller
             $statusService->markAsSent($invoice);
             $invoice->refresh();
         }
+
+        // Create snapshot for the sent invoice
+        $this->snapshotService->createSnapshot($invoice, 'sent');
 
         // Queue email job with PDF attachment
         \App\Jobs\SendInvoiceEmailJob::dispatch($invoice);

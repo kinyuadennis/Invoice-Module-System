@@ -31,9 +31,10 @@
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                 <div class="aspect-[4/3] bg-slate-100 relative">
                     <img 
-                        src="{{ $screenshot['image'] ?? ($screenshot['fallback'] ?? '') }}"
+                        src="{{ $screenshot['fallback'] ?? '' }}"
+                        data-src="{{ $screenshot['image'] ?? '' }}"
                         alt="{{ $screenshot['title'] ?? 'Product Screenshot' }}"
-                        class="w-full h-full object-cover"
+                        class="w-full h-full object-cover lazy-load"
                         onerror="this.src='{{ $screenshot['fallback'] ?? '' }}'"
                         loading="lazy"
                     />

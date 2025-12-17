@@ -208,4 +208,12 @@ class Invoice extends Model
     {
         return $query->where('company_id', $companyId);
     }
+
+    /**
+     * The snapshots for this invoice.
+     */
+    public function snapshots(): HasMany
+    {
+        return $this->hasMany(InvoiceSnapshot::class);
+    }
 }

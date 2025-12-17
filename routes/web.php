@@ -28,6 +28,7 @@ Route::prefix('webhooks')->name('webhooks.')->group(function () {
 // Customer Portal (token-based access, no authentication required)
 Route::prefix('invoice')->name('customer.invoices.')->group(function () {
     Route::get('/{token}', [\App\Http\Controllers\Customer\InvoiceController::class, 'show'])->name('show');
+    Route::get('/{token}/pdf', [\App\Http\Controllers\Customer\InvoiceController::class, 'downloadPdf'])->name('pdf');
     Route::post('/{token}/pay/stripe', [\App\Http\Controllers\Customer\InvoiceController::class, 'payStripe'])->name('pay.stripe');
     Route::post('/{token}/pay/mpesa', [\App\Http\Controllers\Customer\InvoiceController::class, 'payMpesa'])->name('pay.mpesa');
     Route::get('/{token}/payment-status', [\App\Http\Controllers\Customer\InvoiceController::class, 'paymentStatus'])->name('payment-status');

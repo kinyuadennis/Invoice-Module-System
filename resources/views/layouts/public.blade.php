@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Home') - {{ config('app.name', 'InvoiceHub') }}</title>
+    @stack('meta')
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="alternate icon" href="{{ route('favicon') }}" type="image/x-icon">
     
@@ -14,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
     @stack('scripts')
 </head>
 <body class="bg-slate-50">
@@ -79,8 +81,21 @@
             <div class="mt-8 pt-8 border-t border-slate-200">
                 <div class="flex flex-wrap items-center justify-center gap-6 mb-6">
                     <x-trust.trust-badge text="KRA eTIMS Compliant" icon="shield-check" size="sm" />
+                    <x-trust.trust-badge text="M-PESA Ready" icon="check-circle" size="sm" />
                     <x-trust.trust-badge text="Bank-Level Security" icon="lock-closed" size="sm" />
                     <x-trust.trust-badge text="GDPR Ready" icon="shield-check" size="sm" />
+                </div>
+                
+                <div class="text-center mb-4">
+                    <p class="text-sm text-slate-600 mb-2">
+                        Trusted by 500+ Kenyan businesses
+                    </p>
+                    <div class="flex items-center justify-center gap-2 text-xs text-slate-500">
+                        <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span>4.8/5 average rating</span>
+                    </div>
                 </div>
                 
                 <p class="text-center text-sm text-slate-600">

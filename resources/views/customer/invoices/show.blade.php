@@ -17,7 +17,13 @@
                         <h1 class="text-3xl font-bold text-gray-900">Invoice #{{ $invoice->invoice_number ?? 'INV-'.str_pad($invoice->id, 3, '0', STR_PAD_LEFT) }}</h1>
                         <p class="text-gray-600 mt-1">From: {{ $invoice->company->name }}</p>
                     </div>
-                    <div>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('customer.invoices.pdf', $accessToken->token) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download PDF
+                        </a>
                         @php
                             $statusService = new \App\Http\Services\InvoiceStatusService();
                             $statusVariant = $statusService::getStatusVariant($invoice->status ?? 'draft');

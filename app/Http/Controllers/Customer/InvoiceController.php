@@ -12,7 +12,9 @@ class InvoiceController extends Controller
 {
     public function __construct(
         private InvoiceAccessTokenService $tokenService,
-        private PaymentGatewayService $paymentGatewayService
+        private PaymentGatewayService $paymentGatewayService,
+        private \App\Services\InvoiceSnapshotService $snapshotService,
+        private \App\Services\PdfInvoiceRenderer $pdfRenderer
     ) {}
 
     /**
@@ -40,6 +42,48 @@ class InvoiceController extends Controller
             'accessToken' => $accessToken,
             'paymentSummary' => $paymentSummary,
         ]);
+    }
+
+    /**
+     * Download invoice PDF using access token.
+     */
+    public function downloadPdf(string $token)
+    {
+        $accessToken = $this->tokenService->validateToken($token);
+
+        if (! $accessToken || ! $accessToken->isValid()) {
+            abort(403, 'Invalid or expired access token');
+        }
+
+        $invoice = $accessToken->invoice;
+
+        // Find existing snapshot or create one
+        $snapshot = $this->snapshotService->findLatestSnapshot($invoice);
+
+        if (! $snapshot) {
+            // If no snapshot exists, create one based on current status
+            $snapshot = $this->snapshotService->createSnapshot($invoice, $invoice->status);
+        }
+
+        // Render PDF from snapshot
+        try {
+            $pdfContent = $this->pdfRenderer->render($snapshot);
+            
+            // Generate filename
+            $filename = 'invoice-'.($snapshot->snapshot_data['invoice_details']['full_number'] ?? $invoice->invoice_number ?? $invoice->id).'.pdf';
+
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+
+        } catch (\Exception $e) {
+            \Log::error('Customer PDF generation error', [
+                'invoice_id' => $invoice->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            abort(500, 'Failed to generate PDF');
+        }
     }
 
     /**
