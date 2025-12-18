@@ -12,19 +12,19 @@
     
     /* Neutral Professional Theme - B2B Design System */
     
-    /* Primary Colors */
-    --color-primary: #2B6EF6;
-    --color-primary-rgb: 43, 110, 246;
-    --color-primary-50: #EFF6FF;
-    --color-primary-100: #DBEAFE;
-    --color-primary-500: #2B6EF6;
-    --color-primary-600: #2563EB;
-    --color-primary-700: #1D4ED8;
+    /* Primary Colors - Deep Royal Blue (Trust) */
+    --color-primary: #1e3a8a;
+    --color-primary-rgb: 30, 58, 138;
+    --color-primary-50: #eff6ff;
+    --color-primary-100: #dbeafe;
+    --color-primary-500: #1e3a8a;
+    --color-primary-600: #1e40af;
+    --color-primary-700: #172554;
     
-    /* Accent Colors */
-    --color-accent: #7C3AED;
-    --color-accent-500: #7C3AED;
-    --color-accent-600: #6D28D9;
+    /* Accent Colors - M-PESA Green (Action) */
+    --color-accent: #39B54A;
+    --color-accent-500: #39B54A;
+    --color-accent-600: #2e913b;
     
     /* Neutral Colors */
     --color-neutral-50: #F9FAFB;
