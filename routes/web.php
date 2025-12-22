@@ -128,6 +128,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('inventory', \App\Http\Controllers\User\InventoryController::class);
         Route::post('/inventory/{id}/purchase', [\App\Http\Controllers\User\InventoryController::class, 'recordPurchase'])->name('inventory.purchase');
         Route::post('/inventory/{id}/adjustment', [\App\Http\Controllers\User\InventoryController::class, 'recordAdjustment'])->name('inventory.adjustment');
+
+        // Roles & Permissions routes
+        Route::resource('roles', \App\Http\Controllers\User\RoleController::class);
+        Route::post('/roles/{id}/assign-user', [\App\Http\Controllers\User\RoleController::class, 'assignToUser'])->name('roles.assign-user');
+        Route::post('/roles/{id}/remove-user', [\App\Http\Controllers\User\RoleController::class, 'removeFromUser'])->name('roles.remove-user');
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
         Route::post('/invoices/{id}/record-payment', [InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');

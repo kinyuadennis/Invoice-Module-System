@@ -13,6 +13,17 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->onDelete('cascade');
+            $table->string('name'); // e.g., "Admin", "Manager", "Staff"
+            $table->string('slug')->unique(); // e.g., "admin", "manager", "staff"
+            $table->text('description')->nullable();
+            $table->boolean('is_system')->default(false); // System roles can't be deleted
+            $table->boolean('is_active')->default(true);
+
+            $table->index('company_id');
+            $table->index(['company_id', 'is_active']);
+            $table->unique(['company_id', 'slug']); // Unique role per company
+
             $table->timestamps();
         });
     }

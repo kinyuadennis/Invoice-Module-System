@@ -122,6 +122,13 @@
                                 </svg>
                                 Company Settings
                             </a>
+                            
+                            <a href="{{ route('user.roles.index') }}" class="{{ request()->routeIs('user.roles.*') ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-300 hover:bg-slate-800 hover:text-white border-transparent' }} group flex items-center px-2 py-2 text-sm font-medium border-l-4">
+                                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-3-3h-2a3 3 0 00-3 3v2zM13 10a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Roles & Permissions
+                            </a>
                         @endif
                     </nav>
                 </div>
@@ -320,6 +327,7 @@
                     <a href="{{ route('user.profile') }}" class="{{ request()->routeIs('user.profile') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Profile</a>
                     @if(isset($activeCompany) && $activeCompany?->owner_user_id === auth()->id())
                         <a href="{{ route('user.company.settings') }}" class="{{ request()->routeIs('user.company.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Company Settings</a>
+                        <a href="{{ route('user.roles.index') }}" class="{{ request()->routeIs('user.roles.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Roles & Permissions</a>
                     @endif
                 </nav>
             </div>

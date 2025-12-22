@@ -304,13 +304,50 @@ class EstimateController extends Controller
             ]);
         }
 
+        if (! $estimate->client->email) {
+            return back()->withErrors([
+                'message' => 'Client must have an email address to send estimate.',
+            ]);
+        }
+
         // Update status to sent
         $estimate->update(['status' => 'sent']);
 
-        // TODO: Implement email/WhatsApp sending
-        // Similar to invoice sending functionality
+        // Send email to client
+        try {
+            // Generate PDF path for estimate
+            $pdfPath = $this->generatePdfPath($estimate);
 
-        return back()->with('success', 'Estimate sent to client successfully.');
+            // Send email with PDF attachment
+            \Illuminate\Support\Facades\Mail::to($estimate->client->email)
+                ->send(new \App\Mail\EstimateSentMail($estimate, $pdfPath));
+
+            // Clean up temporary PDF file if it exists
+            if ($pdfPath && file_exists($pdfPath)) {
+                unlink($pdfPath);
+            }
+
+            return back()->with('success', 'Estimate sent to client successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to send estimate email', [
+                'estimate_id' => $estimate->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors([
+                'message' => 'Estimate status updated, but failed to send email: '.$e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Generate PDF path for estimate (temporary implementation)
+     */
+    protected function generatePdfPath(Estimate $estimate): ?string
+    {
+        // For now, return null - PDF generation can be implemented later
+        // This allows the email to be sent without PDF attachment
+        return null;
     }
 
     /**

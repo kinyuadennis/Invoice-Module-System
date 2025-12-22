@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->unique(); // e.g., "invoices.create", "invoices.view"
+            $table->string('display_name'); // e.g., "Create Invoices"
+            $table->text('description')->nullable();
+            $table->string('category'); // e.g., "invoices", "clients", "reports", "inventory"
+            $table->integer('sort_order')->default(0); // For ordering in UI
+
+            $table->index('category');
+            $table->index('name');
+
             $table->timestamps();
         });
     }

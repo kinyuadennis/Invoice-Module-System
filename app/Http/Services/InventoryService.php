@@ -214,9 +214,12 @@ class InventoryService
     {
         foreach ($invoice->invoiceItems as $invoiceItem) {
             if ($invoiceItem->item_id) {
+                // Only restore stock for items that were auto-deducted
+                // This matches the logic in deductStockForInvoice()
                 $inventoryItem = InventoryItem::where('company_id', $invoice->company_id)
                     ->where('item_id', $invoiceItem->item_id)
                     ->where('track_stock', true)
+                    ->where('auto_deduct_on_invoice', true)
                     ->where('is_active', true)
                     ->first();
 
