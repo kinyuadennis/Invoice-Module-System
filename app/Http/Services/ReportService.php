@@ -2,6 +2,7 @@
 
 namespace App\Http\Services;
 
+use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Payment;
 use Carbon\Carbon;
@@ -262,5 +263,287 @@ class ReportService
         fclose($file);
 
         return $filename;
+    }
+
+    /**
+     * Get aging report data (outstanding invoices by age)
+     */
+    public function getAgingReport(int $companyId, ?Carbon $asOfDate = null): array
+    {
+        $asOfDate = $asOfDate ?? Carbon::now();
+
+        $invoices = Invoice::where('company_id', $companyId)
+            ->whereIn('status', ['sent', 'overdue'])
+            ->with(['client', 'payments'])
+            ->get();
+
+        $agingBuckets = [
+            'current' => ['min' => 0, 'max' => 30, 'label' => '0-30 Days', 'amount' => 0, 'count' => 0],
+            'days_31_60' => ['min' => 31, 'max' => 60, 'label' => '31-60 Days', 'amount' => 0, 'count' => 0],
+            'days_61_90' => ['min' => 61, 'max' => 90, 'label' => '61-90 Days', 'amount' => 0, 'count' => 0],
+            'over_90' => ['min' => 91, 'max' => 9999, 'label' => 'Over 90 Days', 'amount' => 0, 'count' => 0],
+        ];
+
+        $agingDetails = [];
+
+        foreach ($invoices as $invoice) {
+            $totalPaid = (float) $invoice->payments->sum('amount');
+            $outstanding = (float) $invoice->grand_total - $totalPaid;
+
+            if ($outstanding <= 0) {
+                continue; // Skip fully paid invoices
+            }
+
+            // Calculate days overdue
+            $dueDate = $invoice->due_date ?? $invoice->issue_date;
+            $daysOverdue = $asOfDate->diffInDays($dueDate, false);
+
+            // Determine bucket
+            $bucket = null;
+            if ($daysOverdue <= 30) {
+                $bucket = 'current';
+            } elseif ($daysOverdue <= 60) {
+                $bucket = 'days_31_60';
+            } elseif ($daysOverdue <= 90) {
+                $bucket = 'days_61_90';
+            } else {
+                $bucket = 'over_90';
+            }
+
+            $agingBuckets[$bucket]['amount'] += $outstanding;
+            $agingBuckets[$bucket]['count'] += 1;
+
+            $agingDetails[] = [
+                'invoice_id' => $invoice->id,
+                'invoice_number' => $invoice->full_number ?? $invoice->invoice_reference,
+                'client_name' => $invoice->client->name ?? 'N/A',
+                'invoice_date' => $invoice->issue_date?->toDateString(),
+                'due_date' => $dueDate?->toDateString(),
+                'invoice_total' => (float) $invoice->grand_total,
+                'amount_paid' => $totalPaid,
+                'outstanding' => $outstanding,
+                'days_overdue' => max(0, $daysOverdue),
+                'bucket' => $bucket,
+            ];
+        }
+
+        $totalOutstanding = array_sum(array_column($agingBuckets, 'amount'));
+        $totalCount = array_sum(array_column($agingBuckets, 'count'));
+
+        return [
+            'as_of_date' => $asOfDate->format('Y-m-d'),
+            'summary' => [
+                'total_outstanding' => $totalOutstanding,
+                'total_invoices' => $totalCount,
+            ],
+            'aging_buckets' => array_values($agingBuckets),
+            'aging_details' => collect($agingDetails)->sortByDesc('days_overdue')->values()->toArray(),
+        ];
+    }
+
+    /**
+     * Get Profit & Loss (P&L) statement
+     */
+    public function getProfitLossStatement(int $companyId, ?Carbon $startDate = null, ?Carbon $endDate = null): array
+    {
+        $startDate = $startDate ?? Carbon::now()->startOfYear();
+        $endDate = $endDate ?? Carbon::now()->endOfYear();
+
+        // Revenue (from paid invoices)
+        $revenueInvoices = Invoice::where('company_id', $companyId)
+            ->where('status', 'paid')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $totalRevenue = (float) $revenueInvoices->sum('grand_total');
+        $totalVAT = (float) $revenueInvoices->sum('vat_amount');
+        $totalPlatformFees = (float) $revenueInvoices->sum('platform_fee');
+        $netRevenue = $totalRevenue - $totalPlatformFees; // Revenue after platform fees
+
+        // Expenses
+        $expenses = Expense::where('company_id', $companyId)
+            ->whereBetween('expense_date', [$startDate, $endDate])
+            ->get();
+
+        $totalExpenses = (float) $expenses->sum('amount');
+        $taxDeductibleExpenses = (float) $expenses->where('is_tax_deductible', true)->sum('amount');
+        $nonTaxDeductibleExpenses = $totalExpenses - $taxDeductibleExpenses;
+
+        // Expense breakdown by category
+        $expenseByCategory = $expenses->groupBy('expense_category_id')->map(function ($group) {
+            $first = $group->first();
+
+            return [
+                'category_id' => $first->expense_category_id,
+                'category_name' => $first->category->name ?? 'Uncategorized',
+                'amount' => (float) $group->sum('amount'),
+                'count' => $group->count(),
+            ];
+        })->sortByDesc('amount')->values();
+
+        // Monthly breakdown
+        $monthlyBreakdown = [];
+        $current = $startDate->copy();
+        while ($current <= $endDate) {
+            $monthStart = $current->copy()->startOfMonth();
+            $monthEnd = $current->copy()->endOfMonth();
+
+            $monthRevenue = (float) $revenueInvoices
+                ->filter(function ($invoice) use ($monthStart, $monthEnd) {
+                    return $invoice->created_at >= $monthStart && $invoice->created_at <= $monthEnd;
+                })
+                ->sum('grand_total');
+
+            $monthExpenses = (float) $expenses
+                ->filter(function ($expense) use ($monthStart, $monthEnd) {
+                    return $expense->expense_date >= $monthStart && $expense->expense_date <= $monthEnd;
+                })
+                ->sum('amount');
+
+            $monthlyBreakdown[] = [
+                'month' => $monthStart->format('M Y'),
+                'revenue' => $monthRevenue,
+                'expenses' => $monthExpenses,
+                'profit' => $monthRevenue - $monthExpenses,
+            ];
+
+            $current->addMonth();
+        }
+
+        // Calculate profit/loss
+        $grossProfit = $netRevenue - $totalExpenses;
+        $profitMargin = $netRevenue > 0 ? ($grossProfit / $netRevenue) * 100 : 0;
+
+        return [
+            'period' => [
+                'start' => $startDate->format('Y-m-d'),
+                'end' => $endDate->format('Y-m-d'),
+            ],
+            'revenue' => [
+                'total_revenue' => $totalRevenue,
+                'vat_collected' => $totalVAT,
+                'platform_fees' => $totalPlatformFees,
+                'net_revenue' => $netRevenue,
+            ],
+            'expenses' => [
+                'total_expenses' => $totalExpenses,
+                'tax_deductible' => $taxDeductibleExpenses,
+                'non_tax_deductible' => $nonTaxDeductibleExpenses,
+                'by_category' => $expenseByCategory,
+            ],
+            'profit_loss' => [
+                'gross_profit' => $grossProfit,
+                'profit_margin' => $profitMargin,
+            ],
+            'monthly_breakdown' => $monthlyBreakdown,
+        ];
+    }
+
+    /**
+     * Get expense breakdown report
+     */
+    public function getExpenseBreakdown(int $companyId, ?Carbon $startDate = null, ?Carbon $endDate = null, ?int $categoryId = null): array
+    {
+        $startDate = $startDate ?? Carbon::now()->startOfMonth();
+        $endDate = $endDate ?? Carbon::now()->endOfMonth();
+
+        $query = Expense::where('company_id', $companyId)
+            ->whereBetween('expense_date', [$startDate, $endDate])
+            ->with(['category', 'client']);
+
+        if ($categoryId) {
+            $query->where('expense_category_id', $categoryId);
+        }
+
+        $expenses = $query->get();
+
+        // Summary
+        $totalExpenses = (float) $expenses->sum('amount');
+        $taxDeductibleTotal = (float) $expenses->where('is_tax_deductible', true)->sum('amount');
+        $nonTaxDeductibleTotal = $totalExpenses - $taxDeductibleTotal;
+
+        // By category
+        $byCategory = $expenses->groupBy('expense_category_id')->map(function ($group) {
+            $first = $group->first();
+
+            return [
+                'category_id' => $first->expense_category_id,
+                'category_name' => $first->category->name ?? 'Uncategorized',
+                'amount' => (float) $group->sum('amount'),
+                'count' => $group->count(),
+                'tax_deductible' => (float) $group->where('is_tax_deductible', true)->sum('amount'),
+            ];
+        })->sortByDesc('amount')->values();
+
+        // By payment method
+        $byPaymentMethod = $expenses->groupBy('payment_method')->map(function ($group) {
+            return [
+                'method' => $group->first()->payment_method ?? 'Other',
+                'amount' => (float) $group->sum('amount'),
+                'count' => $group->count(),
+            ];
+        })->sortByDesc('amount')->values();
+
+        // By status
+        $byStatus = $expenses->groupBy('status')->map(function ($group) {
+            return [
+                'status' => $group->first()->status,
+                'amount' => (float) $group->sum('amount'),
+                'count' => $group->count(),
+            ];
+        })->sortByDesc('amount')->values();
+
+        // Monthly breakdown
+        $monthlyBreakdown = [];
+        $current = $startDate->copy();
+        while ($current <= $endDate) {
+            $monthStart = $current->copy()->startOfMonth();
+            $monthEnd = $current->copy()->endOfMonth();
+
+            $monthExpenses = $expenses->filter(function ($expense) use ($monthStart, $monthEnd) {
+                return $expense->expense_date >= $monthStart && $expense->expense_date <= $monthEnd;
+            });
+
+            $monthlyBreakdown[] = [
+                'month' => $monthStart->format('M Y'),
+                'amount' => (float) $monthExpenses->sum('amount'),
+                'count' => $monthExpenses->count(),
+            ];
+
+            $current->addMonth();
+        }
+
+        // Top expenses
+        $topExpenses = $expenses->sortByDesc('amount')->take(10)->map(function ($expense) {
+            return [
+                'id' => $expense->id,
+                'expense_number' => $expense->expense_number ?? "EXP-{$expense->id}",
+                'description' => $expense->description,
+                'category' => $expense->category->name ?? 'Uncategorized',
+                'amount' => (float) $expense->amount,
+                'date' => $expense->expense_date->toDateString(),
+                'status' => $expense->status,
+            ];
+        })->values();
+
+        return [
+            'period' => [
+                'start' => $startDate->format('Y-m-d'),
+                'end' => $endDate->format('Y-m-d'),
+            ],
+            'summary' => [
+                'total_expenses' => $totalExpenses,
+                'tax_deductible' => $taxDeductibleTotal,
+                'non_tax_deductible' => $nonTaxDeductibleTotal,
+                'expense_count' => $expenses->count(),
+                'average_expense' => $expenses->count() > 0 ? $totalExpenses / $expenses->count() : 0,
+            ],
+            'by_category' => $byCategory,
+            'by_payment_method' => $byPaymentMethod,
+            'by_status' => $byStatus,
+            'monthly_breakdown' => $monthlyBreakdown,
+            'top_expenses' => $topExpenses,
+            'expenses' => $expenses,
+        ];
     }
 }

@@ -9,7 +9,7 @@
         <p class="mt-1 text-sm text-gray-600">View detailed reports and export data</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Revenue Report -->
         <x-card>
             <div class="flex items-center justify-between mb-4">
@@ -49,6 +49,48 @@
             <p class="text-sm text-gray-600 mb-4">Track payments, methods, and payment trends</p>
             <a href="{{ route('user.reports.payments') }}" class="block w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center">
                 View Payment Report
+            </a>
+        </x-card>
+
+        <!-- Aging Report -->
+        <x-card>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Aging Report</h2>
+                <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Track outstanding invoices grouped by age (0-30, 31-60, 61-90, 90+ days)</p>
+            <a href="{{ route('user.reports.aging') }}" class="block w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center">
+                View Aging Report
+            </a>
+        </x-card>
+
+        <!-- Profit & Loss Statement -->
+        <x-card>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Profit & Loss</h2>
+                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">View revenue, expenses, and profit/loss analysis</p>
+            <a href="{{ route('user.reports.profit-loss') }}" class="block w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center">
+                View P&L Statement
+            </a>
+        </x-card>
+
+        <!-- Expense Breakdown -->
+        <x-card>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Expense Breakdown</h2>
+                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Analyze expenses by category, payment method, and trends</p>
+            <a href="{{ route('user.reports.expenses') }}" class="block w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center">
+                View Expense Report
             </a>
         </x-card>
     </div>

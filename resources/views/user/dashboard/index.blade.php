@@ -133,6 +133,87 @@
             </div>
         </x-card>
     </div>
+
+    <!-- Additional KPIs: Expenses & Cash Flow -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Total Expenses -->
+        <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index') }}'">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-red-500 rounded-lg p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">Total Expenses</dt>
+                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($expenseStats['total_expenses'] ?? 0, 2) }}</dd>
+                        <dd class="text-xs text-gray-500 mt-1">{{ $expenseStats['expense_count'] ?? 0 }} expense(s)</dd>
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+
+        <!-- This Month Expenses -->
+        <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index', ['date_range' => 'month']) }}'">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-orange-500 rounded-lg p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">This Month Expenses</dt>
+                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($expenseStats['this_month_expenses'] ?? 0, 2) }}</dd>
+                        <dd class="text-xs text-gray-500 mt-1">{{ $expenseStats['this_month_count'] ?? 0 }} expense(s)</dd>
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+
+        <!-- Net Cash Flow -->
+        <x-card padding="sm" class="hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 {{ ($cashFlow['net_cash_flow'] ?? 0) >= 0 ? 'bg-green-500' : 'bg-red-500' }} rounded-lg p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">Net Cash Flow</dt>
+                        <dd class="text-lg font-semibold {{ ($cashFlow['net_cash_flow'] ?? 0) >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                            KES {{ number_format($cashFlow['net_cash_flow'] ?? 0, 2) }}
+                        </dd>
+                        @if(isset($cashFlow['cash_flow_change']) && $cashFlow['cash_flow_change'] != 0)
+                            <dd class="text-xs {{ $cashFlow['cash_flow_change'] >= 0 ? 'text-green-600' : 'text-red-600' }} mt-1">
+                                {{ $cashFlow['cash_flow_change'] >= 0 ? '+' : '' }}{{ number_format($cashFlow['cash_flow_change'], 1) }}% vs last month
+                            </dd>
+                        @endif
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+
+        <!-- Tax Deductible Expenses -->
+        <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index', ['tax_deductible' => '1']) }}'">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-purple-500 rounded-lg p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">Tax Deductible</dt>
+                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($expenseStats['tax_deductible'] ?? 0, 2) }}</dd>
+                        <dd class="text-xs text-gray-500 mt-1">Eligible for tax deduction</dd>
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+    </div>
     
     <!-- Status Distribution & Quick Filters -->
     @if(isset($statusDistribution) && count($statusDistribution) > 0)
@@ -278,6 +359,89 @@
         <x-alert type="info">
             You have KES {{ number_format($stats['outstanding'], 2) }} in outstanding invoices.
         </x-alert>
+    @endif
+
+    <!-- Inventory Alerts -->
+    @if(isset($inventoryAlerts) && (($inventoryAlerts['out_of_stock_count'] ?? 0) > 0 || ($inventoryAlerts['low_stock_count'] ?? 0) > 0))
+        <div class="space-y-3">
+            @if(($inventoryAlerts['out_of_stock_count'] ?? 0) > 0)
+                <x-alert type="error">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <strong>Out of Stock:</strong> You have {{ $inventoryAlerts['out_of_stock_count'] }} item(s) out of stock.
+                            <a href="{{ route('user.inventory.index', ['status' => 'out_of_stock']) }}" class="font-medium underline ml-1">View them</a>
+                        </div>
+                    </div>
+                </x-alert>
+            @endif
+
+            @if(($inventoryAlerts['low_stock_count'] ?? 0) > 0)
+                <x-alert type="warning">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <strong>Low Stock Alert:</strong> You have {{ $inventoryAlerts['low_stock_count'] }} item(s) below minimum stock level.
+                            <a href="{{ route('user.inventory.index', ['status' => 'low_stock']) }}" class="font-medium underline ml-1">View them</a>
+                        </div>
+                    </div>
+                </x-alert>
+            @endif
+        </div>
+    @endif
+
+    <!-- Inventory Alerts Detail Card -->
+    @if(isset($inventoryAlerts) && (($inventoryAlerts['out_of_stock_count'] ?? 0) > 0 || ($inventoryAlerts['low_stock_count'] ?? 0) > 0))
+        <x-card>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Inventory Alerts</h2>
+                <a href="{{ route('user.inventory.index') }}" class="text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">View all inventory</a>
+            </div>
+
+            @if(($inventoryAlerts['out_of_stock_count'] ?? 0) > 0)
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-red-600 mb-3">Out of Stock ({{ $inventoryAlerts['out_of_stock_count'] }})</h3>
+                    <div class="space-y-2">
+                        @foreach(array_slice($inventoryAlerts['out_of_stock'] ?? [], 0, 5) as $item)
+                            <div class="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">{{ $item['name'] ?? 'Unknown' }}</p>
+                                    @if(isset($item['sku']) && $item['sku'])
+                                        <p class="text-xs text-gray-500">SKU: {{ $item['sku'] }}</p>
+                                    @endif
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-red-600">0 in stock</p>
+                                    <a href="{{ route('user.inventory.show', $item['id']) }}" class="text-xs text-[#2B6EF6] hover:text-[#2563EB]">View</a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if(($inventoryAlerts['low_stock_count'] ?? 0) > 0)
+                <div>
+                    <h3 class="text-sm font-semibold text-orange-600 mb-3">Low Stock ({{ $inventoryAlerts['low_stock_count'] }})</h3>
+                    <div class="space-y-2">
+                        @foreach(array_slice($inventoryAlerts['low_stock'] ?? [], 0, 5) as $item)
+                            <div class="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">{{ $item['name'] ?? 'Unknown' }}</p>
+                                    @if(isset($item['sku']) && $item['sku'])
+                                        <p class="text-xs text-gray-500">SKU: {{ $item['sku'] }}</p>
+                                    @endif
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-orange-600">
+                                        {{ number_format($item['current_stock'] ?? 0, 0) }} / {{ number_format($item['minimum_stock'] ?? 0, 0) }}
+                                    </p>
+                                    <a href="{{ route('user.inventory.show', $item['id']) }}" class="text-xs text-[#2B6EF6] hover:text-[#2563EB]">View</a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </x-card>
     @endif
 
     <!-- Recent Invoices -->

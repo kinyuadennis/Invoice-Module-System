@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Services\ReportService;
 use App\Models\Client;
+use App\Models\ExpenseCategory;
 use App\Services\CurrentCompanyService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -145,5 +146,61 @@ class ReportController extends Controller
         fclose($file);
 
         return Response::download($filename, 'revenue_'.date('Y-m-d').'.csv')->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Display aging report (outstanding invoices by age)
+     */
+    public function aging(Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        $asOfDate = $request->filled('as_of_date') ? Carbon::parse($request->as_of_date) : Carbon::now();
+
+        $report = $this->reportService->getAgingReport($companyId, $asOfDate);
+
+        return view('user.reports.aging', [
+            'report' => $report,
+            'filters' => $request->only(['as_of_date']),
+        ]);
+    }
+
+    /**
+     * Display Profit & Loss statement
+     */
+    public function profitLoss(Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date) : Carbon::now()->startOfYear();
+        $endDate = $request->filled('end_date') ? Carbon::parse($request->end_date) : Carbon::now()->endOfYear();
+
+        $report = $this->reportService->getProfitLossStatement($companyId, $startDate, $endDate);
+
+        return view('user.reports.profit-loss', [
+            'report' => $report,
+            'filters' => $request->only(['start_date', 'end_date']),
+        ]);
+    }
+
+    /**
+     * Display expense breakdown report
+     */
+    public function expenses(Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->filled('end_date') ? Carbon::parse($request->end_date) : Carbon::now()->endOfMonth();
+        $categoryId = $request->filled('category_id') ? (int) $request->category_id : null;
+
+        $report = $this->reportService->getExpenseBreakdown($companyId, $startDate, $endDate, $categoryId);
+        $categories = ExpenseCategory::where('company_id', $companyId)->orderBy('name')->get(['id', 'name']);
+
+        return view('user.reports.expenses', [
+            'report' => $report,
+            'categories' => $categories,
+            'filters' => $request->only(['start_date', 'end_date', 'category_id']),
+        ]);
     }
 }

@@ -136,6 +136,14 @@ class Invoice extends Model
     }
 
     /**
+     * The refunds for this invoice.
+     */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /**
      * The reminder logs for this invoice.
      */
     public function reminderLogs(): HasMany

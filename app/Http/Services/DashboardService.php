@@ -3,7 +3,10 @@
 namespace App\Http\Services;
 
 use App\Models\Client;
+use App\Models\Expense;
+use App\Models\InventoryItem;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\PlatformFee;
 use App\Traits\FormatsInvoiceData;
 use App\Traits\InvoiceStatusHelper;
@@ -44,6 +47,9 @@ class DashboardService
                     'alerts' => $this->getAlerts($companyId, $stats), // Pass stats to avoid recalculation
                     'statusBreakdown' => $this->getStatusBreakdown($companyId),
                     'insights' => $insights,
+                    'expenseStats' => $this->getExpenseStats($companyId),
+                    'inventoryAlerts' => $this->getInventoryAlerts($companyId),
+                    'cashFlow' => $this->getCashFlow($companyId),
                 ];
             } catch (\Exception $e) {
                 return $this->getEmptyData();
@@ -105,6 +111,180 @@ class DashboardService
             'paidCount' => $paidCount,
             'totalClients' => $totalClients,
             'activeClients' => $activeClients,
+        ];
+    }
+
+    /**
+     * Get expense statistics for dashboard
+     *
+     * @param  int  $companyId  Company ID to scope expenses
+     */
+    protected function getExpenseStats(int $companyId): array
+    {
+        if (! Schema::hasTable('expenses')) {
+            return [
+                'total_expenses' => 0,
+                'this_month_expenses' => 0,
+                'expense_count' => 0,
+                'tax_deductible' => 0,
+                'this_month_count' => 0,
+            ];
+        }
+
+        $expenseQuery = Expense::where('company_id', $companyId);
+
+        $totalExpenses = (float) (clone $expenseQuery)->sum('amount');
+        $expenseCount = (clone $expenseQuery)->count();
+
+        $thisMonthExpenses = (float) (clone $expenseQuery)
+            ->whereBetween('expense_date', [
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth(),
+            ])
+            ->sum('amount');
+
+        $thisMonthCount = (clone $expenseQuery)
+            ->whereBetween('expense_date', [
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth(),
+            ])
+            ->count();
+
+        $taxDeductible = (float) (clone $expenseQuery)
+            ->where('tax_deductible', true)
+            ->sum('amount');
+
+        return [
+            'total_expenses' => $totalExpenses,
+            'this_month_expenses' => $thisMonthExpenses,
+            'expense_count' => $expenseCount,
+            'tax_deductible' => $taxDeductible,
+            'this_month_count' => $thisMonthCount,
+        ];
+    }
+
+    /**
+     * Get inventory alerts (low stock and out of stock items)
+     *
+     * @param  int  $companyId  Company ID to scope inventory
+     */
+    protected function getInventoryAlerts(int $companyId): array
+    {
+        if (! Schema::hasTable('inventory_items')) {
+            return [
+                'low_stock' => [],
+                'out_of_stock' => [],
+                'low_stock_count' => 0,
+                'out_of_stock_count' => 0,
+            ];
+        }
+
+        $inventoryQuery = InventoryItem::where('company_id', $companyId)
+            ->where('track_stock', true)
+            ->where('is_active', true);
+
+        $lowStockItems = (clone $inventoryQuery)
+            ->whereColumn('current_stock', '<=', 'minimum_stock')
+            ->where('current_stock', '>', 0)
+            ->with(['item'])
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->item?->name ?? $item->name ?? 'Unknown',
+                    'sku' => $item->sku,
+                    'current_stock' => (float) $item->current_stock,
+                    'minimum_stock' => (float) $item->minimum_stock,
+                ];
+            })
+            ->toArray();
+
+        $outOfStockItems = (clone $inventoryQuery)
+            ->where('current_stock', '<=', 0)
+            ->with(['item'])
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->item?->name ?? $item->name ?? 'Unknown',
+                    'sku' => $item->sku,
+                    'current_stock' => (float) $item->current_stock,
+                ];
+            })
+            ->toArray();
+
+        return [
+            'low_stock' => $lowStockItems,
+            'out_of_stock' => $outOfStockItems,
+            'low_stock_count' => count($lowStockItems),
+            'out_of_stock_count' => count($outOfStockItems),
+        ];
+    }
+
+    /**
+     * Get cash flow metrics (inflow, outflow, net cash flow)
+     *
+     * @param  int  $companyId  Company ID to scope cash flow
+     */
+    protected function getCashFlow(int $companyId): array
+    {
+        // Cash Inflow: Payments received (this month)
+        $inflowThisMonth = 0;
+        if (Schema::hasTable('payments')) {
+            $inflowThisMonth = (float) Payment::where('company_id', $companyId)
+                ->whereBetween('payment_date', [
+                    Carbon::now()->startOfMonth(),
+                    Carbon::now()->endOfMonth(),
+                ])
+                ->sum('amount');
+        }
+
+        // Cash Outflow: Expenses paid (this month)
+        $outflowThisMonth = 0;
+        if (Schema::hasTable('expenses')) {
+            $outflowThisMonth = (float) Expense::where('company_id', $companyId)
+                ->where('status', 'paid')
+                ->whereBetween('expense_date', [
+                    Carbon::now()->startOfMonth(),
+                    Carbon::now()->endOfMonth(),
+                ])
+                ->sum('amount');
+        }
+
+        $netCashFlow = $inflowThisMonth - $outflowThisMonth;
+
+        // Calculate previous month for comparison
+        $inflowLastMonth = 0;
+        if (Schema::hasTable('payments')) {
+            $inflowLastMonth = (float) Payment::where('company_id', $companyId)
+                ->whereBetween('payment_date', [
+                    Carbon::now()->subMonth()->startOfMonth(),
+                    Carbon::now()->subMonth()->endOfMonth(),
+                ])
+                ->sum('amount');
+        }
+
+        $outflowLastMonth = 0;
+        if (Schema::hasTable('expenses')) {
+            $outflowLastMonth = (float) Expense::where('company_id', $companyId)
+                ->where('status', 'paid')
+                ->whereBetween('expense_date', [
+                    Carbon::now()->subMonth()->startOfMonth(),
+                    Carbon::now()->subMonth()->endOfMonth(),
+                ])
+                ->sum('amount');
+        }
+
+        $netCashFlowLastMonth = $inflowLastMonth - $outflowLastMonth;
+        $cashFlowChange = $netCashFlowLastMonth != 0
+            ? round((($netCashFlow - $netCashFlowLastMonth) / abs($netCashFlowLastMonth)) * 100, 1)
+            : 0;
+
+        return [
+            'inflow_this_month' => $inflowThisMonth,
+            'outflow_this_month' => $outflowThisMonth,
+            'net_cash_flow' => $netCashFlow,
+            'cash_flow_change' => $cashFlowChange,
         ];
     }
 
@@ -272,6 +452,25 @@ class DashboardService
             'recentInvoices' => [],
             'statusDistribution' => $statusDistribution,
             'alerts' => [],
+            'expenseStats' => [
+                'total_expenses' => 0,
+                'this_month_expenses' => 0,
+                'expense_count' => 0,
+                'tax_deductible' => 0,
+                'this_month_count' => 0,
+            ],
+            'inventoryAlerts' => [
+                'low_stock' => [],
+                'out_of_stock' => [],
+                'low_stock_count' => 0,
+                'out_of_stock_count' => 0,
+            ],
+            'cashFlow' => [
+                'inflow_this_month' => 0,
+                'outflow_this_month' => 0,
+                'net_cash_flow' => 0,
+                'cash_flow_change' => 0,
+            ],
         ];
     }
 

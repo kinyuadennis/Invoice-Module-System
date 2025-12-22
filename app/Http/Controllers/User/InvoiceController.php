@@ -18,7 +18,9 @@ use Illuminate\Support\Facades\Cache;
 class InvoiceController extends Controller
 {
     protected InvoiceService $invoiceService;
+
     protected \App\Services\InvoiceSnapshotService $snapshotService;
+
     protected \App\Services\PdfInvoiceRenderer $pdfRenderer;
 
     public function __construct(
@@ -199,15 +201,19 @@ class InvoiceController extends Controller
 
         // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)
-            ->with(['client', 'invoiceItems', 'payments', 'company'])
+            ->with(['client', 'invoiceItems', 'payments', 'refunds.payment', 'refunds.user', 'company'])
             ->findOrFail($id);
 
         $paymentService = new \App\Http\Services\PaymentService(new \App\Http\Services\InvoiceStatusService);
         $paymentSummary = $paymentService->getPaymentSummary($invoice);
 
+        $refundService = new \App\Http\Services\RefundService;
+        $refundSummary = $refundService->getRefundSummary($invoice);
+
         return view('user.invoices.show', [
             'invoice' => $this->invoiceService->formatInvoiceForShow($invoice),
             'paymentSummary' => $paymentSummary,
+            'refundSummary' => $refundSummary,
         ]);
     }
 
@@ -307,7 +313,7 @@ class InvoiceController extends Controller
             } else {
                 // Draft: full editing allowed
                 $this->invoiceService->updateInvoice($invoice, $request);
-                
+
                 // Create snapshot for draft update
                 $invoice->refresh();
                 $this->snapshotService->createSnapshot($invoice, 'draft');
@@ -529,7 +535,7 @@ class InvoiceController extends Controller
         // Render PDF from snapshot
         try {
             $pdfContent = $this->pdfRenderer->render($snapshot);
-            
+
             // Generate filename
             $filename = 'invoice-'.($snapshot->snapshot_data['invoice_details']['full_number'] ?? $invoice->invoice_number ?? $invoice->id).'.pdf';
 

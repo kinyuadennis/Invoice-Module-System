@@ -137,6 +137,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
         Route::post('/invoices/{id}/record-payment', [InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');
 
+        // Refund routes
+        Route::get('/invoices/{invoiceId}/refunds', [\App\Http\Controllers\User\RefundController::class, 'index'])->name('invoices.refunds.index');
+        Route::post('/invoices/{invoiceId}/refunds', [\App\Http\Controllers\User\RefundController::class, 'store'])->name('invoices.refunds.store');
+        Route::get('/refunds/{id}', [\App\Http\Controllers\User\RefundController::class, 'show'])->name('refunds.show');
+        Route::post('/refunds/{id}/process', [\App\Http\Controllers\User\RefundController::class, 'process'])->name('refunds.process');
+        Route::post('/refunds/{id}/cancel', [\App\Http\Controllers\User\RefundController::class, 'cancel'])->name('refunds.cancel');
+
         // Template routes
         Route::post('/invoices/save-as-template', [InvoiceController::class, 'saveAsTemplate'])->name('invoices.save-as-template');
         Route::get('/invoices/templates', [InvoiceController::class, 'getTemplates'])->name('invoices.templates');
@@ -156,6 +163,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/revenue', [\App\Http\Controllers\User\ReportController::class, 'revenue'])->name('reports.revenue');
         Route::get('/reports/invoices', [\App\Http\Controllers\User\ReportController::class, 'invoices'])->name('reports.invoices');
         Route::get('/reports/payments', [\App\Http\Controllers\User\ReportController::class, 'payments'])->name('reports.payments');
+        Route::get('/reports/aging', [\App\Http\Controllers\User\ReportController::class, 'aging'])->name('reports.aging');
+        Route::get('/reports/profit-loss', [\App\Http\Controllers\User\ReportController::class, 'profitLoss'])->name('reports.profit-loss');
+        Route::get('/reports/expenses', [\App\Http\Controllers\User\ReportController::class, 'expenses'])->name('reports.expenses');
         Route::get('/reports/export/invoices-csv', [\App\Http\Controllers\User\ReportController::class, 'exportInvoicesCsv'])->name('reports.export.invoices-csv');
         Route::get('/reports/export/revenue-csv', [\App\Http\Controllers\User\ReportController::class, 'exportRevenueCsv'])->name('reports.export.revenue-csv');
 

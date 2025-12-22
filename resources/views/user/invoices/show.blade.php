@@ -125,6 +125,103 @@
             document.getElementById('record-payment-modal').classList.add('hidden');
             document.getElementById('record-payment-form').reset();
         }
+
+        function openCreateRefundModal() {
+            document.getElementById('create-refund-modal').classList.remove('hidden');
+            loadRefundData();
+        }
+        
+        function closeCreateRefundModal() {
+            document.getElementById('create-refund-modal').classList.add('hidden');
+            document.getElementById('create-refund-form').reset();
+        }
+
+        function loadRefundData() {
+            const invoiceId = {{ $invoice['id'] }};
+            fetch(`/app/invoices/${invoiceId}/refunds`, {
+                headers: {
+                    'Accept': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Populate payment dropdown if needed
+                const paymentSelect = document.getElementById('refund-payment-id');
+                if (paymentSelect && data.payments) {
+                    paymentSelect.innerHTML = '<option value="">Refund against invoice (distribute across payments)</option>';
+                    data.payments.forEach(payment => {
+                        const available = payment.amount - (payment.refunded_amount || 0);
+                        if (available > 0) {
+                            const option = document.createElement('option');
+                            option.value = payment.id;
+                            option.textContent = `Payment #${payment.id} - KES ${available.toFixed(2)} available`;
+                            paymentSelect.appendChild(option);
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading refund data:', error);
+            });
+        }
+
+        function createRefund(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const invoiceId = {{ $invoice['id'] }};
+            
+            fetch(`/app/invoices/${invoiceId}/refunds`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Refund created successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to create refund'));
+                    if (data.errors) {
+                        console.error('Validation errors:', data.errors);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to create refund. Please try again.');
+            });
+        }
+
+        function processRefund(refundId) {
+            if (!confirm('Process this refund? This will update payment records.')) return;
+            
+            fetch(`/app/refunds/${refundId}/process`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Refund processed successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to process refund'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to process refund. Please try again.');
+            });
+        }
         
         function recordPayment(event) {
             event.preventDefault();
@@ -539,10 +636,18 @@
                             <h3 class="text-sm font-semibold text-gray-900 mb-3">Payment History</h3>
                             <div class="space-y-3">
                                 @foreach($invoice['payments'] as $payment)
+                                    @php
+                                        $paymentAmount = (float) ($payment['amount'] ?? 0);
+                                        $refundedAmount = (float) ($payment['refunded_amount'] ?? 0);
+                                        $netAmount = $paymentAmount - $refundedAmount;
+                                    @endphp
                                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                         <div class="flex-1">
                                             <div class="flex items-center gap-2 mb-1">
-                                                <p class="font-medium text-gray-900">KES {{ number_format($payment['amount'] ?? 0, 2) }}</p>
+                                                <p class="font-medium text-gray-900">KES {{ number_format($paymentAmount, 2) }}</p>
+                                                @if($refundedAmount > 0)
+                                                    <span class="text-xs text-red-600">(KES {{ number_format($refundedAmount, 2) }} refunded)</span>
+                                                @endif
                                                 @if(isset($payment['payment_method']))
                                                     <span class="text-xs text-gray-500">via {{ $payment['payment_method'] }}</span>
                                                 @endif
@@ -552,9 +657,28 @@
                                                 @if(isset($payment['mpesa_reference']))
                                                     <span>Ref: {{ $payment['mpesa_reference'] }}</span>
                                                 @endif
+                                                @if($refundedAmount > 0)
+                                                    <span class="text-red-600">Net: KES {{ number_format($netAmount, 2) }}</span>
+                                                @endif
                                             </div>
                                         </div>
-                                        <x-badge variant="success">Paid</x-badge>
+                                        @php
+                                            $statusVariant = 'success';
+                                            if ($refundedAmount >= $paymentAmount) {
+                                                $statusVariant = 'default';
+                                            } elseif ($refundedAmount > 0) {
+                                                $statusVariant = 'warning';
+                                            }
+                                        @endphp
+                                        <x-badge :variant="$statusVariant">
+                                            @if($refundedAmount >= $paymentAmount)
+                                                Fully Refunded
+                                            @elseif($refundedAmount > 0)
+                                                Partially Refunded
+                                            @else
+                                                Paid
+                                            @endif
+                                        </x-badge>
                                     </div>
                                 @endforeach
                             </div>
@@ -566,6 +690,92 @@
                     @endif
                 </div>
             </x-card>
+
+            <!-- Refund Summary & History -->
+            @php
+                $refundSummary = $refundSummary ?? null;
+                $totalRefunded = $refundSummary['total_refunded'] ?? 0;
+                $pendingRefunds = $refundSummary['pending_refunds'] ?? 0;
+            @endphp
+            @if($totalRefunded > 0 || $pendingRefunds > 0 || (isset($invoice['refunds']) && count($invoice['refunds']) > 0))
+                <x-card>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-900">Refunds</h2>
+                        @if($totalPaid > 0 && ($invoice['status'] ?? 'draft') !== 'cancelled' && ($invoice['status'] ?? 'draft') !== 'draft')
+                            <button 
+                                onclick="openCreateRefundModal()"
+                                class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Create Refund
+                            </button>
+                        @endif
+                    </div>
+
+                    @if($totalRefunded > 0 || $pendingRefunds > 0)
+                        <div class="mb-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-red-900">Total Refunded</p>
+                                    <p class="text-2xl font-bold text-red-600">KES {{ number_format($totalRefunded, 2) }}</p>
+                                </div>
+                                @if($pendingRefunds > 0)
+                                    <div class="text-right">
+                                        <p class="text-sm font-medium text-orange-900">Pending</p>
+                                        <p class="text-xl font-bold text-orange-600">KES {{ number_format($pendingRefunds, 2) }}</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Refund History -->
+                    @if(isset($invoice['refunds']) && count($invoice['refunds']) > 0)
+                        <div class="border-t border-gray-200 pt-4">
+                            <h3 class="text-sm font-semibold text-gray-900 mb-3">Refund History</h3>
+                            <div class="space-y-3">
+                                @foreach($invoice['refunds'] as $refund)
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <p class="font-medium text-gray-900">KES {{ number_format($refund['amount'] ?? 0, 2) }}</p>
+                                                <span class="text-xs text-gray-500">({{ $refund['refund_reference'] ?? 'N/A' }})</span>
+                                            </div>
+                                            <div class="flex items-center gap-3 text-xs text-gray-500">
+                                                <span>{{ $refund['refund_date'] ? \Carbon\Carbon::parse($refund['refund_date'])->format('M d, Y') : 'N/A' }}</span>
+                                                @if(isset($refund['refund_method']))
+                                                    <span>via {{ $refund['refund_method'] }}</span>
+                                                @endif
+                                                @if(isset($refund['reason']))
+                                                    <span>• {{ $refund['reason'] }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @php
+                                            $refundStatus = $refund['status'] ?? 'pending';
+                                            $statusVariants = [
+                                                'processed' => 'success',
+                                                'pending' => 'warning',
+                                                'failed' => 'error',
+                                                'cancelled' => 'default',
+                                            ];
+                                        @endphp
+                                        <x-badge :variant="$statusVariants[$refundStatus] ?? 'default'">
+                                            {{ ucfirst($refundStatus) }}
+                                        </x-badge>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="text-center py-4 text-sm text-gray-500 border-t border-gray-200">
+                            No refunds recorded yet
+                        </div>
+                    @endif
+                </x-card>
+            @endif
             
             <!-- Record Payment Modal -->
             <div 
@@ -655,6 +865,143 @@
                                     type="button"
                                     onclick="closeRecordPaymentModal()"
                                     class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Refund Modal -->
+            <div 
+                id="create-refund-modal" 
+                class="fixed inset-0 z-50 overflow-y-auto hidden"
+                onclick="if(event.target === this) closeCreateRefundModal()"
+            >
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
+                    
+                    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <form id="create-refund-form" onsubmit="createRefund(event)">
+                            @csrf
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900">Create Refund</h3>
+                                    <button type="button" onclick="closeCreateRefundModal()" class="text-gray-400 hover:text-gray-600">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Refund Amount *</label>
+                                        <input 
+                                            type="number"
+                                            name="amount"
+                                            step="0.01"
+                                            min="0.01"
+                                            max="{{ $totalPaid - $totalRefunded }}"
+                                            required
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                        >
+                                        <p class="text-xs text-gray-500 mt-1">Available to refund: KES {{ number_format($totalPaid - $totalRefunded, 2) }}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Refund Date *</label>
+                                        <input 
+                                            type="date"
+                                            name="refund_date"
+                                            value="{{ date('Y-m-d') }}"
+                                            required
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment (Optional)</label>
+                                        <select 
+                                            id="refund-payment-id"
+                                            name="payment_id"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                        >
+                                            <option value="">Refund against invoice (distribute across payments)</option>
+                                        </select>
+                                        <p class="text-xs text-gray-500 mt-1">Leave empty to distribute refund across all payments</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Refund Method</label>
+                                        <select 
+                                            name="refund_method"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                        >
+                                            <option value="">Select method...</option>
+                                            <option value="Original Payment Method">Original Payment Method</option>
+                                            <option value="Bank Transfer">Bank Transfer</option>
+                                            <option value="Cash">Cash</option>
+                                            <option value="Cheque">Cheque</option>
+                                            <option value="Credit Card">Credit Card</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                                        <select 
+                                            name="reason"
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                        >
+                                            <option value="">Select reason...</option>
+                                            <option value="Customer Request">Customer Request</option>
+                                            <option value="Duplicate Payment">Duplicate Payment</option>
+                                            <option value="Service Not Provided">Service Not Provided</option>
+                                            <option value="Invoice Error">Invoice Error</option>
+                                            <option value="Cancelled Order">Cancelled Order</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                                        <textarea 
+                                            name="notes"
+                                            rows="3"
+                                            placeholder="Additional notes about this refund..."
+                                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                        ></textarea>
+                                    </div>
+
+                                    <div class="flex items-center">
+                                        <input 
+                                            type="checkbox"
+                                            id="process-immediately"
+                                            name="process_immediately"
+                                            value="1"
+                                            class="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                        >
+                                        <label for="process-immediately" class="ml-2 text-sm text-gray-700">
+                                            Process refund immediately
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button 
+                                    type="submit"
+                                    class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                >
+                                    Create Refund
+                                </button>
+                                <button 
+                                    type="button"
+                                    onclick="closeCreateRefundModal()"
+                                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                                 >
                                     Cancel
                                 </button>

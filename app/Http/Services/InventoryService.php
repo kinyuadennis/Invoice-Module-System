@@ -138,13 +138,17 @@ class InventoryService
         $stockBefore = $inventoryItem->current_stock;
         $stockAfter = $stockBefore + $quantity;
 
+        // Clamp stock to zero (never allow negative stock)
+        $clampedStockAfter = max(0, $stockAfter);
+
         // Update inventory item stock
         if ($inventoryItem->track_stock) {
-            $inventoryItem->current_stock = max(0, $stockAfter);
+            $inventoryItem->current_stock = $clampedStockAfter;
             $inventoryItem->save();
         }
 
         // Create stock movement record
+        // Use clamped value to match actual inventory state
         $movement = StockMovement::create([
             'company_id' => $inventoryItem->company_id,
             'inventory_item_id' => $inventoryItem->id,
@@ -152,7 +156,7 @@ class InventoryService
             'type' => $type,
             'quantity' => $quantity,
             'stock_before' => $stockBefore,
-            'stock_after' => $stockAfter,
+            'stock_after' => $clampedStockAfter,
             'invoice_id' => $invoice?->id,
             'estimate_id' => $estimate?->id,
             'credit_note_id' => $creditNote?->id,
