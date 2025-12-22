@@ -319,12 +319,21 @@ class CreditNoteController extends Controller
         }
 
         try {
-            $this->creditNoteService->submitToEtims($creditNote);
+            $result = $this->creditNoteService->submitToEtims($creditNote);
 
             // Clear dashboard cache
             Cache::forget("dashboard_data_{$companyId}");
 
-            return back()->with('success', 'Credit note submitted to eTIMS successfully.');
+            if ($result['success']) {
+                return back()->with('success', $result['message'] ?? 'Credit note submitted to eTIMS successfully.');
+            }
+
+            // Handle validation errors
+            if (isset($result['errors']) && ! empty($result['errors'])) {
+                return back()->withErrors(['validation' => $result['errors']]);
+            }
+
+            return back()->withErrors(['error' => $result['error'] ?? $result['message'] ?? 'Failed to submit to eTIMS.']);
         } catch (\Exception $e) {
             return back()->withErrors([
                 'message' => 'Failed to submit to eTIMS: '.$e->getMessage(),

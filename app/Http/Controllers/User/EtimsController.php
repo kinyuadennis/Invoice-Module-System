@@ -75,7 +75,47 @@ class EtimsController extends Controller
     }
 
     /**
-     * Submit invoice to eTIMS API.
+     * Pre-validate invoice before eTIMS submission.
+     */
+    public function preValidate(Invoice $invoice, Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        // Verify invoice belongs to company
+        if ($invoice->company_id !== $companyId) {
+            abort(403);
+        }
+
+        try {
+            $errors = $this->etimsService->preValidateInvoice($invoice);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'valid' => empty($errors),
+                    'errors' => $errors,
+                    'is_compliant' => $this->etimsService->isCompliant($invoice),
+                ]);
+            }
+
+            if (empty($errors)) {
+                return back()->with('success', 'Invoice is valid for eTIMS submission');
+            }
+
+            return back()->withErrors(['validation' => $errors]);
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'valid' => false,
+                    'errors' => ['An error occurred during validation: '.$e->getMessage()],
+                ], 500);
+            }
+
+            return back()->withErrors(['error' => 'Validation failed: '.$e->getMessage()]);
+        }
+    }
+
+    /**
+     * Submit invoice to eTIMS API with validation.
      */
     public function submit(Invoice $invoice)
     {
@@ -87,13 +127,19 @@ class EtimsController extends Controller
         }
 
         try {
-            $result = $this->etimsService->submitToEtims($invoice);
+            // Use validation-enabled submission
+            $result = $this->etimsService->submitToEtimsWithValidation($invoice);
 
             if ($result['success']) {
                 return back()->with('success', $result['message'] ?? 'Invoice submitted to eTIMS successfully');
             }
 
-            return back()->withErrors(['error' => $result['error'] ?? 'Failed to submit to eTIMS']);
+            // Handle validation errors
+            if (isset($result['errors']) && ! empty($result['errors'])) {
+                return back()->withErrors(['validation' => $result['errors']]);
+            }
+
+            return back()->withErrors(['error' => $result['error'] ?? $result['message'] ?? 'Failed to submit to eTIMS']);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to submit to eTIMS: '.$e->getMessage()]);
         }

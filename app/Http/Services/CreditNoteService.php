@@ -219,25 +219,18 @@ class CreditNoteService
     /**
      * Submit credit note to eTIMS for reversal
      */
-    public function submitToEtims(CreditNote $creditNote): bool
+    public function submitToEtims(CreditNote $creditNote): array
     {
         if ($creditNote->etims_status === 'approved') {
-            return true; // Already submitted and approved
+            return [
+                'success' => true,
+                'message' => 'Credit note already submitted and approved',
+            ];
         }
 
-        // TODO: Implement actual eTIMS API submission
-        // For now, simulate submission
-        $creditNote->etims_control_number = 'CN-'.strtoupper(uniqid());
-        $creditNote->etims_status = 'submitted';
-        $creditNote->etims_submitted_at = now();
-        $creditNote->etims_metadata = [
-            'reversal_type' => 'credit_note',
-            'original_invoice' => $creditNote->invoice->etims_control_number,
-            'submitted_at' => now()->toIso8601String(),
-        ];
-        $creditNote->save();
+        $etimsService = new \App\Http\Services\EtimsService;
 
-        return true;
+        return $etimsService->submitReverseInvoice($creditNote);
     }
 
     /**

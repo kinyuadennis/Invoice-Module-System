@@ -184,6 +184,7 @@ Route::middleware('auth')->group(function () {
 
         // eTIMS Export
         Route::get('/invoices/{invoice}/etims/export', [\App\Http\Controllers\User\EtimsController::class, 'export'])->name('invoices.etims.export');
+        Route::get('/invoices/{invoice}/etims/validate', [\App\Http\Controllers\User\EtimsController::class, 'preValidate'])->name('invoices.etims.validate');
         Route::post('/invoices/{invoice}/etims/generate-qr', [\App\Http\Controllers\User\EtimsController::class, 'generateQrCode'])->name('invoices.etims.generate-qr');
         Route::post('/invoices/{invoice}/etims/submit', [\App\Http\Controllers\User\EtimsController::class, 'submit'])->name('invoices.etims.submit');
 

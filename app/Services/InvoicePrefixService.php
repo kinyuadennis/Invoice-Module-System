@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Client;
 use App\Models\Company;
+use App\Models\Estimate;
 use App\Models\Invoice;
 use App\Models\InvoicePrefix;
 use Illuminate\Support\Facades\DB;
@@ -267,5 +268,119 @@ class InvoicePrefixService
         $nextSequence = $client->next_invoice_sequence ?? $client->invoice_sequence_start ?? 1;
 
         return $this->formatClientInvoiceNumber($company, $nextSequence);
+    }
+
+    /**
+     * Generate the next serial number for estimates (transactional with proper locking).
+     * Estimates use their own independent sequence separate from invoices.
+     */
+    public function generateNextEstimateSerialNumber(Company $company, InvoicePrefix $prefix): int
+    {
+        return DB::transaction(function () use ($company, $prefix) {
+            // Use SELECT FOR UPDATE to lock rows and prevent race conditions
+            // Query Estimate model instead of Invoice to maintain separate sequence
+            $lastEstimate = Estimate::where('company_id', $company->id)
+                ->where('prefix_used', $prefix->prefix)
+                ->whereNotNull('serial_number')
+                ->lockForUpdate()
+                ->orderBy('serial_number', 'desc')
+                ->first();
+
+            $nextSerial = 1;
+            if ($lastEstimate && $lastEstimate->serial_number) {
+                $nextSerial = $lastEstimate->serial_number + 1;
+            }
+
+            return $nextSerial;
+        }, 5); // Retry up to 5 times if deadlock occurs
+    }
+
+    /**
+     * Generate full estimate number from prefix and serial.
+     * Uses estimate-specific prefix (EST) if available, otherwise uses invoice prefix.
+     */
+    public function generateEstimateFullNumber(Company $company, InvoicePrefix $prefix, int $serialNumber): string
+    {
+        $suffix = $company->invoice_suffix ?? '';
+        $padding = $company->invoice_padding ?? 4;
+        $format = $company->invoice_format ?? '{PREFIX}-{NUMBER}';
+        $estimatePrefix = $prefix->prefix ?? ($company->estimate_prefix ?? 'EST');
+
+        // Process prefix with dynamic placeholders
+        $processedPrefix = $this->processPrefixPlaceholders($estimatePrefix);
+
+        // Pad the serial number
+        $paddedNumber = str_pad($serialNumber, $padding, '0', STR_PAD_LEFT);
+
+        // Replace placeholders in format
+        $estimateNumber = $format;
+        $estimateNumber = str_replace('{PREFIX}', $processedPrefix, $estimateNumber);
+        $estimateNumber = str_replace('{NUMBER}', $paddedNumber, $estimateNumber);
+        $estimateNumber = str_replace('{YEAR}', date('Y'), $estimateNumber);
+        $estimateNumber = str_replace('{SUFFIX}', $suffix, $estimateNumber);
+
+        return $estimateNumber;
+    }
+
+    /**
+     * Generate client-specific estimate number with row locking for concurrency safety.
+     * Estimates use their own sequence separate from invoices.
+     */
+    public function generateClientEstimateNumber(Company $company, Client $client): array
+    {
+        return DB::transaction(function () use ($company, $client) {
+            // Lock the client row for update to prevent race conditions
+            $lockedClient = Client::where('id', $client->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Get the next sequence number for estimates for this client
+            // Use next_estimate_sequence if available, otherwise start from 1
+            $clientSequence = $lockedClient->next_estimate_sequence ?? 1;
+
+            // Generate the formatted estimate number BEFORE incrementing
+            $estimateNumber = $this->formatClientEstimateNumber($company, $clientSequence);
+
+            // Increment the client's next_estimate_sequence atomically
+            if ($lockedClient->next_estimate_sequence === null) {
+                $lockedClient->next_estimate_sequence = 2; // Set to 2 since we used 1
+            } else {
+                $lockedClient->increment('next_estimate_sequence');
+            }
+
+            return [
+                'client_sequence' => $clientSequence,
+                'estimate_number' => $estimateNumber,
+            ];
+        }, 5); // Retry up to 5 times if deadlock occurs
+    }
+
+    /**
+     * Format estimate number using company's client-specific format pattern.
+     * Supports placeholders: {PREFIX}, {CLIENTSEQ}, {YEAR}, {SUFFIX}
+     */
+    public function formatClientEstimateNumber(Company $company, int $clientSequence): string
+    {
+        // Get format pattern from company settings (default if not set)
+        $format = $company->client_invoice_format ?? $company->invoice_format ?? '{PREFIX}-{CLIENTSEQ}';
+        $prefix = $company->estimate_prefix ?? ($company->invoice_prefix ?? 'EST');
+        $suffix = $company->invoice_suffix ?? '';
+        $padding = $company->invoice_padding ?? 3;
+
+        // Process prefix with dynamic placeholders
+        $processedPrefix = $this->processPrefixPlaceholders($prefix);
+
+        // Pad the client sequence number
+        $paddedSequence = str_pad($clientSequence, $padding, '0', STR_PAD_LEFT);
+
+        // Replace placeholders in format
+        $estimateNumber = $format;
+        $estimateNumber = str_replace('{PREFIX}', $processedPrefix, $estimateNumber);
+        $estimateNumber = str_replace('{CLIENTSEQ}', $paddedSequence, $estimateNumber);
+        $estimateNumber = str_replace('{NUMBER}', $paddedSequence, $estimateNumber); // Alias for CLIENTSEQ
+        $estimateNumber = str_replace('{YEAR}', date('Y'), $estimateNumber);
+        $estimateNumber = str_replace('{SUFFIX}', $suffix, $estimateNumber);
+
+        return $estimateNumber;
     }
 }

@@ -222,6 +222,30 @@
                 alert('Failed to process refund. Please try again.');
             });
         }
+
+        function validateInvoiceForEtims(invoiceId) {
+            fetch(`/app/invoices/${invoiceId}/etims/validate`, {
+                headers: {
+                    'Accept': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.valid) {
+                    alert('✓ Invoice is valid for eTIMS submission!');
+                } else {
+                    let message = 'Validation failed:\n\n';
+                    data.errors.forEach(error => {
+                        message += '• ' + error + '\n';
+                    });
+                    alert(message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to validate invoice. Please try again.');
+            });
+        }
         
         function recordPayment(event) {
             event.preventDefault();
@@ -873,6 +897,68 @@
                     </div>
                 </div>
             </div>
+
+            <!-- eTIMS Compliance Section -->
+            @if(($invoice['status'] ?? 'draft') !== 'draft' && ($invoice['status'] ?? 'draft') !== 'cancelled')
+                <x-card>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-900">eTIMS Compliance</h2>
+                        <div class="flex gap-2">
+                            <button 
+                                onclick="validateInvoiceForEtims({{ $invoice['id'] }})"
+                                class="px-4 py-2 text-sm font-medium text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100"
+                            >
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Validate
+                            </button>
+                            @if(!isset($invoice['etims_control_number']) || empty($invoice['etims_control_number']))
+                                <form method="POST" action="{{ route('user.invoices.etims.submit', $invoice['id']) }}" class="inline" onsubmit="return confirm('Submit this invoice to eTIMS?');">
+                                    @csrf
+                                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        Submit to eTIMS
+                                    </button>
+                                </form>
+                            @endif
+                            <a href="{{ route('user.invoices.etims.export', ['invoice' => $invoice['id'], 'format' => 'json']) }}" class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Export
+                            </a>
+                        </div>
+                    </div>
+
+                    @if(isset($invoice['etims_control_number']) && !empty($invoice['etims_control_number']))
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-green-900">✓ Submitted to eTIMS</p>
+                                    <p class="text-xs text-green-700 mt-1">Control Number: {{ $invoice['etims_control_number'] }}</p>
+                                    @if(isset($invoice['etims_submitted_at']))
+                                        <p class="text-xs text-green-600 mt-1">Submitted: {{ \Carbon\Carbon::parse($invoice['etims_submitted_at'])->format('M d, Y H:i') }}</p>
+                                    @endif
+                                </div>
+                                @if(isset($invoice['etims_qr_code']) && !empty($invoice['etims_qr_code']))
+                                    <div class="bg-white p-2 rounded">
+                                        {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(100)->generate($invoice['etims_qr_code']) !!}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <p class="text-sm text-yellow-800">
+                                <strong>Not yet submitted to eTIMS.</strong> Validate the invoice before submission to ensure compliance.
+                            </p>
+                        </div>
+                    @endif
+                </x-card>
+            @endif
 
             <!-- Create Refund Modal -->
             <div 

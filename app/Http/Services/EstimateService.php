@@ -86,28 +86,28 @@ class EstimateService
             $data['client_id'] = $clientId;
         }
 
-        // Generate estimate number
+        // Generate estimate number using estimate-specific numbering
         if ($useClientSpecific && $clientId) {
             $client = Client::where('id', $clientId)
                 ->where('company_id', $companyId)
                 ->firstOrFail();
 
-            // Use invoice prefix service for numbering (estimates use same system)
-            $numberingData = $this->prefixService->generateClientInvoiceNumber($company, $client);
+            // Use estimate-specific numbering (separate from invoices)
+            $numberingData = $this->prefixService->generateClientEstimateNumber($company, $client);
 
             $data['client_sequence'] = $numberingData['client_sequence'];
-            $data['estimate_number'] = $numberingData['invoice_number'];
-            $data['estimate_reference'] = $numberingData['invoice_number'];
+            $data['estimate_number'] = $numberingData['estimate_number'];
+            $data['estimate_reference'] = $numberingData['estimate_number'];
 
             $prefix = $this->prefixService->getActivePrefix($company);
             $data['prefix_used'] = $prefix->prefix;
             $data['serial_number'] = $numberingData['client_sequence'];
-            $data['full_number'] = $numberingData['invoice_number'];
+            $data['full_number'] = $numberingData['estimate_number'];
         } elseif (empty($data['estimate_reference'])) {
-            // Global numbering
+            // Global numbering using estimate-specific sequence
             $prefix = $this->prefixService->getActivePrefix($company);
-            $serialNumber = $this->prefixService->generateNextSerialNumber($company, $prefix);
-            $fullNumber = $this->prefixService->generateFullNumber($company, $prefix, $serialNumber);
+            $serialNumber = $this->prefixService->generateNextEstimateSerialNumber($company, $prefix);
+            $fullNumber = $this->prefixService->generateEstimateFullNumber($company, $prefix, $serialNumber);
 
             $data['prefix_used'] = $prefix->prefix;
             $data['serial_number'] = $serialNumber;

@@ -310,9 +310,6 @@ class EstimateController extends Controller
             ]);
         }
 
-        // Update status to sent
-        $estimate->update(['status' => 'sent']);
-
         // Send email to client
         try {
             // Generate PDF path for estimate
@@ -327,6 +324,9 @@ class EstimateController extends Controller
                 unlink($pdfPath);
             }
 
+            // Only update status to 'sent' after successful email delivery
+            $estimate->update(['status' => 'sent']);
+
             return back()->with('success', 'Estimate sent to client successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to send estimate email', [
@@ -335,7 +335,7 @@ class EstimateController extends Controller
             ]);
 
             return back()->withErrors([
-                'message' => 'Estimate status updated, but failed to send email: '.$e->getMessage(),
+                'message' => 'Failed to send estimate email: '.$e->getMessage(),
             ]);
         }
     }
