@@ -107,6 +107,22 @@ Route::middleware('auth')->group(function () {
         Route::resource('invoices', InvoiceController::class);
         Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
         Route::post('/invoices/{id}/duplicate', [InvoiceController::class, 'duplicate'])->name('invoices.duplicate');
+
+        // Estimate routes
+        Route::resource('estimates', \App\Http\Controllers\User\EstimateController::class);
+        Route::post('/estimates/{id}/convert', [\App\Http\Controllers\User\EstimateController::class, 'convert'])->name('estimates.convert');
+        Route::post('/estimates/{id}/send', [\App\Http\Controllers\User\EstimateController::class, 'send'])->name('estimates.send');
+        Route::get('/estimates/{id}/pdf', [\App\Http\Controllers\User\EstimateController::class, 'pdf'])->name('estimates.pdf');
+
+        // Expense routes
+        Route::resource('expenses', \App\Http\Controllers\User\ExpenseController::class);
+
+        // Credit Note routes
+        Route::resource('credit-notes', \App\Http\Controllers\User\CreditNoteController::class);
+        Route::post('/credit-notes/{id}/issue', [\App\Http\Controllers\User\CreditNoteController::class, 'issue'])->name('credit-notes.issue');
+        Route::post('/credit-notes/{id}/apply-to-invoice', [\App\Http\Controllers\User\CreditNoteController::class, 'applyToInvoice'])->name('credit-notes.apply-to-invoice');
+        Route::post('/credit-notes/{id}/submit-etims', [\App\Http\Controllers\User\CreditNoteController::class, 'submitToEtims'])->name('credit-notes.submit-etims');
+        Route::get('/credit-notes/{id}/pdf', [\App\Http\Controllers\User\CreditNoteController::class, 'pdf'])->name('credit-notes.pdf');
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
         Route::post('/invoices/{id}/record-payment', [InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');
