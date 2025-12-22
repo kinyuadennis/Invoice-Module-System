@@ -63,14 +63,14 @@ class CreditNoteService
         // Get items to credit (from request or all invoice items)
         $itemsToCredit = [];
         $requestItems = $request->input('items', []);
-        
+
         // Filter items that are included (checked)
         foreach ($requestItems as $itemData) {
             if (isset($itemData['include']) && $itemData['include'] == '1') {
                 $itemsToCredit[] = $itemData;
             }
         }
-        
+
         // If no items specified, credit all items
         if (empty($itemsToCredit)) {
             foreach ($invoice->invoiceItems as $invoiceItem) {
@@ -204,6 +204,10 @@ class CreditNoteService
             'payment_method' => 'credit_note',
             'reference' => $creditNote->credit_note_number ?? $creditNote->full_number,
         ]);
+
+        // Refresh invoice to get latest payments (like PaymentService does)
+        $invoice->refresh();
+        $invoice->load('payments');
 
         // Update invoice status if fully paid
         $totalPaid = $invoice->payments->sum('amount');

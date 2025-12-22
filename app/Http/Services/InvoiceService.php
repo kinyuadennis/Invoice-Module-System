@@ -21,10 +21,24 @@ class InvoiceService
 
     protected InvoicePrefixService $prefixService;
 
+    protected ?InventoryService $inventoryService = null;
+
     public function __construct(PlatformFeeService $platformFeeService, InvoicePrefixService $prefixService)
     {
         $this->platformFeeService = $platformFeeService;
         $this->prefixService = $prefixService;
+    }
+
+    /**
+     * Set inventory service (lazy loading to avoid circular dependency)
+     */
+    protected function getInventoryService(): InventoryService
+    {
+        if ($this->inventoryService === null) {
+            $this->inventoryService = app(InventoryService::class);
+        }
+
+        return $this->inventoryService;
     }
 
     /**
@@ -237,6 +251,16 @@ class InvoiceService
         // Auto-generate platform fee (with company_id)
         $this->platformFeeService->generateFeeForInvoice($invoice);
 
+        // Auto-deduct stock if invoice is not a draft
+        if ($invoice->status !== 'draft') {
+            try {
+                $this->getInventoryService()->deductStockForInvoice($invoice);
+            } catch (\Exception $e) {
+                // Log error but don't fail invoice creation
+                \Log::warning("Failed to auto-deduct stock for invoice {$invoice->id}: ".$e->getMessage());
+            }
+        }
+
         return $invoice;
     }
 
@@ -383,6 +407,10 @@ class InvoiceService
             }
         }
 
+        // Track old status before update
+        $oldStatus = $invoice->status;
+        $newStatus = $data['status'] ?? $oldStatus;
+
         $invoice->update($data);
 
         // Update totals
@@ -391,6 +419,24 @@ class InvoiceService
         // Update platform fee
         if ($invoice->platformFees()->exists()) {
             $this->platformFeeService->generateFeeForInvoice($invoice);
+        }
+
+        // Handle stock movements based on status changes
+        // If status changed from non-cancelled to cancelled, restore stock
+        if ($oldStatus !== 'cancelled' && $newStatus === 'cancelled') {
+            try {
+                $this->getInventoryService()->restoreStockForInvoice($invoice);
+            } catch (\Exception $e) {
+                \Log::warning("Failed to restore stock for cancelled invoice {$invoice->id}: ".$e->getMessage());
+            }
+        }
+        // If status changed from draft to sent/paid, deduct stock
+        elseif ($oldStatus === 'draft' && in_array($newStatus, ['sent', 'paid'])) {
+            try {
+                $this->getInventoryService()->deductStockForInvoice($invoice);
+            } catch (\Exception $e) {
+                \Log::warning("Failed to auto-deduct stock for invoice {$invoice->id}: ".$e->getMessage());
+            }
         }
 
         return $invoice->fresh();

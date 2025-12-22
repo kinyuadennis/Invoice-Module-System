@@ -123,6 +123,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/credit-notes/{id}/apply-to-invoice', [\App\Http\Controllers\User\CreditNoteController::class, 'applyToInvoice'])->name('credit-notes.apply-to-invoice');
         Route::post('/credit-notes/{id}/submit-etims', [\App\Http\Controllers\User\CreditNoteController::class, 'submitToEtims'])->name('credit-notes.submit-etims');
         Route::get('/credit-notes/{id}/pdf', [\App\Http\Controllers\User\CreditNoteController::class, 'pdf'])->name('credit-notes.pdf');
+
+        // Inventory routes
+        Route::resource('inventory', \App\Http\Controllers\User\InventoryController::class);
+        Route::post('/inventory/{id}/purchase', [\App\Http\Controllers\User\InventoryController::class, 'recordPurchase'])->name('inventory.purchase');
+        Route::post('/inventory/{id}/adjustment', [\App\Http\Controllers\User\InventoryController::class, 'recordAdjustment'])->name('inventory.adjustment');
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
         Route::post('/invoices/{id}/record-payment', [InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');

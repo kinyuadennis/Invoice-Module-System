@@ -20,10 +20,13 @@ class EstimateService
 
     protected InvoicePrefixService $prefixService;
 
-    public function __construct(PlatformFeeService $platformFeeService, InvoicePrefixService $prefixService)
+    protected InvoiceService $invoiceService;
+
+    public function __construct(PlatformFeeService $platformFeeService, InvoicePrefixService $prefixService, InvoiceService $invoiceService)
     {
         $this->platformFeeService = $platformFeeService;
         $this->prefixService = $prefixService;
+        $this->invoiceService = $invoiceService;
     }
 
     /**
@@ -250,12 +253,34 @@ class EstimateService
                 $subtotal += $itemTotal;
             }
 
-            $vatAmount = $subtotal * 0.16;
-            $totalBeforeFee = $subtotal + $vatAmount;
+            // Apply discount if present
+            $discount = $request->input('discount', $estimate->discount ?? 0);
+            $discountType = $request->input('discount_type', $estimate->discount_type ?? 'fixed');
+            $discountAmount = 0;
+
+            if ($discount > 0) {
+                if ($discountType === 'percentage') {
+                    $discountAmount = $subtotal * ($discount / 100);
+                } else {
+                    $discountAmount = $discount;
+                }
+            }
+
+            $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
+
+            // Calculate VAT only if VAT registered
+            $vatRegistered = $request->input('vat_registered', $estimate->vat_registered ?? false);
+            $vatAmount = 0;
+            if ($vatRegistered) {
+                $vatAmount = $subtotalAfterDiscount * 0.16;
+            }
+
+            $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
             $platformFee = $totalBeforeFee * 0.03;
             $grandTotal = $totalBeforeFee + $platformFee;
 
             $data['subtotal'] = $subtotal;
+            $data['discount'] = $discountAmount;
             $data['vat_amount'] = $vatAmount;
             $data['platform_fee'] = $platformFee;
             $data['grand_total'] = $grandTotal;
@@ -311,46 +336,43 @@ class EstimateService
             throw new \RuntimeException('Estimate has already been converted to an invoice.');
         }
 
-        $companyId = $estimate->company_id;
         $user = auth()->user();
 
-        // Create invoice from estimate data
-        $invoiceData = [
-            'company_id' => $estimate->company_id,
-            'template_id' => $estimate->template_id,
+        // Prepare items in the format expected by InvoiceService
+        $items = $estimate->items->map(function ($estimateItem) {
+            return [
+                'description' => $estimateItem->description,
+                'quantity' => $estimateItem->quantity,
+                'unit_price' => $estimateItem->unit_price,
+                'total_price' => $estimateItem->total_price,
+                'vat_included' => $estimateItem->vat_included,
+                'vat_rate' => $estimateItem->vat_rate,
+            ];
+        })->toArray();
+
+        // Create a Request object with estimate data to use InvoiceService.createInvoice()
+        // This ensures proper invoice number generation based on company's numbering configuration
+        $request = Request::create('/app/invoices', 'POST', [
             'client_id' => $estimate->client_id,
-            'user_id' => $user->id,
-            'status' => 'draft',
             'issue_date' => now()->toDateString(),
             'due_date' => $estimate->expiry_date ?? now()->addDays(30)->toDateString(),
+            'status' => 'draft',
             'po_number' => $estimate->po_number,
             'notes' => $estimate->notes,
             'terms_and_conditions' => $estimate->terms_and_conditions,
             'vat_registered' => $estimate->vat_registered,
-            'subtotal' => $estimate->subtotal,
-            'discount' => $estimate->discount,
+            'discount' => $estimate->discount ?? 0,
             'discount_type' => $estimate->discount_type ?? 'fixed',
-            'vat_amount' => $estimate->vat_amount,
-            'platform_fee' => $estimate->platform_fee,
-            'grand_total' => $estimate->grand_total,
-        ];
+            'items' => $items,
+        ]);
 
-        // Generate invoice number (will be handled by InvoiceService)
-        $invoice = Invoice::create($invoiceData);
+        // Set the authenticated user on the request
+        $request->setUserResolver(function () use ($user) {
+            return $user;
+        });
 
-        // Copy estimate items to invoice items
-        foreach ($estimate->items as $estimateItem) {
-            $invoice->invoiceItems()->create([
-                'company_id' => $companyId,
-                'item_id' => $estimateItem->item_id,
-                'description' => $estimateItem->description,
-                'quantity' => $estimateItem->quantity,
-                'unit_price' => $estimateItem->unit_price,
-                'vat_included' => $estimateItem->vat_included,
-                'vat_rate' => $estimateItem->vat_rate,
-                'total_price' => $estimateItem->total_price,
-            ]);
-        }
+        // Use InvoiceService to create invoice with proper numbering
+        $invoice = $this->invoiceService->createInvoice($request);
 
         // Update estimate to mark as converted
         $estimate->update([
@@ -370,12 +392,33 @@ class EstimateService
             return $item->total_price;
         });
 
-        $vatAmount = $subtotal * 0.16; // 16% VAT
-        $totalBeforeFee = $subtotal + $vatAmount;
+        // Apply discount if present
+        $discount = $estimate->discount ?? 0;
+        $discountType = $estimate->discount_type ?? 'fixed';
+        $discountAmount = 0;
+
+        if ($discount > 0) {
+            if ($discountType === 'percentage') {
+                $discountAmount = $subtotal * ($discount / 100);
+            } else {
+                $discountAmount = $discount;
+            }
+        }
+
+        $subtotalAfterDiscount = max(0, $subtotal - $discountAmount);
+
+        // Calculate VAT only if VAT registered
+        $vatAmount = 0;
+        if ($estimate->vat_registered) {
+            $vatAmount = $subtotalAfterDiscount * 0.16; // 16% VAT
+        }
+
+        $totalBeforeFee = $subtotalAfterDiscount + $vatAmount;
         $platformFee = $totalBeforeFee * 0.03; // 3% platform fee
         $grandTotal = $totalBeforeFee + $platformFee;
 
         $estimate->subtotal = $subtotal;
+        $estimate->discount = $discountAmount;
         $estimate->vat_amount = $vatAmount;
         $estimate->platform_fee = $platformFee;
         $estimate->grand_total = $grandTotal;
