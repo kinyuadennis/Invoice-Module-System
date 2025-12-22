@@ -107,6 +107,13 @@
                             Reports
                         </a>
                         
+                        <a href="{{ route('user.approvals.index') }}" class="{{ request()->routeIs('user.approvals.*') ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-300 hover:bg-slate-800 hover:text-white border-transparent' }} group flex items-center px-2 py-2 text-sm font-medium border-l-4">
+                            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Approvals
+                        </a>
+                        
                         <a href="{{ route('user.profile') }}" class="{{ request()->routeIs('user.profile') ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-300 hover:bg-slate-800 hover:text-white border-transparent' }} group flex items-center px-2 py-2 text-sm font-medium border-l-4">
                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -324,6 +331,7 @@
                     <a href="{{ route('user.credit-notes.index') }}" class="{{ request()->routeIs('user.credit-notes.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Credit Notes</a>
                     <a href="{{ route('user.inventory.index') }}" class="{{ request()->routeIs('user.inventory.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Inventory</a>
                     <a href="{{ route('user.payments.index') }}" class="{{ request()->routeIs('user.payments.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Payments</a>
+                    <a href="{{ route('user.approvals.index') }}" class="{{ request()->routeIs('user.approvals.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Approvals</a>
                     <a href="{{ route('user.profile') }}" class="{{ request()->routeIs('user.profile') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Profile</a>
                     @if(isset($activeCompany) && $activeCompany?->owner_user_id === auth()->id())
                         <a href="{{ route('user.company.settings') }}" class="{{ request()->routeIs('user.company.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Company Settings</a>

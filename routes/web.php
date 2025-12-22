@@ -144,6 +144,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/refunds/{id}/process', [\App\Http\Controllers\User\RefundController::class, 'process'])->name('refunds.process');
         Route::post('/refunds/{id}/cancel', [\App\Http\Controllers\User\RefundController::class, 'cancel'])->name('refunds.cancel');
 
+        // Approval routes
+        Route::get('/approvals', [\App\Http\Controllers\User\ApprovalController::class, 'index'])->name('approvals.index');
+        Route::post('/approvals/{type}/{id}/request', [\App\Http\Controllers\User\ApprovalController::class, 'request'])->name('approvals.request');
+        Route::post('/approvals/{id}/approve', [\App\Http\Controllers\User\ApprovalController::class, 'approve'])->name('approvals.approve');
+        Route::post('/approvals/{id}/reject', [\App\Http\Controllers\User\ApprovalController::class, 'reject'])->name('approvals.reject');
+        Route::post('/approvals/{id}/cancel', [\App\Http\Controllers\User\ApprovalController::class, 'cancel'])->name('approvals.cancel');
+        Route::get('/approvals/{type}/{id}/history', [\App\Http\Controllers\User\ApprovalController::class, 'history'])->name('approvals.history');
+
         // Template routes
         Route::post('/invoices/save-as-template', [InvoiceController::class, 'saveAsTemplate'])->name('invoices.save-as-template');
         Route::get('/invoices/templates', [InvoiceController::class, 'getTemplates'])->name('invoices.templates');

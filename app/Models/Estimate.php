@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
 class Estimate extends Model
@@ -23,6 +24,8 @@ class Estimate extends Model
         'estimate_number',
         'full_number',
         'status',
+        'requires_approval',
+        'approval_status',
         'issue_date',
         'expiry_date',
         'accepted_at',
@@ -94,6 +97,14 @@ class Estimate extends Model
     public function convertedInvoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class, 'converted_to_invoice_id');
+    }
+
+    /**
+     * The approval requests for this estimate.
+     */
+    public function approvalRequests(): MorphMany
+    {
+        return $this->morphMany(ApprovalRequest::class, 'approvable');
     }
 
     public function isConverted(): bool

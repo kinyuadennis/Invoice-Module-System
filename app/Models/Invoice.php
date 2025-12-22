@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
 class Invoice extends Model
@@ -38,6 +39,8 @@ class Invoice extends Model
         'platform_fee',
         'total',
         'grand_total',
+        'requires_approval',
+        'approval_status',
         'uuid',
         'etims_control_number',
         'etims_qr_code',
@@ -165,6 +168,14 @@ class Invoice extends Model
     public function platformFees(): HasMany
     {
         return $this->hasMany(PlatformFee::class);
+    }
+
+    /**
+     * The approval requests for this invoice.
+     */
+    public function approvalRequests(): MorphMany
+    {
+        return $this->morphMany(ApprovalRequest::class, 'approvable');
     }
 
     /**

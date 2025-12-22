@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
 class Expense extends Model
@@ -23,6 +24,8 @@ class Expense extends Model
         'receipt_path',
         'payment_method',
         'status',
+        'requires_approval',
+        'approval_status',
         'tax_deductible',
         'tax_amount',
         'reference_number',
@@ -78,5 +81,13 @@ class Expense extends Model
     public function recurringExpense(): BelongsTo
     {
         return $this->belongsTo(Expense::class, 'recurring_expense_id');
+    }
+
+    /**
+     * The approval requests for this expense.
+     */
+    public function approvalRequests(): MorphMany
+    {
+        return $this->morphMany(ApprovalRequest::class, 'approvable');
     }
 }
