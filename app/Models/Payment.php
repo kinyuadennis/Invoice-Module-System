@@ -24,6 +24,17 @@ class Payment extends Model
         'gateway_metadata',
         'gateway_status',
         'status',
+        'fraud_status',
+        'fraud_score',
+        'fraud_checks',
+        'fraud_reason',
+        'ip_address',
+        'user_agent',
+        'device_fingerprint',
+        'fraud_reviewed_at',
+        'fraud_reviewed_by',
+        'retry_count',
+        'last_retry_at',
     ];
 
     protected $casts = [
@@ -32,6 +43,10 @@ class Payment extends Model
         'amount' => 'decimal:2',
         'refunded_amount' => 'decimal:2',
         'gateway_metadata' => 'array',
+        'fraud_score' => 'decimal:2',
+        'fraud_checks' => 'array',
+        'fraud_reviewed_at' => 'datetime',
+        'last_retry_at' => 'datetime',
     ];
 
     /**
@@ -56,6 +71,22 @@ class Payment extends Model
     public function refunds(): HasMany
     {
         return $this->hasMany(Refund::class);
+    }
+
+    /**
+     * The bank transaction matched to this payment.
+     */
+    public function bankTransaction(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(BankTransaction::class);
+    }
+
+    /**
+     * The user who reviewed this payment for fraud.
+     */
+    public function fraudReviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'fraud_reviewed_by');
     }
 
     /**

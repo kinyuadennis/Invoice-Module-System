@@ -513,7 +513,7 @@ Final phase implementing UX improvements, comprehensive error handling, bug prev
 - Create user guide for new features
 - Document API endpoints
 - Add code comments for complex logic
-- 
+-
 
 ### To-dos
 

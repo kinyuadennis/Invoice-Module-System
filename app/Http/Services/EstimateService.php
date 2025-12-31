@@ -205,6 +205,14 @@ class EstimateService
         $estimate->load('items');
         $this->updateTotals($estimate);
 
+        // Log client activity if client exists
+        if ($estimate->client_id) {
+            $client = $estimate->client;
+            $activityService = app(\App\Http\Services\ClientActivityService::class);
+            $estimateNumber = $estimate->full_number ?? $estimate->estimate_number ?? $estimate->estimate_reference ?? "EST-{$estimate->id}";
+            $activityService->logEstimateCreated($client, $estimate->id, $estimateNumber, $user->id);
+        }
+
         return $estimate;
     }
 
@@ -379,6 +387,15 @@ class EstimateService
             'status' => 'converted',
             'converted_to_invoice_id' => $invoice->id,
         ]);
+
+        // Log client activity if client exists
+        if ($estimate->client_id) {
+            $client = $estimate->client;
+            $activityService = app(\App\Http\Services\ClientActivityService::class);
+            $estimateNumber = $estimate->full_number ?? $estimate->estimate_number ?? $estimate->estimate_reference ?? "EST-{$estimate->id}";
+            $invoiceNumber = $invoice->full_number ?? $invoice->invoice_number ?? $invoice->invoice_reference ?? "INV-{$invoice->id}";
+            $activityService->logEstimateConverted($client, $estimate->id, $estimateNumber, $invoice->id, $invoiceNumber, $user->id);
+        }
 
         return $invoice;
     }

@@ -218,6 +218,24 @@ Route::middleware('auth')->group(function () {
         Route::put('/company/payment-methods/{paymentMethod}', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'update'])->name('company.payment-methods.update');
         Route::delete('/company/payment-methods/{paymentMethod}', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'destroy'])->name('company.payment-methods.destroy');
         Route::post('/company/payment-methods/reorder', [\App\Http\Controllers\User\CompanyPaymentMethodController::class, 'reorder'])->name('company.payment-methods.reorder');
+
+        // Bank Reconciliations
+        Route::resource('bank-reconciliations', \App\Http\Controllers\User\BankReconciliationController::class);
+        Route::post('/bank-reconciliations/{reconciliation}/auto-match', [\App\Http\Controllers\User\BankReconciliationController::class, 'autoMatch'])->name('bank-reconciliations.auto-match');
+        Route::post('/bank-reconciliations/{reconciliation}/complete', [\App\Http\Controllers\User\BankReconciliationController::class, 'complete'])->name('bank-reconciliations.complete');
+        Route::post('/bank-reconciliations/import-transactions', [\App\Http\Controllers\User\BankReconciliationController::class, 'importTransactions'])->name('bank-reconciliations.import-transactions');
+        Route::get('/bank-reconciliations/transactions/{transactionId}/matches', [\App\Http\Controllers\User\BankReconciliationController::class, 'findMatches'])->name('bank-reconciliations.transactions.find-matches');
+        Route::post('/bank-reconciliations/transactions/{transactionId}/match', [\App\Http\Controllers\User\BankReconciliationController::class, 'matchTransaction'])->name('bank-reconciliations.transactions.match');
+        Route::get('/bank-reconciliations/{reconciliation}/transactions', [\App\Http\Controllers\User\BankReconciliationController::class, 'getTransactions'])->name('bank-reconciliations.transactions');
+
+        // Data Import/Export
+        Route::get('/data-import', [\App\Http\Controllers\User\DataImportExportController::class, 'showImportForm'])->name('data-import.show');
+        Route::post('/data-import/clients', [\App\Http\Controllers\User\DataImportExportController::class, 'importClients'])->name('data-import.clients');
+        Route::get('/data-import/clients/template', [\App\Http\Controllers\User\DataImportExportController::class, 'downloadClientTemplate'])->name('data-import.clients.template');
+        Route::get('/data-export/clients/csv', [\App\Http\Controllers\User\DataImportExportController::class, 'exportClients'])->name('data-export.clients.csv');
+        Route::get('/data-export/clients/excel', [\App\Http\Controllers\User\DataImportExportController::class, 'exportClientsExcel'])->name('data-export.clients.excel');
+        Route::get('/data-export/invoices/csv', [\App\Http\Controllers\User\DataImportExportController::class, 'exportInvoices'])->name('data-export.invoices.csv');
+        Route::get('/data-export/invoices/excel', [\App\Http\Controllers\User\DataImportExportController::class, 'exportInvoicesExcel'])->name('data-export.invoices.excel');
     });
 
     // Admin area (prefix: /admin)
@@ -249,6 +267,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/system-settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'index'])->name('system-settings.index');
         Route::put('/system-settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'update'])->name('system-settings.update');
         Route::resource('audit-logs', \App\Http\Controllers\Admin\AuditLogController::class)->only(['index', 'show']);
+        Route::resource('tickets', \App\Http\Controllers\Admin\TicketController::class);
+        Route::post('/tickets/{ticket}/comments', [\App\Http\Controllers\Admin\TicketController::class, 'addComment'])->name('tickets.comments.store');
+        Route::post('/tickets/{ticket}/assign', [\App\Http\Controllers\Admin\TicketController::class, 'assign'])->name('tickets.assign');
+        Route::post('/tickets/{ticket}/status', [\App\Http\Controllers\Admin\TicketController::class, 'updateStatus'])->name('tickets.status.update');
         Route::get('/billing/plans', [\App\Http\Controllers\Admin\BillingController::class, 'plans'])->name('billing.plans');
         Route::get('/billing/subscriptions', [\App\Http\Controllers\Admin\BillingController::class, 'subscriptions'])->name('billing.subscriptions');
         Route::get('/billing/subscriptions/{id}', [\App\Http\Controllers\Admin\BillingController::class, 'showSubscription'])->name('billing.subscriptions.show');

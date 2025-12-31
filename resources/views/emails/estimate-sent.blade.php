@@ -45,6 +45,14 @@
         </p>
         @endif
 
+        @if(isset($accessUrl) && $accessUrl)
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ $accessUrl }}" style="display: inline-block; background-color: #2B6EF6; color: #fff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                View & Approve Estimate Online
+            </a>
+        </div>
+        @endif
+
         <p>Please review the estimate and let us know if you have any questions or if you'd like to proceed with this proposal.</p>
 
         <p>Thank you for considering our services!</p>

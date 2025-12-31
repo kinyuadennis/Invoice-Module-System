@@ -19,11 +19,11 @@
 
 <x-landing.footer />
 
-<x-demo-walkthrough />
+    <x-demo-walkthrough />
 
 @push('scripts')
 @vite('resources/js/demo-landing.js')
-<script type="application/ld+json">
+    <script type="application/ld+json">
     {
         "@@context": "https://schema.org",
         "@type": "FAQPage",
@@ -35,10 +35,10 @@
                 "text": "eTIMS is Kenya’s new digital invoicing system by KRA. All invoices generated on our platform can be pushed directly to KRA via our built-in eTIMS integration."
             }
         }, {
-            "@type": "Question",
+                "@type": "Question",
             "name": "How do I accept mobile payments?",
-            "acceptedAnswer": {
-                "@type": "Answer",
+                "acceptedAnswer": {
+                    "@type": "Answer",
                 "text": "We integrate with the Daraja 2.0 API. Simply enable Safaricom M-PESA in your settings, and your customers can pay directly from the invoice link."
             }
         }, {
@@ -71,7 +71,7 @@
             }
         }]
     }
-</script>
+    </script>
 @endpush
 
 @endsection

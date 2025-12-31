@@ -310,22 +310,38 @@ class EstimateController extends Controller
             ]);
         }
 
-        // Send email to client
         try {
-            // Generate PDF path for estimate
-            $pdfPath = $this->generatePdfPath($estimate);
+            // Generate access token for customer portal
+            $tokenService = app(\App\Http\Services\EstimateAccessTokenService::class);
+            $accessToken = $tokenService->generateToken($estimate, 30); // 30 days expiry
+            $accessUrl = $tokenService->getAccessUrl($accessToken);
 
-            // Send email with PDF attachment
+            // Generate PDF
+            $pdfRenderer = app(\App\Services\PdfEstimateRenderer::class);
+            $pdfContent = $pdfRenderer->render($estimate);
+
+            // Save PDF to temporary file
+            $tempPath = storage_path('app/temp/estimate-'.$estimate->id.'-'.time().'.pdf');
+            if (! is_dir(dirname($tempPath))) {
+                mkdir(dirname($tempPath), 0755, true);
+            }
+            file_put_contents($tempPath, $pdfContent);
+
+            // Send email with PDF attachment and approval link
             \Illuminate\Support\Facades\Mail::to($estimate->client->email)
-                ->send(new \App\Mail\EstimateSentMail($estimate, $pdfPath));
+                ->send(new \App\Mail\EstimateSentMail($estimate, $tempPath, $accessUrl));
 
-            // Clean up temporary PDF file if it exists
-            if ($pdfPath && file_exists($pdfPath)) {
-                unlink($pdfPath);
+            // Clean up temporary PDF file after sending
+            if (file_exists($tempPath)) {
+                unlink($tempPath);
             }
 
-            // Only update status to 'sent' after successful email delivery
+            // Update status to 'sent' after successful email delivery
             $estimate->update(['status' => 'sent']);
+
+            // Log client activity
+            $activityService = app(\App\Http\Services\ClientActivityService::class);
+            $activityService->logEstimateSent($estimate->client, $estimate->id, $estimate->full_number ?? $estimate->estimate_number);
 
             return back()->with('success', 'Estimate sent to client successfully.');
         } catch (\Exception $e) {
@@ -341,16 +357,6 @@ class EstimateController extends Controller
     }
 
     /**
-     * Generate PDF path for estimate (temporary implementation)
-     */
-    protected function generatePdfPath(Estimate $estimate): ?string
-    {
-        // For now, return null - PDF generation can be implemented later
-        // This allows the email to be sent without PDF attachment
-        return null;
-    }
-
-    /**
      * Generate PDF for estimate
      */
     public function pdf($id)
@@ -361,11 +367,22 @@ class EstimateController extends Controller
             ->with(['client', 'items', 'company'])
             ->findOrFail($id);
 
-        // TODO: Implement PDF generation
-        // Similar to invoice PDF generation
+        try {
+            $pdfRenderer = app(\App\Services\PdfEstimateRenderer::class);
+            $pdfContent = $pdfRenderer->render($estimate);
 
-        return response()->json([
-            'message' => 'PDF generation not yet implemented',
-        ], 501);
+            $filename = 'estimate-'.($estimate->full_number ?? $estimate->estimate_number ?? $estimate->estimate_reference ?? $estimate->id).'.pdf';
+
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+        } catch (\Exception $e) {
+            \Log::error('Estimate PDF generation error', [
+                'estimate_id' => $estimate->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            abort(500, 'Failed to generate PDF');
+        }
     }
 }

@@ -31,6 +31,7 @@ class InvoiceController extends Controller
         }
 
         $invoice = $accessToken->invoice;
+
         $invoice->load(['company', 'client', 'items', 'payments']);
 
         // Get payment summary
@@ -68,7 +69,7 @@ class InvoiceController extends Controller
         // Render PDF from snapshot
         try {
             $pdfContent = $this->pdfRenderer->render($snapshot);
-            
+
             // Generate filename
             $filename = 'invoice-'.($snapshot->snapshot_data['invoice_details']['full_number'] ?? $invoice->invoice_number ?? $invoice->id).'.pdf';
 

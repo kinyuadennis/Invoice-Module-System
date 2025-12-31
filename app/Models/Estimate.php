@@ -107,6 +107,14 @@ class Estimate extends Model
         return $this->morphMany(ApprovalRequest::class, 'approvable');
     }
 
+    /**
+     * The access tokens for this estimate.
+     */
+    public function accessTokens(): HasMany
+    {
+        return $this->hasMany(EstimateAccessToken::class);
+    }
+
     public function isConverted(): bool
     {
         return $this->status === 'converted' && $this->converted_to_invoice_id !== null;

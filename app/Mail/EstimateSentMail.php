@@ -19,7 +19,8 @@ class EstimateSentMail extends Mailable
      */
     public function __construct(
         public Estimate $estimate,
-        public ?string $pdfPath = null
+        public ?string $pdfPath = null,
+        public ?string $accessUrl = null
     ) {}
 
     /**
@@ -57,6 +58,7 @@ class EstimateSentMail extends Mailable
                 'estimateNumber' => $estimateNumber,
                 'total' => $total,
                 'expiryDate' => $expiryDate,
+                'accessUrl' => $this->accessUrl,
             ],
         );
     }

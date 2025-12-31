@@ -48,4 +48,28 @@ class Client extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    /**
+     * Notes for this client.
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(ClientNote::class)->orderBy('is_pinned', 'desc')->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Tags for this client.
+     */
+    public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(ClientTag::class, 'client_tag_client');
+    }
+
+    /**
+     * Activity logs for this client.
+     */
+    public function activities(): HasMany
+    {
+        return $this->hasMany(ClientActivity::class)->latest();
+    }
 }

@@ -1,9 +1,14 @@
 <?php
 
 use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Foundation\Console\Kernel;
 
 return function (Schedule $schedule): void {
+    // Send payment reminders daily at 9:00 AM
+    // Uses company-specific preferences (days before due, frequency, etc.)
+    // Expire estimates daily at midnight
+    $schedule->command('estimates:expire')
+        ->daily();
+
     // Send payment reminders daily at 9:00 AM
     // Uses company-specific preferences (days before due, frequency, etc.)
     $schedule->command('invoices:send-reminders')

@@ -100,6 +100,30 @@ class Company extends Model
     }
 
     /**
+     * All bank transactions belonging to this company.
+     */
+    public function bankTransactions(): HasMany
+    {
+        return $this->hasMany(BankTransaction::class);
+    }
+
+    /**
+     * All bank reconciliations belonging to this company.
+     */
+    public function bankReconciliations(): HasMany
+    {
+        return $this->hasMany(BankReconciliation::class);
+    }
+
+    /**
+     * All client tags belonging to this company.
+     */
+    public function clientTags(): HasMany
+    {
+        return $this->hasMany(ClientTag::class);
+    }
+
+    /**
      * All platform fees belonging to this company.
      */
     public function platformFees(): HasMany
