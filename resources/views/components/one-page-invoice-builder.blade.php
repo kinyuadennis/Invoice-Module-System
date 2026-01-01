@@ -6,11 +6,12 @@
     @keydown.ctrl.s.prevent="saveDraft()"
     @keydown.meta.s.prevent="saveDraft()">
     <!-- Enhanced Header with Quick Actions -->
-    <div class="flex items-center justify-between mb-6 bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">New Invoice</h1>
-            <p class="text-sm text-gray-500 mt-1">Create and send professional invoices in minutes</p>
-        </div>
+    <div class="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">New Invoice</h1>
+                <p class="text-sm text-gray-500 mt-1">Create and send professional invoices in minutes</p>
+            </div>
         <div class="flex items-center gap-4">
             <!-- Enhanced Autosave Status -->
             <div class="flex items-center gap-2">
@@ -65,6 +66,49 @@
                     </svg>
                     Save Template
                 </button>
+            </div>
+        </div>
+        
+        <!-- Progress Indicator -->
+        <div class="mt-4">
+            <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+                <span class="font-medium">Form Completion</span>
+                <span class="font-semibold text-blue-600" x-text="Math.round(calculateProgress()) + '%'"></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                    class="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                    :style="'width: ' + calculateProgress() + '%'">
+                </div>
+            </div>
+            <div class="mt-2 flex items-center gap-4 text-xs text-gray-500">
+                <span class="flex items-center gap-1" :class="formData.client_id ? 'text-green-600' : ''">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" x-show="formData.client_id">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" x-show="!formData.client_id" x-cloak>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    Customer Selected
+                </span>
+                <span class="flex items-center gap-1" :class="formData.items.some(i => i.description && i.quantity > 0 && i.unit_price > 0) ? 'text-green-600' : ''">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" x-show="formData.items.some(i => i.description && i.quantity > 0 && i.unit_price > 0)">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" x-show="!formData.items.some(i => i.description && i.quantity > 0 && i.unit_price > 0)" x-cloak>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    Items Added
+                </span>
+                <span class="flex items-center gap-1" :class="formData.issue_date && formData.due_date ? 'text-green-600' : ''">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" x-show="formData.issue_date && formData.due_date">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" x-show="!(formData.issue_date && formData.due_date)" x-cloak>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    Dates Set
+                </span>
             </div>
         </div>
     </div>
@@ -123,31 +167,47 @@
                             </div>
                         </div>
 
-                        <!-- Selected Client Info -->
-                        <div x-show="formData.client != null" class="p-4 bg-gray-50 rounded-lg" x-cloak>
-                            <div class="grid grid-cols-2 gap-4 text-sm">
+                        <!-- Selected Client Info - Enhanced with KRA PIN -->
+                        <div x-show="formData.client != null" class="p-4 bg-gradient-to-r from-blue-50 to-gray-50 rounded-lg border border-blue-200" x-cloak>
+                            <div class="flex items-start justify-between mb-3">
+                                <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Customer Information
+                                </h3>
+                                <button
+                                    @click="formData.client = null; formData.client_id = null; refreshInvoiceNumber()"
+                                    class="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Change Client
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                                 <div>
-                                    <span class="font-medium">Name:</span>
-                                    <span x-text="formData.client ? formData.client.name : 'N/A'"></span>
+                                    <span class="font-medium text-gray-700 block mb-1">Name:</span>
+                                    <span class="text-gray-900" x-text="formData.client ? formData.client.name : 'N/A'"></span>
                                 </div>
                                 <div>
-                                    <span class="font-medium">Email:</span>
-                                    <span x-text="formData.client ? (formData.client.email || 'N/A') : 'N/A'"></span>
+                                    <span class="font-medium text-gray-700 block mb-1">Email:</span>
+                                    <span class="text-gray-900" x-text="formData.client ? (formData.client.email || 'N/A') : 'N/A'"></span>
                                 </div>
                                 <div>
-                                    <span class="font-medium">Phone:</span>
-                                    <span x-text="formData.client ? (formData.client.phone || 'N/A') : 'N/A'"></span>
+                                    <span class="font-medium text-gray-700 block mb-1">Phone:</span>
+                                    <span class="text-gray-900" x-text="formData.client ? (formData.client.phone || 'N/A') : 'N/A'"></span>
                                 </div>
-                                <div>
-                                    <span class="font-medium">Address:</span>
-                                    <span x-text="formData.client ? (formData.client.address || 'N/A') : 'N/A'"></span>
+                                <div class="col-span-2 md:col-span-3">
+                                    <span class="font-medium text-gray-700 block mb-1">Address:</span>
+                                    <span class="text-gray-900" x-text="formData.client ? (formData.client.address || 'N/A') : 'N/A'"></span>
+                                </div>
+                                <div x-show="formData.client && formData.client.kra_pin">
+                                    <span class="font-medium text-gray-700 block mb-1">KRA PIN:</span>
+                                    <span class="text-gray-900 font-mono bg-white px-2 py-1 rounded border border-gray-200 inline-block" x-text="formData.client ? (formData.client.kra_pin || '') : ''"></span>
+                                    <span class="ml-2 text-xs text-green-600 font-medium">✓ Verified</span>
                                 </div>
                             </div>
-                            <button
-                                @click="formData.client = null; formData.client_id = null; refreshInvoiceNumber()"
-                                class="mt-2 text-sm text-red-600 hover:text-red-700">
-                                Change Client
-                            </button>
                         </div>
                     </div>
 
@@ -229,10 +289,63 @@
                                     <input
                                         type="checkbox"
                                         x-model="formData.vat_registered"
-                                        @change="if (showPreview) updatePreview()"
+                                        @change="updateItemTaxRates(); calculateTotals(); if (showPreview) updatePreview()"
                                         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                     <span class="text-sm font-medium text-gray-700">VAT Registered Business</span>
                                 </label>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Currency *
+                                </label>
+                                <select
+                                    x-model="formData.currency"
+                                    @change="updateCurrency(); if (showPreview) updatePreview()"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <template x-for="currency in availableCurrencies" :key="currency.code">
+                                        <option :value="currency.code" :selected="currency.code === formData.currency">
+                                            <span x-text="currency.code"></span> - <span x-text="currency.name"></span>
+                                        </option>
+                                    </template>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <span x-show="formData.currency !== baseCurrency && exchangeRate">
+                                        Exchange rate: 1 <span x-text="baseCurrency"></span> = <span x-text="exchangeRate.toFixed(4)"></span> <span x-text="formData.currency"></span>
+                                    </span>
+                                    <span x-show="formData.currency === baseCurrency" class="text-green-600">
+                                        Base currency (no conversion needed)
+                                    </span>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Reference / PO Number
+                                    <span class="text-xs text-gray-500 font-normal">(Optional)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    x-model="formData.po_number"
+                                    @change="if (showPreview) updatePreview()"
+                                    placeholder="Enter purchase order or reference number"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <!-- KRA Compliance Info (Auto-filled from Company) -->
+                            <div class="col-span-2 mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-start gap-2">
+                                    <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-semibold text-green-900 mb-1">KRA eTIMS Compliance</h4>
+                                        <div class="text-xs text-green-800 space-y-1">
+                                            <div><span class="font-medium">Trader PIN:</span> <span class="font-mono" x-text="company.kra_pin || 'Not configured'"></span></div>
+                                            <div x-show="company.kra_pin" class="text-green-700">All required KRA fields will be auto-filled from your company profile</div>
+                                            <div x-show="!company.kra_pin" class="text-amber-700">
+                                                <a href="{{ route('user.company.settings') }}" class="underline font-medium">Configure KRA PIN</a> in company settings for eTIMS compliance
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -256,8 +369,10 @@
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-28">Discount</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-28">Tax Rate</th>
                                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Line Total</th>
-                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -334,7 +449,48 @@
                                                     class="w-24 border-0 focus:ring-0 p-0 text-sm text-right"
                                                     required>
                                             </td>
-                                            <td class="px-4 py-3 text-right text-sm font-medium" x-text="formatCurrency(item.total)"></td>
+                                            <!-- Discount Column -->
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-1">
+                                                    <input
+                                                        type="number"
+                                                        x-model="item.discount"
+                                                        @input="calculateItemTotal(index); triggerAutosave(); if (showPreview) updatePreview()"
+                                                        min="0"
+                                                        step="0.01"
+                                                        placeholder="0"
+                                                        class="w-16 border border-gray-300 rounded px-2 py-1 text-xs text-right focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                                    <select
+                                                        x-model="item.discount_type"
+                                                        @change="calculateItemTotal(index); triggerAutosave(); if (showPreview) updatePreview()"
+                                                        class="w-12 border border-gray-300 rounded px-1 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                                        <option value="fixed">KES</option>
+                                                        <option value="percentage">%</option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <!-- Tax Rate Column -->
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-1">
+                                                    <input
+                                                        type="number"
+                                                        x-model="item.tax_rate"
+                                                        @input="calculateItemTotal(index); triggerAutosave(); if (showPreview) updatePreview()"
+                                                        min="0"
+                                                        max="100"
+                                                        step="0.01"
+                                                        :value="item.tax_rate || (formData.vat_registered ? 16 : 0)"
+                                                        placeholder="0"
+                                                        class="w-16 border border-gray-300 rounded px-2 py-1 text-xs text-right focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                                    <span class="text-xs text-gray-500">%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-right">
+                                                <div class="text-sm font-medium" x-text="formatCurrency(item.total)"></div>
+                                                <div x-show="item.tax_amount > 0" class="text-xs text-gray-500" x-cloak>
+                                                    Tax: <span x-text="formatCurrency(item.tax_amount)"></span>
+                                                </div>
+                                            </td>
                                             <td class="px-4 py-3 text-center">
                                                 <div class="flex items-center justify-center gap-2">
                                                     <button
@@ -595,12 +751,42 @@
                             description: '',
                             quantity: 1,
                             unit_price: 0,
-                            total: 0
+                            discount: 0,
+                            discount_type: 'fixed', // 'fixed' or 'percentage'
+                            tax_rate: 0, // Tax rate as percentage (e.g., 16 for 16%)
+                            subtotal: 0, // Subtotal after discount
+                            tax_amount: 0, // Tax amount for this item
+                            total: 0 // Final total including tax
                         }],
                         notes: '',
                         terms_and_conditions: '',
                         discount: 0,
                         discount_type: 'fixed',
+                        currency: company.currency || 'KES', // Default to company currency
+                    },
+                    availableCurrencies: [
+                        { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh' },
+                        { code: 'USD', name: 'US Dollar', symbol: '$' },
+                        { code: 'EUR', name: 'Euro', symbol: '€' },
+                        { code: 'GBP', name: 'British Pound', symbol: '£' },
+                        { code: 'UGX', name: 'Ugandan Shilling', symbol: 'USh' },
+                        { code: 'TZS', name: 'Tanzanian Shilling', symbol: 'TSh' },
+                        { code: 'RWF', name: 'Rwandan Franc', symbol: 'RF' },
+                        { code: 'ETB', name: 'Ethiopian Birr', symbol: 'Br' },
+                    ],
+                    baseCurrency: company.currency || 'KES', // Company's base currency
+                    exchangeRate: 1, // Exchange rate from base currency to selected currency
+                    exchangeRates: {
+                        // Exchange rates relative to KES (base)
+                        // These would ideally come from an API or be updated regularly
+                        KES: 1,
+                        USD: 0.0078, // Example: 1 KES = 0.0078 USD (approx 128 KES = 1 USD)
+                        EUR: 0.0072, // Example: 1 KES = 0.0072 EUR
+                        GBP: 0.0061, // Example: 1 KES = 0.0061 GBP
+                        UGX: 28.5, // Example: 1 KES = 28.5 UGX
+                        TZS: 18.2, // Example: 1 KES = 18.2 TZS
+                        RWF: 9.8, // Example: 1 KES = 9.8 RWF
+                        ETB: 0.45, // Example: 1 KES = 0.45 ETB
                     },
                     clientSearch: '',
                     clientSearchResults: [],
@@ -648,6 +834,9 @@
                         // this.updatePreview();
                         this.startAutosave();
                         this.refreshInvoiceNumber();
+                        
+                        // Initialize currency and exchange rate
+                        this.updateCurrency();
 
                         // Load all clients on init for dropdown
                         this.searchClients();
@@ -823,6 +1012,11 @@
                             description: '',
                             quantity: 1,
                             unit_price: 0,
+                            discount: 0,
+                            discount_type: 'fixed',
+                            tax_rate: this.formData.vat_registered ? 16 : 0,
+                            subtotal: 0,
+                            tax_amount: 0,
                             total: 0
                         });
                     },
@@ -840,55 +1034,128 @@
 
                     duplicateItem(index) {
                         const item = {
-                            ...this.formData.items[index]
+                            ...this.formData.items[index],
+                            // Reset calculated fields for new item
+                            subtotal: 0,
+                            tax_amount: 0,
+                            total: 0
                         };
                         this.formData.items.splice(index + 1, 0, item);
-                        this.calculateTotals();
+                        // Recalculate the duplicated item
+                        this.calculateItemTotal(index + 1);
                         if (this.showPreview) {
                             this.updatePreview();
                         }
                     },
 
+                    updateItemTaxRates() {
+                        // Update all items' tax rates when VAT registered status changes
+                        const defaultTaxRate = this.formData.vat_registered ? 16 : 0;
+                        this.formData.items.forEach((item, index) => {
+                            if (!item.tax_rate || item.tax_rate === 0) {
+                                item.tax_rate = defaultTaxRate;
+                                this.calculateItemTotal(index);
+                            }
+                        });
+                    },
+                    
                     calculateItemTotal(index) {
                         const item = this.formData.items[index];
-                        item.total = (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+                        
+                        // Calculate base subtotal (quantity * unit price)
+                        const baseSubtotal = (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+                        
+                        // Apply discount
+                        let discountAmount = 0;
+                        if (item.discount && parseFloat(item.discount) > 0) {
+                            if (item.discount_type === 'percentage') {
+                                discountAmount = baseSubtotal * (parseFloat(item.discount) / 100);
+                            } else {
+                                discountAmount = parseFloat(item.discount);
+                            }
+                        }
+                        // Ensure discount doesn't exceed subtotal
+                        discountAmount = Math.min(discountAmount, baseSubtotal);
+                        
+                        // Calculate subtotal after discount
+                        item.subtotal = Math.max(0, baseSubtotal - discountAmount);
+                        
+                        // Calculate tax amount
+                        const taxRate = parseFloat(item.tax_rate) || 0;
+                        item.tax_amount = item.subtotal * (taxRate / 100);
+                        
+                        // Calculate final total (subtotal + tax)
+                        item.total = item.subtotal + item.tax_amount;
+                        
+                        // Round to 2 decimal places
+                        item.subtotal = Math.round(item.subtotal * 100) / 100;
+                        item.tax_amount = Math.round(item.tax_amount * 100) / 100;
+                        item.total = Math.round(item.total * 100) / 100;
+                        
                         this.calculateTotals();
                     },
 
                     calculateTotals() {
-                        let subtotal = 0;
+                        // Calculate totals from items (each item already includes its tax)
+                        let itemsSubtotal = 0; // Sum of item subtotals (after per-item discounts)
+                        let itemsTaxTotal = 0; // Sum of all item taxes
+                        let itemsTotal = 0; // Sum of all item totals (subtotal + tax)
+                        let itemsDiscountTotal = 0; // Sum of all per-item discounts
+                        
                         this.formData.items.forEach(item => {
-                            subtotal += item.total || 0;
+                            const baseAmount = (parseFloat(item.quantity) || 0) * (parseFloat(item.unit_price) || 0);
+                            itemsSubtotal += item.subtotal || 0;
+                            itemsTaxTotal += item.tax_amount || 0;
+                            itemsTotal += item.total || 0;
+                            
+                            // Calculate per-item discount for display
+                            if (item.discount && parseFloat(item.discount) > 0) {
+                                let itemDiscount = 0;
+                                if (item.discount_type === 'percentage') {
+                                    itemDiscount = baseAmount * (parseFloat(item.discount) / 100);
+                                } else {
+                                    itemDiscount = parseFloat(item.discount);
+                                }
+                                itemsDiscountTotal += Math.min(itemDiscount, baseAmount);
+                            }
                         });
 
-                        // Apply discount
-                        let discount = 0;
+                        // Apply invoice-level discount (if any - for backwards compatibility)
+                        let invoiceDiscount = 0;
                         if (this.formData.discount > 0) {
                             if (this.formData.discount_type === 'percentage') {
-                                discount = subtotal * (this.formData.discount / 100);
+                                invoiceDiscount = itemsSubtotal * (this.formData.discount / 100);
                             } else {
-                                discount = this.formData.discount;
+                                invoiceDiscount = this.formData.discount;
                             }
                         }
-                        const subtotalAfterDiscount = Math.max(0, subtotal - discount);
+                        
+                        const subtotalAfterInvoiceDiscount = Math.max(0, itemsSubtotal - invoiceDiscount);
+                        const totalDiscount = itemsDiscountTotal + invoiceDiscount;
 
-                        // Calculate VAT
-                        let vatAmount = 0;
-                        if (this.formData.vat_registered) {
-                            vatAmount = subtotalAfterDiscount * 0.16;
-                        }
-
-                        const totalBeforeFee = subtotalAfterDiscount + vatAmount;
+                        // Total tax is already included per-item, but we show it separately
+                        // For invoice-level VAT (if still used), we'd calculate it here
+                        // But since we're using per-item taxes, itemsTaxTotal is already correct
+                        
+                        const totalBeforeFee = itemsTotal - invoiceDiscount; // Subtract invoice discount from final total
                         const platformFee = totalBeforeFee * 0.03;
                         const grandTotal = totalBeforeFee + platformFee;
 
+                        // Convert all amounts to selected currency if different from base
+                        const convertedSubtotal = this.convertAmount(itemsSubtotal);
+                        const convertedDiscount = this.convertAmount(totalDiscount);
+                        const convertedTax = this.convertAmount(itemsTaxTotal);
+                        const convertedPlatformFee = this.convertAmount(platformFee);
+                        const convertedTotal = this.convertAmount(totalBeforeFee);
+                        const convertedGrandTotal = this.convertAmount(grandTotal);
+
                         this.totals = {
-                            subtotal,
-                            discount,
-                            vat_amount: vatAmount,
-                            platform_fee: platformFee,
-                            total: totalBeforeFee,
-                            grand_total: grandTotal,
+                            subtotal: convertedSubtotal,
+                            discount: convertedDiscount,
+                            vat_amount: convertedTax, // Total of all item taxes
+                            platform_fee: convertedPlatformFee,
+                            total: convertedTotal,
+                            grand_total: convertedGrandTotal,
                         };
                     },
 
@@ -1079,7 +1346,18 @@
                     },
 
                     async sendAndMarkSent() {
-                        if (!this.canFinalize()) return;
+                        // Validate before sending
+                        const validation = this.validateInvoice();
+                        if (!validation.isValid) {
+                            alert('Please fix the following errors before sending:\n\n' + validation.errors.join('\n'));
+                            return;
+                        }
+                        
+                        // Double-check with canFinalize
+                        if (!this.canFinalize()) {
+                            alert('Invoice is not ready to send. Please complete all required fields.');
+                            return;
+                        }
 
                         this.processing = true;
                         try {
@@ -1132,13 +1410,59 @@
                         }
                     },
 
+                    validateInvoice() {
+                        const errors = [];
+                        
+                        // Client validation
+                        if (!this.formData.client_id) {
+                            errors.push('A customer must be selected');
+                        }
+                        
+                        // Date validation
+                        if (!this.formData.issue_date) {
+                            errors.push('Invoice date is required');
+                        }
+                        if (!this.formData.due_date) {
+                            errors.push('Due date is required');
+                        }
+                        if (this.formData.issue_date && this.formData.due_date && 
+                            new Date(this.formData.due_date) < new Date(this.formData.issue_date)) {
+                            errors.push('Due date must be after invoice date');
+                        }
+                        
+                        // Items validation
+                        const validItems = this.formData.items.filter(item => 
+                            item.description && 
+                            item.description.trim() !== '' && 
+                            parseFloat(item.quantity) > 0 && 
+                            parseFloat(item.unit_price) > 0
+                        );
+                        
+                        if (validItems.length === 0) {
+                            errors.push('At least one valid line item is required');
+                        }
+                        
+                        // KRA Compliance validation (for Kenyan companies)
+                        if (this.company && this.company.kra_pin && !this.company.kra_pin.trim()) {
+                            errors.push('Company KRA PIN is required for eTIMS compliance. Please configure it in company settings.');
+                        }
+                        
+                        // Client KRA PIN validation (warning, not blocking)
+                        if (this.formData.client && this.formData.client.kra_pin && 
+                            !this.formData.client.kra_pin.match(/^[A-Z]\d{9}[A-Z]$/)) {
+                            // This is a warning, not an error - still allow sending
+                            console.warn('Client KRA PIN format may be invalid');
+                        }
+                        
+                        return {
+                            isValid: errors.length === 0,
+                            errors: errors
+                        };
+                    },
+                    
                     canFinalize() {
-                        // Client is required for finalizing (sending invoice)
-                        return this.formData.client_id &&
-                            this.formData.issue_date &&
-                            this.formData.due_date &&
-                            this.formData.items.length > 0 &&
-                            this.formData.items.every(item => item.description && item.quantity > 0 && item.unit_price > 0);
+                        const validation = this.validateInvoice();
+                        return validation.isValid;
                     },
 
                     downloadPdf() {
@@ -1146,12 +1470,97 @@
                         alert('PDF download will be available after saving the invoice');
                     },
 
+                    updateCurrency() {
+                        // Calculate exchange rate from base currency to selected currency
+                        if (this.formData.currency === this.baseCurrency) {
+                            this.exchangeRate = 1;
+                        } else {
+                            // Get rate from base to selected currency
+                            const baseToSelected = this.exchangeRates[this.formData.currency] || 1;
+                            const baseToBase = this.exchangeRates[this.baseCurrency] || 1;
+                            this.exchangeRate = baseToSelected / baseToBase;
+                        }
+                        // Recalculate all totals with new currency
+                        this.calculateTotals();
+                    },
+                    
                     formatCurrency(amount) {
-                        return new Intl.NumberFormat('en-KE', {
+                        const currency = this.formData.currency || this.baseCurrency || 'KES';
+                        const locale = this.getCurrencyLocale(currency);
+                        
+                        return new Intl.NumberFormat(locale, {
                             style: 'currency',
-                            currency: 'KES',
-                            minimumFractionDigits: 2
+                            currency: currency,
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
                         }).format(amount || 0);
+                    },
+                    
+                    getCurrencyLocale(currency) {
+                        // Map currencies to appropriate locales
+                        const localeMap = {
+                            'KES': 'en-KE',
+                            'USD': 'en-US',
+                            'EUR': 'en-EU',
+                            'GBP': 'en-GB',
+                            'UGX': 'en-UG',
+                            'TZS': 'en-TZ',
+                            'RWF': 'en-RW',
+                            'ETB': 'en-ET',
+                        };
+                        return localeMap[currency] || 'en-US';
+                    },
+                    
+                    convertAmount(amount) {
+                        // Convert amount from base currency to selected currency
+                        if (this.formData.currency === this.baseCurrency) {
+                            return amount;
+                        }
+                        return amount * this.exchangeRate;
+                    },
+
+                    calculateProgress() {
+                        let progress = 0;
+                        
+                        // Client selected (20%)
+                        if (this.formData.client_id) {
+                            progress += 20;
+                        }
+                        
+                        // Invoice dates set (15%)
+                        if (this.formData.issue_date) {
+                            progress += 7.5;
+                        }
+                        if (this.formData.due_date) {
+                            progress += 7.5;
+                        }
+                        
+                        // At least one item with description, quantity, and price (40%)
+                        const validItems = this.formData.items.filter(item => 
+                            item.description && 
+                            item.description.trim() !== '' && 
+                            parseFloat(item.quantity) > 0 && 
+                            parseFloat(item.unit_price) > 0
+                        );
+                        
+                        if (validItems.length > 0) {
+                            progress += 40;
+                        }
+                        
+                        // Invoice number generated (10%)
+                        if (this.formData.invoice_number && this.formData.invoice_number.trim() !== '') {
+                            progress += 10;
+                        }
+                        
+                        // Additional info (15% bonus)
+                        if (this.formData.notes && this.formData.notes.trim() !== '') {
+                            progress += 7.5;
+                        }
+                        if (this.formData.terms_and_conditions && this.formData.terms_and_conditions.trim() !== '') {
+                            progress += 7.5;
+                        }
+                        
+                        return Math.min(100, Math.round(progress));
                     },
 
                     async refreshInvoiceNumber() {

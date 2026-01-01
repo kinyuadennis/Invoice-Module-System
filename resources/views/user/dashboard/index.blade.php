@@ -10,7 +10,38 @@
             <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p class="mt-1 text-sm text-gray-600">Welcome back, {{ auth()->user()->name }}!</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <!-- Quick Actions -->
+            <div class="flex flex-wrap items-center gap-2" id="dashboard-quick-actions">
+                <a href="{{ route('user.invoices.create') }}" id="dashboard-new-invoice-btn" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#2B6EF6] rounded-lg hover:bg-[#2563EB] transition-colors">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Invoice
+                </a>
+                @if(Schema::hasTable('estimates'))
+                <a href="{{ route('user.estimates.create') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="hidden md:inline">New Estimate</span>
+                </a>
+                @endif
+                @if(($stats['overdueCount'] ?? 0) > 0)
+                <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span class="hidden md:inline">Chase Overdue</span>
+                </a>
+                @endif
+                <a href="{{ route('user.reports.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="hidden md:inline">Reports</span>
+                </a>
+            </div>
             @if(isset($companies) && $companies->count() > 0)
                 <a href="{{ route('user.companies.create') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" title="Add another company">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,14 +50,6 @@
                     <span class="hidden md:inline">Add Company</span>
                 </a>
             @endif
-            <a href="{{ route('user.invoices.create') }}" id="dashboard-new-invoice-btn">
-            <x-button variant="primary">
-                <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                New Invoice
-            </x-button>
-        </a>
         </div>
     </div>
     
@@ -214,48 +237,226 @@
             </div>
         </x-card>
     </div>
-    
-    <!-- Status Distribution & Quick Filters -->
-    @if(isset($statusDistribution) && count($statusDistribution) > 0)
+
+    <!-- Additional Metrics KPI Cards -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Average Invoice Value -->
+        <x-card padding="sm" class="hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-indigo-500 rounded-lg p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">Avg Invoice Value</dt>
+                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($stats['averageInvoiceValue'] ?? 0, 2) }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+
+        <!-- Invoice Conversion Rate -->
+        @if(isset($additionalMetrics) && ($additionalMetrics['totalEstimates'] ?? 0) > 0)
+        <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.estimates.index') }}'">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-teal-500 rounded-lg p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">Estimate Conversion</dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ number_format($additionalMetrics['invoiceConversionRate'] ?? 0, 1) }}%</dd>
+                        <dd class="text-xs text-gray-500 mt-1">{{ $additionalMetrics['convertedEstimates'] ?? 0 }} / {{ $additionalMetrics['totalEstimates'] ?? 0 }} converted</dd>
+                        <dd class="mt-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-teal-500 h-2 rounded-full" style="width: {{ min(100, $additionalMetrics['invoiceConversionRate'] ?? 0) }}%"></div>
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+        @endif
+
+        <!-- Payment Success Rate -->
+        <x-card padding="sm" class="hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 {{ ($additionalMetrics['paymentSuccessRate'] ?? 0) >= 80 ? 'bg-green-500' : (($additionalMetrics['paymentSuccessRate'] ?? 0) >= 60 ? 'bg-yellow-500' : 'bg-red-500') }} rounded-lg p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">Payment Success Rate</dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ number_format($additionalMetrics['paymentSuccessRate'] ?? 0, 1) }}%</dd>
+                        <dd class="text-xs text-gray-500 mt-1">{{ $additionalMetrics['paidOnTimeCount'] ?? 0 }} paid on time</dd>
+                        <dd class="mt-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="{{ ($additionalMetrics['paymentSuccessRate'] ?? 0) >= 80 ? 'bg-green-500' : (($additionalMetrics['paymentSuccessRate'] ?? 0) >= 60 ? 'bg-yellow-500' : 'bg-red-500') }} h-2 rounded-full" style="width: {{ min(100, $additionalMetrics['paymentSuccessRate'] ?? 0) }}%"></div>
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </x-card>
+    </div>
+
+    <!-- Compliance Section -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- eTIMS Compliance Card -->
         <x-card>
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Invoice Status Overview</h2>
-                <div class="flex gap-2">
-                    <a href="{{ route('user.invoices.index', ['status' => 'draft']) }}" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">eTIMS Compliance</h3>
+                <span class="px-3 py-1 text-xs font-medium rounded-full {{ ($complianceData['etimsComplianceRate'] ?? 0) >= 95 ? 'bg-green-100 text-green-800' : (($complianceData['etimsComplianceRate'] ?? 0) >= 80 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                    {{ number_format($complianceData['etimsComplianceRate'] ?? 0, 1) }}%
+                </span>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Compliance Rate</span>
+                        <span class="font-medium text-gray-900">{{ number_format($complianceData['etimsComplianceRate'] ?? 0, 1) }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="{{ ($complianceData['etimsComplianceRate'] ?? 0) >= 95 ? 'bg-green-500' : (($complianceData['etimsComplianceRate'] ?? 0) >= 80 ? 'bg-yellow-500' : 'bg-red-500') }} h-3 rounded-full transition-all" style="width: {{ min(100, $complianceData['etimsComplianceRate'] ?? 0) }}%"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between text-sm text-gray-600 pt-2 border-t border-gray-200">
+                    <span>{{ $complianceData['etimsSubmittedCount'] ?? 0 }} submitted</span>
+                    <span>{{ $complianceData['totalInvoicesForCompliance'] ?? 0 }} total invoices</span>
+                </div>
+                @if(($complianceData['recentEtimsSubmissions'] ?? 0) > 0)
+                <div class="text-xs text-gray-500">
+                    {{ $complianceData['recentEtimsSubmissions'] }} submitted in last 7 days
+                </div>
+                @endif
+            </div>
+        </x-card>
+
+        <!-- Fraud & Bank Reconciliation Card -->
+        <x-card>
+            <div class="space-y-4">
+                <!-- Fraud Indicators -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Fraud Indicators</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold {{ ($fraudIndicators['flagged_count'] ?? 0) > 0 ? 'text-red-600' : 'text-gray-900' }}">
+                                {{ $fraudIndicators['flagged_count'] ?? 0 }}
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1">Flagged</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-2xl font-bold text-gray-900">{{ number_format($fraudIndicators['average_fraud_score'] ?? 0, 1) }}</div>
+                            <div class="text-xs text-gray-600 mt-1">Avg Score</div>
+                        </div>
+                    </div>
+                    @if(($fraudIndicators['requires_review'] ?? 0) > 0)
+                    <div class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                        {{ $fraudIndicators['requires_review'] }} payments require review
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Bank Reconciliation -->
+                @if(($bankReconciliationStatus['is_enabled'] ?? false))
+                <div class="pt-4 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Bank Reconciliation</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Reconciled</span>
+                            <span class="font-medium text-gray-900">{{ number_format($bankReconciliationStatus['reconciled_percentage'] ?? 0, 1) }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: {{ min(100, $bankReconciliationStatus['reconciled_percentage'] ?? 0) }}%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 pt-1">
+                            <span>{{ $bankReconciliationStatus['matched_payments'] ?? 0 }} matched</span>
+                            <span>{{ $bankReconciliationStatus['pending_transactions'] ?? 0 }} pending</span>
+                        </div>
+                        @if(($bankReconciliationStatus['pending_transactions'] ?? 0) > 0)
+                        <a href="{{ route('user.bank-reconciliations.index') }}" class="block mt-2 text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">
+                            Reconcile now →
+                        </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+            </div>
+        </x-card>
+    </div>
+
+    <!-- Duplicate Detection Alert -->
+    @if(isset($complianceData) && ($complianceData['duplicateCount'] ?? 0) > 0)
+    <x-alert type="warning">
+        <div class="flex items-center justify-between">
+            <div>
+                <strong>Duplicate Detection:</strong> {{ $complianceData['duplicateCount'] }} potential duplicate invoice(s) detected.
+            </div>
+            <a href="{{ route('user.invoices.index') }}" class="ml-4 text-sm font-medium underline">Review Invoices</a>
+        </div>
+    </x-alert>
+    @endif
+    
+    <!-- Status Distribution & Quick Filters -->
+    @php
+        $hasStatusData = isset($statusDistribution) && count($statusDistribution) > 0 && collect($statusDistribution)->sum('count') > 0;
+    @endphp
+    @if($hasStatusData)
+        <x-card>
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Invoice Status Overview</h2>
+                    <p class="text-sm text-gray-500 mt-1">Distribution of invoices by status</p>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <a href="{{ route('user.invoices.index', ['status' => 'draft']) }}" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                         Draft
                     </a>
-                    <a href="{{ route('user.invoices.index', ['status' => 'sent']) }}" class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200">
+                    <a href="{{ route('user.invoices.index', ['status' => 'sent']) }}" class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
                         Sent
                     </a>
-                    <a href="{{ route('user.invoices.index', ['status' => 'paid']) }}" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200">
+                    <a href="{{ route('user.invoices.index', ['status' => 'paid']) }}" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors">
                         Paid
                     </a>
-                    <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200">
+                    <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">
                         Overdue
                     </a>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Status Cards -->
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Status Pie Chart - More Prominent -->
+                <div class="lg:col-span-2" style="position: relative; height: 300px; max-width: 100%;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <!-- Status Cards List -->
+                <div class="space-y-3">
                     @foreach($statusDistribution as $status)
                         @if($status['count'] > 0)
-                            <div class="text-center p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-                                <div class="text-2xl font-bold mb-1" style="color: {{ $status['color'] }}">
-                                    {{ $status['count'] }}
+                            <a href="{{ route('user.invoices.index', ['status' => strtolower($status['name'])]) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-4 h-4 rounded-full" style="background-color: {{ $status['bgColor'] }}"></div>
+                                        <div>
+                                            <div class="text-sm font-semibold text-gray-900">{{ $status['name'] }}</div>
+                                            <div class="text-xs text-gray-500">{{ $status['percentage'] }}% of total</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold" style="color: {{ $status['color'] }}">
+                                            {{ $status['count'] }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">invoices</div>
+                                    </div>
                                 </div>
-                                <div class="text-sm font-medium text-gray-700 mb-1">{{ $status['name'] }}</div>
-                                <div class="text-xs text-gray-500">{{ $status['percentage'] }}%</div>
-                                <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div class="h-full rounded-full" style="background-color: {{ $status['color'] }}; width: {{ $status['percentage'] }}%"></div>
-                                </div>
-                            </div>
+                            </a>
                         @endif
                     @endforeach
-                </div>
-                <!-- Status Pie Chart -->
-                <div style="position: relative; height: 250px; max-width: 100%;">
-                    <canvas id="statusChart"></canvas>
                 </div>
             </div>
         </x-card>
@@ -326,26 +527,194 @@
             @if(isset($insights['top_clients']) && count($insights['top_clients']) > 0)
                 <x-card>
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Top Clients by Revenue</h2>
-                    <div class="space-y-3">
-                        @foreach(array_slice($insights['top_clients'], 0, 5) as $client)
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-900">{{ $client['client_name'] }}</p>
-                                    <p class="text-xs text-gray-500">{{ $client['invoice_count'] }} invoice(s)</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm font-semibold text-gray-900">KES {{ number_format($client['revenue'], 2) }}</p>
-                                    @if($client['avg_payment_time'])
-                                        <p class="text-xs text-gray-500">{{ number_format($client['avg_payment_time'], 1) }} days avg</p>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
+                    <div style="position: relative; height: 300px; max-width: 100%;">
+                        <canvas id="topClientsChart"></canvas>
                     </div>
                 </x-card>
             @endif
         </div>
     @endif
+
+    <!-- Additional Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Payment Method Breakdown -->
+        @if(isset($paymentMethodBreakdown) && count($paymentMethodBreakdown['breakdown'] ?? []) > 0)
+        <x-card>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h2>
+            <div style="position: relative; height: 300px; max-width: 100%;">
+                <canvas id="paymentMethodChart"></canvas>
+            </div>
+        </x-card>
+        @endif
+
+        <!-- Cash Flow Forecast -->
+        @if(isset($cashFlowForecast) && count($cashFlowForecast) > 0)
+        <x-card>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Cash Flow Forecast (Next 3 Months)</h2>
+            <div style="position: relative; height: 300px; max-width: 100%;">
+                <canvas id="cashFlowForecastChart"></canvas>
+            </div>
+        </x-card>
+        @endif
+    </div>
+
+    <!-- Multi-Company Overview -->
+    @if(isset($multiCompanyOverview) && isset($multiCompanyOverview['companies']) && count($multiCompanyOverview['companies']) > 1)
+    <x-card>
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">All Companies Overview</h2>
+                <p class="text-sm text-gray-600">Summary across all your companies</p>
+            </div>
+            <a href="{{ route('user.companies.index') }}" class="text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">Manage Companies</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Revenue</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Outstanding</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Overdue</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">DSO (days)</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($multiCompanyOverview['companies'] as $company)
+                    <tr class="hover:bg-gray-50 {{ $company['isActive'] ? 'bg-blue-50' : '' }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="text-sm font-medium text-gray-900">{{ $company['name'] }}</div>
+                                @if($company['isActive'])
+                                <span class="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Active</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                            KES {{ number_format($company['totalRevenue'], 2) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                            KES {{ number_format($company['outstanding'], 2) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm {{ $company['overdue'] > 0 ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                            KES {{ number_format($company['overdue'], 2) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                            {{ number_format($company['dso'], 1) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            @if(!$company['isActive'])
+                            <a href="{{ route('user.companies.index') }}" class="text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">Switch</a>
+                            @else
+                            <span class="text-sm text-gray-500">Current</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </x-card>
+    @endif
+
+    <!-- AI Insights & Predictions -->
+    @if(isset($aiInsights))
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Revenue Prediction -->
+        @if(($aiInsights['predictedNextMonthRevenue'] ?? 0) > 0)
+        <x-card>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Revenue Prediction</h3>
+                <span class="px-2 py-1 text-xs font-medium rounded-full {{ $aiInsights['revenueTrend'] === 'increasing' ? 'bg-green-100 text-green-800' : ($aiInsights['revenueTrend'] === 'decreasing' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
+                    {{ ucfirst($aiInsights['revenueTrend'] ?? 'stable') }} trend
+                </span>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Predicted Revenue (Next Month)</p>
+                    <p class="text-2xl font-bold text-gray-900">KES {{ number_format($aiInsights['predictedNextMonthRevenue'], 2) }}</p>
+                </div>
+                <p class="text-xs text-gray-500">Based on average of last 3 months</p>
+            </div>
+        </x-card>
+        @endif
+
+        <!-- Recommendations -->
+        @if(count($aiInsights['recommendations'] ?? []) > 0)
+        <x-card>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recommendations</h3>
+            <div class="space-y-3">
+                @foreach($aiInsights['recommendations'] as $recommendation)
+                <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <p class="text-sm text-gray-700 flex-1">{{ $recommendation }}</p>
+                </div>
+                @endforeach
+            </div>
+        </x-card>
+        @endif
+    </div>
+
+    <!-- Risk Alerts from AI -->
+    @if(count($aiInsights['riskAlerts'] ?? []) > 0)
+    <div class="space-y-3">
+        @foreach($aiInsights['riskAlerts'] as $alert)
+        <x-alert :type="$alert['type']">
+            {{ $alert['message'] }}
+        </x-alert>
+        @endforeach
+    </div>
+    @endif
+    @endif
+
+    <!-- Export Tools Section -->
+    <x-card>
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Export Data</h3>
+                <p class="text-sm text-gray-600">Export your data for analysis or backup</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 border border-gray-200 rounded-lg hover:border-[#2B6EF6] transition-colors">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-gray-900">Export Invoices</h4>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <p class="text-xs text-gray-500 mb-3">Download invoices as CSV or Excel</p>
+                <div class="flex gap-2">
+                    <a href="{{ route('user.data-export.invoices.csv') }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                        CSV
+                    </a>
+                    <a href="{{ route('user.data-export.invoices.excel') }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                        Excel
+                    </a>
+                </div>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg hover:border-[#2B6EF6] transition-colors">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-gray-900">Export Clients</h4>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <p class="text-xs text-gray-500 mb-3">Download client list as CSV or Excel</p>
+                <div class="flex gap-2">
+                    <a href="{{ route('user.data-export.clients.csv') }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                        CSV
+                    </a>
+                    <a href="{{ route('user.data-export.clients.excel') }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                        Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </x-card>
 
     <!-- Alerts -->
     @if(($stats['overdueCount'] ?? 0) > 0)
@@ -444,66 +813,93 @@
         </x-card>
     @endif
 
-    <!-- Recent Invoices -->
+    <!-- Recent Activity Feed -->
     <x-card padding="none">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <div>
-                <h2 class="text-lg font-semibold text-gray-900">Recent Invoices</h2>
-                <p class="text-sm text-gray-600">Latest activity across your invoices</p>
+                <h2 class="text-lg font-semibold text-gray-900">Recent Activity</h2>
+                <p class="text-sm text-gray-600">Latest activity across invoices, payments, and estimates</p>
             </div>
-            <a href="{{ route('user.invoices.index') }}" class="text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">View all</a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('user.invoices.index') }}" class="text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">View Invoices</a>
+                @if(isset($additionalMetrics) && ($additionalMetrics['totalEstimates'] ?? 0) > 0)
+                <a href="{{ route('user.estimates.index') }}" class="text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">View Estimates</a>
+                @endif
+            </div>
         </div>
 
-        @if(isset($recentInvoices) && count($recentInvoices) > 0)
-            <x-table>
-                <x-slot name="header">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    </tr>
-                </x-slot>
-                @foreach($recentInvoices as $invoice)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="{{ route('user.invoices.show', $invoice['id']) }}" class="text-sm font-medium text-[#2B6EF6] hover:text-[#2563EB]">
-                                {{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}
-                            </a>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $invoice['client']['name'] ?? 'Unknown' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusService = new \App\Http\Services\InvoiceStatusService();
-                                $statusVariant = $statusService::getStatusVariant($invoice['status'] ?? 'draft');
-                                $statusInfo = $statusService::getStatuses()[$invoice['status'] ?? 'draft'] ?? ['label' => ucfirst($invoice['status'] ?? 'draft')];
-                            @endphp
-                            <x-badge :variant="$statusVariant" title="{{ $statusInfo['description'] ?? '' }}">
-                                {{ $statusInfo['label'] ?? ucfirst($invoice['status'] ?? 'draft') }}
-                            </x-badge>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $invoice['due_date'] ? \Carbon\Carbon::parse($invoice['due_date'])->format('M d, Y') : 'N/A' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                            KES {{ number_format($invoice['total'] ?? 0, 2) }}
-                        </td>
-                    </tr>
+        @if(isset($recentActivity) && count($recentActivity) > 0)
+            <div class="divide-y divide-gray-200">
+                @foreach($recentActivity as $activity)
+                    <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start gap-4 flex-1">
+                                <!-- Activity Icon -->
+                                <div class="flex-shrink-0 mt-1">
+                                    @if($activity['type'] === 'invoice')
+                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </div>
+                                    @elseif($activity['type'] === 'payment')
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                    @elseif($activity['type'] === 'estimate')
+                                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- Activity Details -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        @if($activity['url'])
+                                        <a href="{{ $activity['url'] }}" class="text-sm font-medium text-gray-900 hover:text-[#2B6EF6]">
+                                            {{ $activity['title'] }}
+                                        </a>
+                                        @else
+                                        <span class="text-sm font-medium text-gray-900">{{ $activity['title'] }}</span>
+                                        @endif
+                                        @if(isset($activity['status']))
+                                            @php
+                                                $statusService = new \App\Http\Services\InvoiceStatusService();
+                                                $statusVariant = $statusService::getStatusVariant($activity['status']);
+                                            @endphp
+                                            <x-badge :variant="$statusVariant" class="text-xs">{{ ucfirst($activity['status']) }}</x-badge>
+                                        @endif
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-1">{{ $activity['description'] }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ \Carbon\Carbon::parse($activity['date'])->diffForHumans() }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Amount -->
+                            @if(isset($activity['amount']) && $activity['amount'] > 0)
+                            <div class="ml-4 flex-shrink-0">
+                                <p class="text-sm font-semibold text-gray-900">KES {{ number_format($activity['amount'], 2) }}</p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
                 @endforeach
-            </x-table>
+            </div>
         @else
             <div class="px-6 py-12 text-center">
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No invoices</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating your first invoice.</p>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No recent activity</h3>
+                <p class="mt-1 text-sm text-gray-500">Activity will appear here as you use the system.</p>
                 <div class="mt-6">
                     <a href="{{ route('user.invoices.create') }}">
-                        <x-button variant="primary">New Invoice</x-button>
+                        <x-button variant="primary">Create Invoice</x-button>
                     </a>
                 </div>
             </div>
@@ -512,21 +908,24 @@
 </div>
 
 @push('scripts')
-    @if(isset($insights) && isset($insights['revenue_trends']) && count($insights['revenue_trends']) > 0)
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-        <script>
-            (function() {
-                // Store chart instances to prevent re-initialization
-                let revenueChartInstance = null;
-                let statusChartInstance = null;
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        (function() {
+            // Store chart instances to prevent re-initialization
+            let revenueChartInstance = null;
+            let statusChartInstance = null;
+            let topClientsChartInstance = null;
+            let paymentMethodChartInstance = null;
+            let cashFlowForecastChartInstance = null;
 
-                function initCharts() {
-                    // Revenue Chart
-                    const ctx = document.getElementById('revenueChart');
-                    if (ctx && !revenueChartInstance) {
+            function initCharts() {
+                // Revenue Chart
+                const ctx = document.getElementById('revenueChart');
+                if (ctx && !revenueChartInstance) {
                         try {
-                            const revenueData = @json($insights['revenue_trends']);
-                            revenueChartInstance = new Chart(ctx, {
+                            const revenueData = @json($insights['revenue_trends'] ?? []);
+                            if (revenueData && revenueData.length > 0) {
+                                revenueChartInstance = new Chart(ctx, {
                                 type: 'line',
                                 data: {
                                     labels: revenueData.map(item => item.month),
@@ -572,52 +971,319 @@
                                     }
                                 }
                             });
+                            }
                         } catch (error) {
                             console.error('Error initializing revenue chart:', error);
                         }
                     }
 
-                    // Status Distribution Pie Chart
-                    const statusCtx = document.getElementById('statusChart');
-                    if (statusCtx && !statusChartInstance) {
-                        try {
-                            const statusData = @json($statusDistribution ?? []);
-                            statusChartInstance = new Chart(statusCtx, {
-                                type: 'doughnut',
-                                data: {
-                                    labels: statusData.map(item => item.name),
-                                    datasets: [{
-                                        data: statusData.map(item => item.count),
-                                        backgroundColor: statusData.map(item => item.bgColor),
-                                        borderWidth: 2,
-                                        borderColor: '#ffffff'
-                                    }]
+                // Status Distribution Doughnut Chart
+                const statusCtx = document.getElementById('statusChart');
+                if (statusCtx && !statusChartInstance) {
+                    try {
+                        const statusData = @json($statusDistribution ?? []);
+                        
+                        if (!statusData || statusData.length === 0) {
+                            console.warn('No status distribution data available');
+                            if (statusCtx.parentElement) {
+                                statusCtx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500"><div class="text-center"><p class="text-sm">No invoice data available</p><p class="text-xs mt-1 text-gray-400">Create an invoice to see status distribution</p></div></div>';
+                            }
+                            return;
+                        }
+                        
+                        // Filter out statuses with count 0 and sort by count (descending) for consistent display
+                        const filteredData = statusData
+                            .filter(item => item && item.count > 0)
+                            .sort((a, b) => (b.count || 0) - (a.count || 0));
+                        
+                        if (filteredData.length === 0) {
+                            console.warn('No invoices with status data to display');
+                            if (statusCtx.parentElement) {
+                                statusCtx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500"><div class="text-center"><p class="text-sm">No invoices found</p><p class="text-xs mt-1 text-gray-400">Create an invoice to see status distribution</p></div></div>';
+                            }
+                            return;
+                        }
+                        
+                        // Ensure all required fields are present
+                        const chartData = {
+                            labels: filteredData.map(item => item.name || 'Unknown'),
+                            datasets: [{
+                                data: filteredData.map(item => item.count || 0),
+                                backgroundColor: filteredData.map(item => item.bgColor || '#9CA3AF'),
+                                borderColor: filteredData.map(item => item.color || '#6B7280'),
+                                borderWidth: 3,
+                                hoverBorderWidth: 5,
+                                hoverOffset: 4,
+                            }]
+                        };
+                        
+                        statusChartInstance = new Chart(statusCtx, {
+                            type: 'doughnut',
+                            data: chartData,
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation: {
+                                    animateRotate: true,
+                                    animateScale: true,
+                                    duration: 1000,
+                                    easing: 'easeInOutQuart'
                                 },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: true,
-                                    aspectRatio: 1,
-                                    animation: {
-                                        duration: 1000,
-                                        easing: 'easeInOutQuart'
+                                plugins: {
+                                    legend: {
+                                        display: false
                                     },
-                                    plugins: {
-                                        legend: {
-                                            position: 'bottom'
-                                        }
+                                    tooltip: {
+                                        enabled: true,
+                                        callbacks: {
+                                            label: function(context) {
+                                                const label = context.label || '';
+                                                const value = context.parsed || 0;
+                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                if (total === 0) return label + ': ' + value;
+                                                const percentage = ((value / total) * 100).toFixed(1);
+                                                return label + ': ' + value + ' invoice' + (value !== 1 ? 's' : '') + ' (' + percentage + '%)';
+                                            }
+                                        },
+                                        padding: 12,
+                                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                                        cornerRadius: 6,
+                                        displayColors: true,
+                                        titleColor: '#ffffff',
+                                        bodyColor: '#ffffff',
+                                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                                        borderWidth: 1
+                                    }
+                                },
+                                cutout: '60%',
+                                interaction: {
+                                    intersect: true,
+                                    mode: 'point'
+                                }
+                            }
+                        });
+                        
+                        console.log('Status chart initialized successfully with', filteredData.length, 'statuses');
+                    } catch (error) {
+                        console.error('Error initializing status chart:', error);
+                        console.error('Error details:', error.message, error.stack);
+                        // Show error message in the chart container
+                        if (statusCtx && statusCtx.parentElement) {
+                            statusCtx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-red-500"><div class="text-center"><p class="text-sm">Error loading chart</p><p class="text-xs mt-1 text-gray-400">Please refresh the page</p></div></div>';
+                        }
+                    }
+                } else if (!statusCtx) {
+                    console.warn('Status chart canvas element not found');
+                }
+
+                // Top Clients Bar Chart
+                const topClientsCtx = document.getElementById('topClientsChart');
+                if (topClientsCtx && !topClientsChartInstance) {
+                        try {
+                            const topClientsData = @json($insights['top_clients'] ?? []);
+                            if (topClientsData.length > 0) {
+                                topClientsChartInstance = new Chart(topClientsCtx, {
+                                    type: 'bar',
+                                    data: {
+                                        labels: topClientsData.slice(0, 10).map(item => item.client_name),
+                                        datasets: [{
+                                            label: 'Revenue (KES)',
+                                            data: topClientsData.slice(0, 10).map(item => item.revenue),
+                                            backgroundColor: 'rgba(43, 110, 246, 0.8)',
+                                            borderColor: 'rgb(43, 110, 246)',
+                                            borderWidth: 1
+                                        }]
                                     },
-                                    layout: {
-                                        padding: {
-                                            top: 10,
-                                            bottom: 10,
-                                            left: 10,
-                                            right: 10
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: true,
+                                        aspectRatio: 2,
+                                        animation: {
+                                            duration: 1000,
+                                            easing: 'easeInOutQuart'
+                                        },
+                                        plugins: {
+                                            legend: {
+                                                display: false
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        return 'KES ' + context.parsed.y.toLocaleString();
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true,
+                                                ticks: {
+                                                    callback: function(value) {
+                                                        return 'KES ' + value.toLocaleString();
+                                                    }
+                                                }
+                                            },
+                                            x: {
+                                                ticks: {
+                                                    maxRotation: 45,
+                                                    minRotation: 0
+                                                }
+                                            }
+                                        },
+                                        layout: {
+                                            padding: {
+                                                top: 10,
+                                                bottom: 10,
+                                                left: 10,
+                                                right: 10
+                                            }
                                         }
                                     }
-                                }
-                            });
+                                });
+                            }
                         } catch (error) {
-                            console.error('Error initializing status chart:', error);
+                            console.error('Error initializing top clients chart:', error);
+                        }
+                    }
+
+                // Payment Method Breakdown Donut Chart
+                const paymentMethodCtx = document.getElementById('paymentMethodChart');
+                if (paymentMethodCtx && !paymentMethodChartInstance) {
+                        try {
+                            const paymentMethodData = @json($paymentMethodBreakdown['breakdown'] ?? []);
+                            if (paymentMethodData.length > 0) {
+                                const colors = ['#2B6EF6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
+                                paymentMethodChartInstance = new Chart(paymentMethodCtx, {
+                                    type: 'doughnut',
+                                    data: {
+                                        labels: paymentMethodData.map(item => item.method),
+                                        datasets: [{
+                                            data: paymentMethodData.map(item => item.total_amount),
+                                            backgroundColor: paymentMethodData.map((item, index) => colors[index % colors.length]),
+                                            borderWidth: 2,
+                                            borderColor: '#ffffff'
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: true,
+                                        aspectRatio: 1,
+                                        animation: {
+                                            duration: 1000,
+                                            easing: 'easeInOutQuart'
+                                        },
+                                        plugins: {
+                                            legend: {
+                                                position: 'bottom'
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        const label = context.label || '';
+                                                        const value = context.parsed || 0;
+                                                        const percentage = paymentMethodData[context.dataIndex]?.percentage || 0;
+                                                        return label + ': KES ' + value.toLocaleString() + ' (' + percentage + '%)';
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        layout: {
+                                            padding: {
+                                                top: 10,
+                                                bottom: 10,
+                                                left: 10,
+                                                right: 10
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error initializing payment method chart:', error);
+                        }
+                    }
+
+                // Cash Flow Forecast Line Chart
+                const cashFlowForecastCtx = document.getElementById('cashFlowForecastChart');
+                if (cashFlowForecastCtx && !cashFlowForecastChartInstance) {
+                        try {
+                            const forecastData = @json($cashFlowForecast ?? []);
+                            if (forecastData.length > 0) {
+                                cashFlowForecastChartInstance = new Chart(cashFlowForecastCtx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: forecastData.map(item => item.month),
+                                        datasets: [
+                                            {
+                                                label: 'Projected Inflow',
+                                                data: forecastData.map(item => item.projected_inflow),
+                                                borderColor: 'rgb(16, 185, 129)',
+                                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                                tension: 0.4,
+                                                fill: false
+                                            },
+                                            {
+                                                label: 'Projected Outflow',
+                                                data: forecastData.map(item => item.projected_outflow),
+                                                borderColor: 'rgb(239, 68, 68)',
+                                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                                tension: 0.4,
+                                                fill: false
+                                            },
+                                            {
+                                                label: 'Projected Net',
+                                                data: forecastData.map(item => item.projected_net),
+                                                borderColor: 'rgb(43, 110, 246)',
+                                                backgroundColor: 'rgba(43, 110, 246, 0.1)',
+                                                tension: 0.4,
+                                                fill: true,
+                                                borderDash: [5, 5]
+                                            }
+                                        ]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: true,
+                                        aspectRatio: 2,
+                                        animation: {
+                                            duration: 1000,
+                                            easing: 'easeInOutQuart'
+                                        },
+                                        plugins: {
+                                            legend: {
+                                                position: 'bottom'
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        return context.dataset.label + ': KES ' + context.parsed.y.toLocaleString();
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: false,
+                                                ticks: {
+                                                    callback: function(value) {
+                                                        return 'KES ' + value.toLocaleString();
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        layout: {
+                                            padding: {
+                                                top: 10,
+                                                bottom: 10,
+                                                left: 10,
+                                                right: 10
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error initializing cash flow forecast chart:', error);
                         }
                     }
                 }
@@ -630,7 +1296,6 @@
                 }
             })();
         </script>
-    @endif
 
 <script>
     // Dashboard Tour

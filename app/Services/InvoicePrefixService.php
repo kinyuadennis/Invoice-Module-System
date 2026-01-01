@@ -383,4 +383,41 @@ class InvoicePrefixService
 
         return $estimateNumber;
     }
+
+    /**
+     * Get the next estimate number preview for a company.
+     * Note: This is a read-only preview that doesn't reserve or consume the serial number.
+     * The actual number is generated when the estimate is created.
+     */
+    public function getNextEstimateNumberPreview(Company $company): string
+    {
+        $prefix = $this->getActivePrefix($company);
+
+        // Get the next serial number without locking (read-only preview)
+        // Query Estimate model instead of Invoice to maintain separate sequence
+        $lastEstimate = Estimate::where('company_id', $company->id)
+            ->where('prefix_used', $prefix->prefix)
+            ->whereNotNull('serial_number')
+            ->orderBy('serial_number', 'desc')
+            ->first();
+
+        $nextSerial = 1;
+        if ($lastEstimate && $lastEstimate->serial_number) {
+            $nextSerial = $lastEstimate->serial_number + 1;
+        }
+
+        $fullNumber = $this->generateEstimateFullNumber($company, $prefix, $nextSerial);
+
+        return $fullNumber;
+    }
+
+    /**
+     * Get preview of next estimate number for a client (read-only, doesn't increment).
+     */
+    public function getNextClientEstimateNumberPreview(Company $company, Client $client): string
+    {
+        $nextSequence = $client->next_estimate_sequence ?? 1;
+
+        return $this->formatClientEstimateNumber($company, $nextSequence);
+    }
 }

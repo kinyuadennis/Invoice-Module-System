@@ -34,6 +34,11 @@ Route::prefix('invoice')->name('customer.invoices.')->group(function () {
     Route::get('/{token}/payment-status', [\App\Http\Controllers\Customer\InvoiceController::class, 'paymentStatus'])->name('payment-status');
 });
 
+Route::prefix('estimate')->name('customer.estimates.')->group(function () {
+    Route::get('/{token}', [\App\Http\Controllers\Customer\EstimateController::class, 'show'])->name('show');
+    Route::get('/{token}/pdf', [\App\Http\Controllers\Customer\EstimateController::class, 'downloadPdf'])->name('pdf');
+});
+
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
 

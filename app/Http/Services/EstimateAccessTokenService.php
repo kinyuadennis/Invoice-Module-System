@@ -80,13 +80,9 @@ class EstimateAccessTokenService
 
     /**
      * Get estimate access URL.
-     *
-     * TODO: Create customer.estimates.show route and Customer\EstimateController when implementing customer portal
      */
     public function getAccessUrl(EstimateAccessToken $token): string
     {
-        // Customer portal route for estimates needs to be created
-        // For now, return a placeholder URL - this should be implemented when creating customer portal
-        return url('/estimate/'.$token->token);
+        return route('customer.estimates.show', $token->token);
     }
 }

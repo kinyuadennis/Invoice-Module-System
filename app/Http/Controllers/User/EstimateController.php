@@ -106,14 +106,14 @@ class EstimateController extends Controller
                 ->first();
 
             if ($client) {
-                $nextEstimateNumber = $prefixService->getNextClientInvoiceNumberPreview($company, $client);
+                $nextEstimateNumber = $prefixService->getNextClientEstimateNumberPreview($company, $client);
             } else {
                 $nextEstimateNumber = 'Select a client to see estimate number';
             }
         } elseif ($company->use_client_specific_numbering && ! $clientId) {
             $nextEstimateNumber = 'Select a client to see estimate number';
         } else {
-            $nextEstimateNumber = $prefixService->getNextInvoiceNumberPreview($company);
+            $nextEstimateNumber = $prefixService->getNextEstimateNumberPreview($company);
         }
 
         $builderType = request()->get('builder', 'one-page');
@@ -311,47 +311,24 @@ class EstimateController extends Controller
         }
 
         try {
-            // Generate access token for customer portal
-            $tokenService = app(\App\Http\Services\EstimateAccessTokenService::class);
-            $accessToken = $tokenService->generateToken($estimate, 30); // 30 days expiry
-            $accessUrl = $tokenService->getAccessUrl($accessToken);
+            // Update status to 'sent' when dispatching email job
+            // This marks the estimate as sent immediately when user initiates the send action
+            $estimate->update([
+                'status' => 'sent',
+            ]);
 
-            // Generate PDF
-            $pdfRenderer = app(\App\Services\PdfEstimateRenderer::class);
-            $pdfContent = $pdfRenderer->render($estimate);
+            // Dispatch job to handle email sending with PDF generation
+            \App\Jobs\SendEstimateEmailJob::dispatch($estimate);
 
-            // Save PDF to temporary file
-            $tempPath = storage_path('app/temp/estimate-'.$estimate->id.'-'.time().'.pdf');
-            if (! is_dir(dirname($tempPath))) {
-                mkdir(dirname($tempPath), 0755, true);
-            }
-            file_put_contents($tempPath, $pdfContent);
-
-            // Send email with PDF attachment and approval link
-            \Illuminate\Support\Facades\Mail::to($estimate->client->email)
-                ->send(new \App\Mail\EstimateSentMail($estimate, $tempPath, $accessUrl));
-
-            // Clean up temporary PDF file after sending
-            if (file_exists($tempPath)) {
-                unlink($tempPath);
-            }
-
-            // Update status to 'sent' after successful email delivery
-            $estimate->update(['status' => 'sent']);
-
-            // Log client activity
-            $activityService = app(\App\Http\Services\ClientActivityService::class);
-            $activityService->logEstimateSent($estimate->client, $estimate->id, $estimate->full_number ?? $estimate->estimate_number);
-
-            return back()->with('success', 'Estimate sent to client successfully.');
+            return back()->with('success', 'Estimate is being sent to client.');
         } catch (\Exception $e) {
-            \Log::error('Failed to send estimate email', [
+            \Log::error('Failed to queue estimate email', [
                 'estimate_id' => $estimate->id,
                 'error' => $e->getMessage(),
             ]);
 
             return back()->withErrors([
-                'message' => 'Failed to send estimate email: '.$e->getMessage(),
+                'message' => 'Failed to queue estimate email: '.$e->getMessage(),
             ]);
         }
     }
