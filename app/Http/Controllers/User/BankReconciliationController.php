@@ -132,10 +132,10 @@ class BankReconciliationController extends Controller
                     'payment_date' => $payment->payment_date,
                     'payment_method' => $payment->payment_method,
                     'invoice' => [
-                        'id' => $payment->invoice->id ?? null,
-                        'invoice_number' => $payment->invoice->invoice_number ?? null,
+                        'id' => $payment->invoice?->id ?? null,
+                        'invoice_number' => $payment->invoice?->invoice_number ?? null,
                         'client' => [
-                            'name' => $payment->invoice->client->name ?? 'Unknown',
+                            'name' => $payment->invoice?->client?->name ?? 'Unknown',
                         ],
                     ],
                 ];

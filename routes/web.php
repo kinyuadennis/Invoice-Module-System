@@ -14,6 +14,7 @@ use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\InvoiceController;
 use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes (no prefix)
@@ -23,6 +24,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::prefix('webhooks')->name('webhooks.')->group(function () {
     Route::post('/stripe', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'stripe'])->name('stripe');
     Route::post('/mpesa/callback', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'mpesa'])->name('mpesa');
+    Route::post('/subscriptions/stripe', [\App\Http\Controllers\Webhook\SubscriptionWebhookController::class, 'stripe'])->name('subscriptions.stripe');
+    Route::post('/subscriptions/mpesa/callback', [\App\Http\Controllers\Webhook\SubscriptionWebhookController::class, 'mpesa'])->name('subscriptions.mpesa');
 });
 
 // Customer Portal (token-based access, no authentication required)
@@ -199,6 +202,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::post('/subscriptions', [SubscriptionController::class, 'store'])->name('subscriptions.store');
         Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
         Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
         // Company management routes
