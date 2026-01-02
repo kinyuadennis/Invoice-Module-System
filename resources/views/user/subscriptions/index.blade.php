@@ -63,10 +63,10 @@
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                {{ $subscription->plan->name ?? 'Unknown Plan' }}
+                                {{ $subscription->plan?->name ?? 'Unknown Plan' }}
                             </h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                {{ $subscription->plan->description ?? '' }}
+                                {{ $subscription->plan?->description ?? '' }}
                             </p>
 
                             <div class="mt-4 grid grid-cols-2 gap-4">

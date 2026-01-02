@@ -91,7 +91,7 @@ class SubscriptionService
                 'company_id' => $subscription->company_id,
                 'payable_type' => Subscription::class,
                 'payable_id' => $subscription->id,
-                'amount' => $subscription->plan->price ?? 0, // TODO: Get amount from plan
+                'amount' => $subscription->plan?->price ?? 0, // TODO: Get amount from plan
                 'gateway' => $gatewayName,
                 'status' => PaymentConstants::PAYMENT_STATUS_INITIATED,
                 'idempotency_key' => $idempotencyKey,
@@ -102,7 +102,7 @@ class SubscriptionService
             $context = new PaymentContext(
                 subscriptionId: (string) $subscription->id,
                 amount: (float) $payment->amount,
-                currency: $subscription->company->currency ?? 'KES',
+                currency: $subscription->company?->currency ?? 'KES',
                 userDetails: $userDetails,
                 reference: "SUB_{$subscription->id}_{$idempotencyKey}",
                 description: "Subscription Payment: {$subscription->plan_code}"
