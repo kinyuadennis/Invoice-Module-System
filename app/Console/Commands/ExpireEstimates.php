@@ -29,7 +29,7 @@ class ExpireEstimates extends Command
         $this->info('Checking for expired estimates...');
 
         $expiredCount = Estimate::whereNotNull('expiry_date')
-            ->where('expiry_date', '<', now()->toDateString())
+            ->where('expiry_date', '<=', now()->toDateString())
             ->where('status', '!=', 'converted')
             ->where('status', '!=', 'expired')
             ->update(['status' => 'expired']);

@@ -11,6 +11,8 @@ class Payment extends Model
     protected $fillable = [
         'company_id',
         'invoice_id',
+        'payable_type',
+        'payable_id',
         'payment_date',
         'amount',
         'refunded_amount',
@@ -23,6 +25,8 @@ class Payment extends Model
         'gateway_payment_intent_id',
         'gateway_metadata',
         'gateway_status',
+        'idempotency_key',
+        'raw_gateway_payload',
         'status',
         'fraud_status',
         'fraud_score',
@@ -43,6 +47,7 @@ class Payment extends Model
         'amount' => 'decimal:2',
         'refunded_amount' => 'decimal:2',
         'gateway_metadata' => 'array',
+        'raw_gateway_payload' => 'array',
         'fraud_score' => 'decimal:2',
         'fraud_checks' => 'array',
         'fraud_reviewed_at' => 'datetime',
@@ -58,11 +63,32 @@ class Payment extends Model
     }
 
     /**
-     * The invoice this payment belongs to.
+     * The invoice this payment belongs to (legacy relationship).
+     *
+     * Note: New payments should use the polymorphic payable() relationship.
      */
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /**
+     * Get the payable model (polymorphic relationship).
+     *
+     * Can be Invoice, Subscription, or any other payable model.
+     */
+    public function payable(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * The subscription this payment belongs to (via polymorphic relationship).
+     */
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class, 'payable_id')
+            ->where('payable_type', Subscription::class);
     }
 
     /**
