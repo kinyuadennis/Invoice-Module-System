@@ -83,6 +83,17 @@ class SubscriptionService
                 throw new \Exception("Gateway mismatch: subscription gateway is {$subscription->gateway}, but user country requires {$gatewayName}");
             }
 
+            // Validate subscription has a plan with valid price
+            $plan = $subscription->plan;
+            if (! $plan) {
+                throw new \Exception('Subscription must have a plan to initiate payment');
+            }
+
+            $planPrice = $plan->price;
+            if ($planPrice === null || $planPrice <= 0) {
+                throw new \Exception("Subscription plan must have a valid price greater than zero. Plan '{$plan->name}' (ID: {$plan->id}) has invalid price: {$planPrice}");
+            }
+
             // Generate idempotency key
             $idempotencyKey = (string) Str::uuid();
 
@@ -91,7 +102,7 @@ class SubscriptionService
                 'company_id' => $subscription->company_id,
                 'payable_type' => Subscription::class,
                 'payable_id' => $subscription->id,
-                'amount' => $subscription->plan?->price ?? 0, // TODO: Get amount from plan
+                'amount' => $planPrice,
                 'gateway' => $gatewayName,
                 'status' => PaymentConstants::PAYMENT_STATUS_INITIATED,
                 'idempotency_key' => $idempotencyKey,
