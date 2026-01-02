@@ -54,35 +54,103 @@ class SubscriptionWebhookController extends Controller
             }
         }
 
-        // Only process payment_intent.succeeded for subscription payments
         $eventType = $payload['type'] ?? null;
-        if ($eventType !== 'payment_intent.succeeded') {
-            return response()->json(['received' => true, 'ignored' => true], 200);
-        }
+        $dataObject = $payload['data']['object'] ?? [];
 
         try {
-            $paymentIntent = $payload['data']['object'] ?? null;
-            if (! $paymentIntent || ! isset($paymentIntent['id'])) {
-                return response()->json(['received' => true, 'ignored' => true], 200);
+            // Handle different Stripe webhook events for subscriptions
+            switch ($eventType) {
+                case 'payment_intent.succeeded':
+                    // One-time payment or renewal payment succeeded
+                    if (! isset($dataObject['id'])) {
+                        return response()->json(['received' => true, 'ignored' => true], 200);
+                    }
+
+                    // Check if this is a subscription payment (via metadata)
+                    $subscriptionId = $dataObject['metadata']['subscription_id'] ?? null;
+                    if (! $subscriptionId) {
+                        // Not a subscription payment, ignore
+                        return response()->json(['received' => true, 'ignored' => true], 200);
+                    }
+
+                    // Create callback payload DTO
+                    $callbackPayload = new GatewayCallbackPayload(
+                        rawData: $payload,
+                        gatewayReference: $dataObject['id'],
+                        signature: $signature
+                    );
+
+                    // Confirm payment via SubscriptionService
+                    $payment = $this->subscriptionService->confirmPayment(PaymentConstants::GATEWAY_STRIPE, $callbackPayload);
+
+                    if ($payment) {
+                        return response()->json(['received' => true], 200);
+                    }
+
+                    return response()->json(['received' => true, 'ignored' => true], 200);
+
+                case 'invoice.payment_succeeded':
+                    // Stripe subscription invoice payment succeeded (native Stripe subscriptions)
+                    // Note: We handle this for Stripe's native subscription feature
+                    // Our system primarily uses manual renewals, but this supports Stripe subscriptions
+                    $subscriptionId = $dataObject['subscription'] ?? null;
+                    if ($subscriptionId) {
+                        // Find subscription by Stripe subscription ID
+                        $subscription = \App\Models\Subscription::where('payment_reference', $subscriptionId)
+                            ->where('gateway', PaymentConstants::GATEWAY_STRIPE)
+                            ->first();
+
+                        if ($subscription) {
+                            // Update next_billing_at from Stripe invoice
+                            $periodEnd = $dataObject['period_end'] ?? null;
+                            if ($periodEnd) {
+                                $subscription->update([
+                                    'next_billing_at' => \Carbon\Carbon::createFromTimestamp($periodEnd),
+                                ]);
+                            }
+                        }
+                    }
+
+                    return response()->json(['received' => true], 200);
+
+                case 'invoice.payment_failed':
+                    // Stripe subscription invoice payment failed
+                    $subscriptionId = $dataObject['subscription'] ?? null;
+                    if ($subscriptionId) {
+                        $subscription = \App\Models\Subscription::where('payment_reference', $subscriptionId)
+                            ->where('gateway', PaymentConstants::GATEWAY_STRIPE)
+                            ->first();
+
+                        if ($subscription && $subscription->isActive()) {
+                            // Transition to GRACE on payment failure
+                            $this->subscriptionService->handleRenewalFailure($subscription);
+                        }
+                    }
+
+                    return response()->json(['received' => true], 200);
+
+                case 'customer.subscription.deleted':
+                    // Stripe subscription cancelled
+                    $subscriptionId = $dataObject['id'] ?? null;
+                    if ($subscriptionId) {
+                        $subscription = \App\Models\Subscription::where('payment_reference', $subscriptionId)
+                            ->where('gateway', PaymentConstants::GATEWAY_STRIPE)
+                            ->first();
+
+                        if ($subscription && ! $subscription->isCancelled()) {
+                            $this->subscriptionService->cancelSubscription($subscription, 'Cancelled via Stripe webhook');
+                        }
+                    }
+
+                    return response()->json(['received' => true], 200);
+
+                default:
+                    // Ignore other event types
+                    return response()->json(['received' => true, 'ignored' => true], 200);
             }
-
-            // Create callback payload DTO
-            $callbackPayload = new GatewayCallbackPayload(
-                rawData: $payload,
-                gatewayReference: $paymentIntent['id'],
-                signature: $signature
-            );
-
-            // Confirm payment via SubscriptionService
-            $payment = $this->subscriptionService->confirmPayment(PaymentConstants::GATEWAY_STRIPE, $callbackPayload);
-
-            if ($payment) {
-                return response()->json(['received' => true], 200);
-            }
-
-            return response()->json(['received' => true, 'ignored' => true], 200);
         } catch (\Exception $e) {
             Log::error('Stripe subscription webhook processing failed', [
+                'event_type' => $eventType,
                 'error' => $e->getMessage(),
                 'payload' => $payload,
             ]);

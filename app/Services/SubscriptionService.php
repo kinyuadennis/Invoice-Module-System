@@ -234,8 +234,25 @@ class SubscriptionService
             // Emit appropriate event
             if ($paymentStatus === PaymentConstants::PAYMENT_STATUS_SUCCESS) {
                 event(new PaymentConfirmed($payment));
+                // Note: Subscription activation is handled by CreateInvoiceOnPaymentConfirmed listener
+
+                // If this is a renewal payment (subscription in GRACE), handle renewal success
+                if ($payment->payable_type === Subscription::class) {
+                    $subscription = $payment->payable;
+                    if ($subscription instanceof Subscription && $subscription->isInGrace()) {
+                        $this->handleRenewalSuccess($subscription, $payment);
+                    }
+                }
             } else {
                 event(new PaymentFailed($payment));
+
+                // If this is a renewal payment that failed, handle renewal failure
+                if ($payment->payable_type === Subscription::class) {
+                    $subscription = $payment->payable;
+                    if ($subscription instanceof Subscription && $subscription->isActive()) {
+                        $this->handleRenewalFailure($subscription);
+                    }
+                }
             }
 
             DB::commit();
