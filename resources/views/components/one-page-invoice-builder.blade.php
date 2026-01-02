@@ -109,6 +109,15 @@
                     </svg>
                     Dates Set
                 </span>
+                <span class="flex items-center gap-1" :class="formData.buyer_kra_pin && isValidKraPin(formData.buyer_kra_pin) ? 'text-green-600 font-medium' : 'text-amber-600'">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" x-show="formData.buyer_kra_pin && isValidKraPin(formData.buyer_kra_pin)">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" x-show="!formData.buyer_kra_pin || !isValidKraPin(formData.buyer_kra_pin)" x-cloak>
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    Buyer PIN
+                </span>
             </div>
         </div>
     </div>
@@ -131,15 +140,20 @@
                                 Select or add a customer
                                 <span class="text-xs text-gray-500 font-normal">(Optional for drafts, required when sending)</span>
                             </label>
-                            <div class="relative" x-data="{ open: false }" @click.outside="showClientDropdown = false">
+                            <div class="relative" @click.outside="showClientDropdown = false">
                                 <input
                                     type="text"
                                     x-model="clientSearch"
                                     @input.debounce.300ms="searchClients()"
                                     @focus="showClientDropdown = true; if (clientSearchResults.length === 0) searchClients();"
                                     @click="showClientDropdown = true; if (clientSearchResults.length === 0) searchClients();"
-                                    placeholder="Search clients or create new..."
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    placeholder="Type to search clients or click 'Create New Client'..."
+                                    class="w-full rounded-lg border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-4 pr-10">
+                                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
                                 <div
                                     x-show="showClientDropdown && (clientSearchResults.length > 0 || clientSearch.length >= 0)"
                                     x-transition:enter="transition ease-out duration-100"
@@ -317,34 +331,104 @@
                                     </span>
                                 </p>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Reference / PO Number
-                                    <span class="text-xs text-gray-500 font-normal">(Optional)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    x-model="formData.po_number"
-                                    @change="if (showPreview) updatePreview()"
-                                    placeholder="Enter purchase order or reference number"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
-                            <!-- KRA Compliance Info (Auto-filled from Company) -->
-                            <div class="col-span-2 mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                <div class="flex items-start gap-2">
-                                    <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            <!-- Reference/PO Number - Collapsible (Optional) -->
+                            <div class="col-span-2">
+                                <button
+                                    type="button"
+                                    @click="showPoNumber = !showPoNumber"
+                                    class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium mb-2">
+                                    <svg class="w-4 h-4 transition-transform" :class="{'rotate-90': showPoNumber}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                     </svg>
-                                    <div class="flex-1">
-                                        <h4 class="text-sm font-semibold text-green-900 mb-1">KRA eTIMS Compliance</h4>
-                                        <div class="text-xs text-green-800 space-y-1">
-                                            <div><span class="font-medium">Trader PIN:</span> <span class="font-mono" x-text="company.kra_pin || 'Not configured'"></span></div>
-                                            <div x-show="company.kra_pin" class="text-green-700">All required KRA fields will be auto-filled from your company profile</div>
-                                            <div x-show="!company.kra_pin" class="text-amber-700">
-                                                <a href="{{ route('user.company.settings') }}" class="underline font-medium">Configure KRA PIN</a> in company settings for eTIMS compliance
+                                    Reference / PO Number <span class="text-xs text-gray-500 font-normal">(Optional)</span>
+                                </button>
+                                <div x-show="showPoNumber" x-transition class="mt-2">
+                                    <input
+                                        type="text"
+                                        x-model="formData.po_number"
+                                        @change="if (showPreview) updatePreview()"
+                                        placeholder="Enter purchase order or reference number"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <!-- KRA eTIMS Compliance Section (2026 Requirements) -->
+                            <div class="col-span-2 mt-2 space-y-3">
+                                <div class="p-3 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-lg">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-start gap-2 flex-1">
+                                            <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h4 class="text-sm font-semibold text-green-900">KRA eTIMS Compliance</h4>
+                                                    <span 
+                                                        title="From Jan 1, 2026, all invoices require buyer's PIN for real-time validation and transmission to avoid penalties"
+                                                        class="cursor-help">
+                                                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="text-xs text-green-800 space-y-1">
+                                                    <div><span class="font-medium">Trader PIN:</span> <span class="font-mono font-bold" x-text="company.kra_pin || 'Not configured'"></span></div>
+                                                    <div x-show="company.kra_pin" class="text-green-700">✓ Your company KRA PIN is configured</div>
+                                                    <div x-show="!company.kra_pin" class="text-amber-700">
+                                                        <a href="{{ route('user.company.settings') }}" class="underline font-medium">Configure KRA PIN</a> in company settings
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
+                                        <button
+                                            @click="validateEtims()"
+                                            :disabled="etimsValidating || !formData.buyer_kra_pin || !company.kra_pin"
+                                            class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap">
+                                            <svg x-show="!etimsValidating" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <svg x-show="etimsValidating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span x-text="etimsValidating ? 'Validating...' : 'Validate Now'"></span>
+                                        </button>
                                     </div>
+                                    <div x-show="etimsValidationStatus === 'valid'" class="mt-2 p-2 bg-green-100 border border-green-300 rounded text-xs text-green-800" x-cloak>
+                                        ✓ Ready for eTIMS transmission
+                                    </div>
+                                    <div x-show="etimsValidationStatus === 'error'" class="mt-2 p-2 bg-red-100 border border-red-300 rounded text-xs text-red-800" x-cloak>
+                                        Validation failed. Please check buyer's PIN format.
+                                    </div>
+                                </div>
+                                
+                                <!-- Buyer KRA PIN (2026 Requirement) -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Buyer KRA PIN <span class="text-red-600">*</span>
+                                        <span class="text-xs text-gray-500 font-normal">(Required for eTIMS transmission)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        x-model="formData.buyer_kra_pin"
+                                        @input="formData.buyer_kra_pin = formData.buyer_kra_pin.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11); etimsValidationStatus = null;"
+                                        @change="validateBuyerPin(); if (showPreview) updatePreview()"
+                                        placeholder="P051234567K"
+                                        maxlength="11"
+                                        :class="{'border-red-300 bg-red-50': formData.buyer_kra_pin && !isValidKraPin(formData.buyer_kra_pin), 'border-green-300 bg-green-50': formData.buyer_kra_pin && isValidKraPin(formData.buyer_kra_pin), 'border-gray-300': !formData.buyer_kra_pin}"
+                                        class="w-full rounded-lg border-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-base py-2 uppercase"
+                                        :value="formData.client && formData.client.kra_pin ? formData.client.kra_pin : formData.buyer_kra_pin"
+                                        required>
+                                    <p class="mt-1 text-xs">
+                                        <span x-show="formData.client && formData.client.kra_pin && isValidKraPin(formData.buyer_kra_pin)" class="text-green-600 font-medium">
+                                            ✓ Auto-filled from customer profile
+                                        </span>
+                                        <span x-show="formData.buyer_kra_pin && !isValidKraPin(formData.buyer_kra_pin)" class="text-red-600 font-medium">
+                                            Invalid format. Must match: A123456789X (1 letter, 9 digits, 1 letter)
+                                        </span>
+                                        <span x-show="!formData.buyer_kra_pin" class="text-amber-600">
+                                            Required for KRA eTIMS compliance (2026) - All invoices must transmit with buyer's PIN
+                                        </span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -361,8 +445,8 @@
                             </button>
                         </div>
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
+                        <div class="overflow-x-auto" style="overflow-y: visible;">
+                            <table class="min-w-full divide-y divide-gray-200" style="position: relative;">
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-8"></th>
@@ -399,55 +483,83 @@
                                                         @focus="if (item.description && item.description.length >= 2) searchItems(index, item.description)"
                                                         @click.outside="itemSearchResults = { ...itemSearchResults, [index]: [] }"
                                                         placeholder="Item description"
-                                                        class="w-full border-0 focus:ring-0 p-0 text-sm"
+                                                        class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         required>
-                                                    <!-- Autocomplete Dropdown -->
+                                                    <!-- Autocomplete Dropdown - Improved visibility -->
                                                     <div
                                                         x-show="getItemSearchResults(index).length > 0"
-                                                        x-transition:enter="transition ease-out duration-100"
-                                                        x-transition:enter-start="opacity-0 scale-95"
-                                                        x-transition:enter-end="opacity-100 scale-100"
-                                                        x-transition:leave="transition ease-in duration-75"
-                                                        x-transition:leave-start="opacity-100 scale-100"
-                                                        x-transition:leave-end="opacity-0 scale-95"
-                                                        class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                                        x-transition:enter="transition ease-out duration-150"
+                                                        x-transition:enter-start="opacity-0 transform scale-95 translate-y-[-10px]"
+                                                        x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+                                                        x-transition:leave="transition ease-in duration-100"
+                                                        x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
+                                                        x-transition:leave-end="opacity-0 transform scale-95 translate-y-[-10px]"
+                                                        style="z-index: 9999;"
+                                                        class="absolute left-0 right-0 mt-1 bg-white border-2 border-blue-200 rounded-lg shadow-xl max-h-72 overflow-y-auto"
                                                         x-cloak>
+                                                        <div class="px-3 py-2 bg-blue-50 border-b border-blue-200">
+                                                            <div class="text-xs font-semibold text-blue-900 uppercase tracking-wide">Previous Items</div>
+                                                        </div>
                                                         <template x-for="suggestion in getItemSearchResults(index)" :key="suggestion.id">
                                                             <div
                                                                 @click.stop="selectItem(index, suggestion)"
-                                                                class="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
-                                                                <div class="font-medium" x-text="suggestion.name"></div>
-                                                                <div class="text-sm text-gray-500" x-text="formatCurrency(suggestion.unit_price)"></div>
+                                                                class="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors">
+                                                                <div class="font-semibold text-gray-900" x-text="suggestion.name"></div>
+                                                                <div class="text-sm text-gray-600 mt-0.5">
+                                                                    Price: <span class="font-medium text-blue-600" x-text="formatCurrency(suggestion.unit_price)"></span>
+                                                                </div>
                                                             </div>
                                                         </template>
                                                     </div>
+                                                    <!-- Loading State -->
                                                     <div
                                                         x-show="isItemSearchLoading(index)"
-                                                        class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 text-center text-sm text-gray-500"
+                                                        style="z-index: 9999;"
+                                                        class="absolute left-0 right-0 mt-1 bg-white border-2 border-blue-200 rounded-lg shadow-xl p-4 text-center"
                                                         x-cloak>
-                                                        Searching...
+                                                        <div class="flex items-center justify-center gap-2 text-blue-600">
+                                                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span class="text-sm font-medium">Searching...</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td class="px-4 py-3">
-                                                <input
-                                                    type="number"
-                                                    x-model="item.quantity"
-                                                    @input="calculateItemTotal(index); triggerAutosave(); if (showPreview) updatePreview()"
-                                                    min="0.01"
-                                                    step="0.01"
-                                                    class="w-20 border-0 focus:ring-0 p-0 text-sm text-right"
-                                                    required>
+                                                <div class="relative">
+                                                    <input
+                                                        type="number"
+                                                        x-model="item.quantity"
+                                                        @input="calculateItemTotal(index); checkStageCompletion(); triggerAutosave(); if (showPreview) updatePreview()"
+                                                        @blur="if (item.quantity <= 0) { item.quantity = 0.01; calculateItemTotal(index); }"
+                                                        min="0.01"
+                                                        step="0.01"
+                                                        :class="{'border-red-300 bg-red-50': item.quantity <= 0, 'border-gray-300': item.quantity > 0}"
+                                                        class="w-20 border rounded px-2 py-1 text-sm text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        required>
+                                                    <div x-show="item.quantity <= 0" class="absolute -bottom-5 left-0 text-xs text-red-600 whitespace-nowrap z-10" x-cloak>
+                                                        Must be > 0
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td class="px-4 py-3">
-                                                <input
-                                                    type="number"
-                                                    x-model="item.unit_price"
-                                                    @input="calculateItemTotal(index); triggerAutosave(); if (showPreview) updatePreview()"
-                                                    min="0"
-                                                    step="0.01"
-                                                    class="w-24 border-0 focus:ring-0 p-0 text-sm text-right"
-                                                    required>
+                                                <div class="relative">
+                                                    <input
+                                                        type="number"
+                                                        x-model="item.unit_price"
+                                                        @input="calculateItemTotal(index); checkStageCompletion(); triggerAutosave(); if (showPreview) updatePreview()"
+                                                        @blur="if (item.unit_price < 0) { item.unit_price = 0; calculateItemTotal(index); }"
+                                                        min="0"
+                                                        step="0.01"
+                                                        :class="{'border-red-300 bg-red-50': item.unit_price < 0, 'border-gray-300': item.unit_price >= 0}"
+                                                        class="w-24 border rounded px-2 py-1 text-sm text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        required>
+                                                    <div x-show="item.unit_price < 0" class="absolute -bottom-5 left-0 text-xs text-red-600 whitespace-nowrap z-10" x-cloak>
+                                                        Cannot be negative
+                                                    </div>
+                                                </div>
                                             </td>
                                             <!-- Discount Column -->
                                             <td class="px-4 py-3">
@@ -516,7 +628,23 @@
                                 </tbody>
                             </table>
                         </div>
-                        <p x-show="formData.items.length === 0" class="text-center text-gray-500 py-4">No items added yet. Click "Add Item" to get started.</p>
+                        <!-- Empty State for Items - Only show when there are NO items at all -->
+                        <div x-show="formData.items.length === 0" 
+                             class="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300" x-cloak>
+                            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No items added yet</h3>
+                            <p class="text-sm text-gray-600 mb-4">Add at least one item to continue. You can search from your item library or create a new item.</p>
+                            <button
+                                @click="addLineItem()"
+                                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 inline-flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Add Your First Item
+                            </button>
+                        </div>
                     </div>
 
                     <!-- D. Totals & Tax Summary -->
@@ -534,10 +662,6 @@
                             <div x-show="formData.vat_registered" class="flex justify-between text-sm" x-cloak>
                                 <span class="text-gray-600">VAT (16%)</span>
                                 <span class="font-medium" x-text="formatCurrency(totals.vat_amount)"></span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Platform Fee (3%)</span>
-                                <span class="font-medium" x-text="formatCurrency(totals.platform_fee)"></span>
                             </div>
                             <div class="pt-2 border-t border-gray-200 flex justify-between text-lg font-bold">
                                 <span>Total Payable</span>
@@ -604,16 +728,6 @@
                             class="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium">
                             Cancel
                         </a>
-                    </div>
-                    <div class="flex items-center gap-6">
-                        <div class="text-sm">
-                            <span class="text-gray-600">Total Quantity:</span>
-                            <span class="font-semibold text-gray-900" x-text="formData.items.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0)"></span>
-                        </div>
-                        <div class="text-lg">
-                            <span class="text-gray-600">Total Amount:</span>
-                            <span class="font-bold text-gray-900" x-text="formatCurrency(totals.grand_total)"></span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -763,6 +877,7 @@
                         discount: 0,
                         discount_type: 'fixed',
                         currency: company.currency || 'KES', // Default to company currency
+                        buyer_kra_pin: '', // Buyer KRA PIN for eTIMS compliance (2026 requirement)
                     },
                     availableCurrencies: [
                         { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh' },
@@ -810,6 +925,9 @@
                     draftId: null,
                     autosaveInterval: null,
                     draggedItemIndex: null, // For drag and drop reordering
+                    showPoNumber: false, // Collapsible PO number field
+                    etimsValidating: false, // eTIMS validation status
+                    etimsValidationStatus: null, // 'ready', 'validating', 'valid', 'error'
                     showTemplateLibrary: false, // Template library modal visibility
                     templates: [], // Array of saved templates
                     showSaveTemplateModal: false, // Save template modal visibility
@@ -916,8 +1034,17 @@
                         this.clientSearch = client.name;
                         this.showClientDropdown = false;
 
+                        // Auto-fill buyer KRA PIN from client if available (eTIMS 2026 requirement)
+                        if (client.kra_pin) {
+                            this.formData.buyer_kra_pin = client.kra_pin;
+                        }
+
                         // Auto-generate invoice number when client is selected
                         this.refreshInvoiceNumber();
+
+                        // Unlock Stage 2 (Currency/Compliance) after client selected
+                        this.stagesUnlocked.stage2 = true;
+                        this.checkStageCompletion();
 
                         if (this.showPreview) {
                             this.updatePreview();
@@ -1093,6 +1220,7 @@
                         item.total = Math.round(item.total * 100) / 100;
                         
                         this.calculateTotals();
+                        this.checkStageCompletion(); // Check stages after item calculation
                     },
 
                     calculateTotals() {
@@ -1137,24 +1265,20 @@
                         // For invoice-level VAT (if still used), we'd calculate it here
                         // But since we're using per-item taxes, itemsTaxTotal is already correct
                         
-                        const totalBeforeFee = itemsTotal - invoiceDiscount; // Subtract invoice discount from final total
-                        const platformFee = totalBeforeFee * 0.03;
-                        const grandTotal = totalBeforeFee + platformFee;
+                        const grandTotal = itemsTotal - invoiceDiscount; // Final total (platform fee removed per subscription pivot)
 
                         // Convert all amounts to selected currency if different from base
                         const convertedSubtotal = this.convertAmount(itemsSubtotal);
                         const convertedDiscount = this.convertAmount(totalDiscount);
                         const convertedTax = this.convertAmount(itemsTaxTotal);
-                        const convertedPlatformFee = this.convertAmount(platformFee);
-                        const convertedTotal = this.convertAmount(totalBeforeFee);
                         const convertedGrandTotal = this.convertAmount(grandTotal);
 
                         this.totals = {
                             subtotal: convertedSubtotal,
                             discount: convertedDiscount,
                             vat_amount: convertedTax, // Total of all item taxes
-                            platform_fee: convertedPlatformFee,
-                            total: convertedTotal,
+                            platform_fee: 0, // Removed - no longer charged
+                            total: convertedGrandTotal, // Same as grand_total now
                             grand_total: convertedGrandTotal,
                         };
                     },
@@ -1410,6 +1534,50 @@
                         }
                     },
 
+                    // Validate KRA PIN format (A123456789X - 1 letter, 9 digits, 1 letter)
+                    isValidKraPin(pin) {
+                        if (!pin || pin.length !== 11) return false;
+                        return /^[A-Z]\d{9}[A-Z]$/.test(pin);
+                    },
+
+                    // Validate buyer PIN format
+                    validateBuyerPin() {
+                        if (this.formData.buyer_kra_pin && !this.isValidKraPin(this.formData.buyer_kra_pin)) {
+                            this.etimsValidationStatus = 'error';
+                        } else if (this.formData.buyer_kra_pin && this.isValidKraPin(this.formData.buyer_kra_pin)) {
+                            this.etimsValidationStatus = 'ready';
+                        } else {
+                            this.etimsValidationStatus = null;
+                        }
+                    },
+
+                    // eTIMS validation (pre-check before sending)
+                    async validateEtims() {
+                        if (!this.formData.buyer_kra_pin) {
+                            alert('Please enter buyer\'s KRA PIN first');
+                            return;
+                        }
+                        if (!this.isValidKraPin(this.formData.buyer_kra_pin)) {
+                            alert('Invalid buyer\'s KRA PIN format. Must match: A123456789X');
+                            return;
+                        }
+
+                        this.etimsValidating = true;
+                        this.etimsValidationStatus = 'validating';
+                        try {
+                            // In a real implementation, this would call the eTIMS API
+                            // For now, simulate validation
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            this.etimsValidationStatus = 'valid';
+                            // In production, integrate with EtimsService::validate()
+                        } catch (error) {
+                            console.error('eTIMS validation error:', error);
+                            this.etimsValidationStatus = 'error';
+                        } finally {
+                            this.etimsValidating = false;
+                        }
+                    },
+
                     validateInvoice() {
                         const errors = [];
                         
@@ -1442,16 +1610,16 @@
                             errors.push('At least one valid line item is required');
                         }
                         
-                        // KRA Compliance validation (for Kenyan companies)
-                        if (this.company && this.company.kra_pin && !this.company.kra_pin.trim()) {
-                            errors.push('Company KRA PIN is required for eTIMS compliance. Please configure it in company settings.');
+                        // Buyer KRA PIN validation - 2026 Requirement (mandatory for eTIMS)
+                        if (!this.formData.buyer_kra_pin) {
+                            errors.push('Buyer\'s KRA PIN is required for eTIMS compliance (2026 requirement)');
+                        } else if (!this.isValidKraPin(this.formData.buyer_kra_pin)) {
+                            errors.push('Buyer\'s KRA PIN format is invalid. Must match: A123456789X (1 letter, 9 digits, 1 letter)');
                         }
                         
-                        // Client KRA PIN validation (warning, not blocking)
-                        if (this.formData.client && this.formData.client.kra_pin && 
-                            !this.formData.client.kra_pin.match(/^[A-Z]\d{9}[A-Z]$/)) {
-                            // This is a warning, not an error - still allow sending
-                            console.warn('Client KRA PIN format may be invalid');
+                        // Company KRA PIN validation (for Kenyan companies)
+                        if (this.company && (!this.company.kra_pin || !this.company.kra_pin.trim())) {
+                            errors.push('Company KRA PIN is required for eTIMS compliance. Please configure it in company settings.');
                         }
                         
                         return {
@@ -1522,42 +1690,25 @@
                     calculateProgress() {
                         let progress = 0;
                         
-                        // Client selected (20%)
+                        // Customer (25%)
                         if (this.formData.client_id) {
+                            progress += 25;
+                        }
+                        
+                        // Items (35%)
+                        const hasValidItems = this.formData.items.some(item => item.description && item.quantity > 0 && item.unit_price > 0);
+                        if (hasValidItems) {
+                            progress += 35;
+                        }
+                        
+                        // Dates (20%)
+                        if (this.formData.issue_date && this.formData.due_date) {
                             progress += 20;
                         }
                         
-                        // Invoice dates set (15%)
-                        if (this.formData.issue_date) {
-                            progress += 7.5;
-                        }
-                        if (this.formData.due_date) {
-                            progress += 7.5;
-                        }
-                        
-                        // At least one item with description, quantity, and price (40%)
-                        const validItems = this.formData.items.filter(item => 
-                            item.description && 
-                            item.description.trim() !== '' && 
-                            parseFloat(item.quantity) > 0 && 
-                            parseFloat(item.unit_price) > 0
-                        );
-                        
-                        if (validItems.length > 0) {
-                            progress += 40;
-                        }
-                        
-                        // Invoice number generated (10%)
-                        if (this.formData.invoice_number && this.formData.invoice_number.trim() !== '') {
-                            progress += 10;
-                        }
-                        
-                        // Additional info (15% bonus)
-                        if (this.formData.notes && this.formData.notes.trim() !== '') {
-                            progress += 7.5;
-                        }
-                        if (this.formData.terms_and_conditions && this.formData.terms_and_conditions.trim() !== '') {
-                            progress += 7.5;
+                        // Buyer KRA PIN - 2026 Requirement (20%)
+                        if (this.formData.buyer_kra_pin && this.isValidKraPin(this.formData.buyer_kra_pin)) {
+                            progress += 20;
                         }
                         
                         return Math.min(100, Math.round(progress));

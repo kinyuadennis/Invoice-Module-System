@@ -1288,7 +1288,7 @@
                     }
                 }
 
-                // Initialize charts when DOM is ready
+                // Initialize chart s when DOM is ready
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', initCharts);
                 } else {
