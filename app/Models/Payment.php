@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Config\PaymentConstants;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -147,5 +148,84 @@ class Payment extends Model
     public function canBeRefunded(): bool
     {
         return $this->status === 'completed' && ! $this->isFullyRefunded();
+    }
+
+    /**
+     * Mark payment as SUCCESS.
+     *
+     * Enforces blueprint invariant: A Payment may transition only once into a terminal state.
+     *
+     * @throws \Exception If payment is already in a terminal state
+     */
+    public function markAsSuccess(): void
+    {
+        if (in_array($this->status, [
+            PaymentConstants::PAYMENT_STATUS_SUCCESS,
+            PaymentConstants::PAYMENT_STATUS_FAILED,
+            PaymentConstants::PAYMENT_STATUS_TIMEOUT,
+        ])) {
+            throw new \Exception("Payment is already in terminal state: {$this->status}");
+        }
+
+        $this->update([
+            'status' => PaymentConstants::PAYMENT_STATUS_SUCCESS,
+            'paid_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark payment as FAILED.
+     *
+     * Enforces blueprint invariant: A Payment may transition only once into a terminal state.
+     *
+     * @throws \Exception If payment is already in a terminal state
+     */
+    public function markAsFailed(): void
+    {
+        if (in_array($this->status, [
+            PaymentConstants::PAYMENT_STATUS_SUCCESS,
+            PaymentConstants::PAYMENT_STATUS_FAILED,
+            PaymentConstants::PAYMENT_STATUS_TIMEOUT,
+        ])) {
+            throw new \Exception("Payment is already in terminal state: {$this->status}");
+        }
+
+        $this->update([
+            'status' => PaymentConstants::PAYMENT_STATUS_FAILED,
+        ]);
+    }
+
+    /**
+     * Mark payment as TIMEOUT.
+     *
+     * Enforces blueprint invariant: A Payment may transition only once into a terminal state.
+     *
+     * @throws \Exception If payment is already in a terminal state
+     */
+    public function markAsTimeout(): void
+    {
+        if (in_array($this->status, [
+            PaymentConstants::PAYMENT_STATUS_SUCCESS,
+            PaymentConstants::PAYMENT_STATUS_FAILED,
+            PaymentConstants::PAYMENT_STATUS_TIMEOUT,
+        ])) {
+            throw new \Exception("Payment is already in terminal state: {$this->status}");
+        }
+
+        $this->update([
+            'status' => PaymentConstants::PAYMENT_STATUS_TIMEOUT,
+        ]);
+    }
+
+    /**
+     * Check if payment is in a terminal state.
+     */
+    public function isTerminal(): bool
+    {
+        return in_array($this->status, [
+            PaymentConstants::PAYMENT_STATUS_SUCCESS,
+            PaymentConstants::PAYMENT_STATUS_FAILED,
+            PaymentConstants::PAYMENT_STATUS_TIMEOUT,
+        ]);
     }
 }

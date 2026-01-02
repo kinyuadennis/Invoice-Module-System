@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Config\GatewayConstants;
 use App\Config\SubscriptionConstants;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
@@ -32,13 +33,16 @@ class SubscriptionController extends Controller
      */
     public function store(Request $request)
     {
+        $user = $request->user();
+
+        // Validate phone based on user country (KE → M-Pesa requires phone)
+        $phoneRule = $user->country === GatewayConstants::COUNTRY_KENYA ? 'required|string' : 'nullable|string';
+
         $request->validate([
             'subscription_plan_id' => 'required|exists:subscription_plans,id',
-            'phone' => 'required_if:gateway,mpesa|string', // Required for M-Pesa
+            'phone' => $phoneRule,
             'customer_id' => 'nullable|string', // Optional for Stripe
         ]);
-
-        $user = $request->user();
         $companyId = CurrentCompanyService::requireId();
 
         // Get subscription plan
@@ -50,8 +54,8 @@ class SubscriptionController extends Controller
         DB::beginTransaction();
 
         try {
-            // Create subscription (PENDING status)
-            $subscription = Subscription::create([
+            // Create subscription (PENDING status) via repository (audited)
+            $subscription = $this->subscriptionRepository->create([
                 'user_id' => $user->id,
                 'company_id' => $companyId,
                 'subscription_plan_id' => $plan->id,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Config\PaymentConstants;
 use App\Config\SubscriptionConstants;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 class Subscription extends Model
 {
-    protected $table = 'company_subscriptions';
+    protected $table = 'subscriptions';
 
     protected $fillable = [
         'user_id',
@@ -158,5 +159,77 @@ class Subscription extends Model
     public function isTrial(): bool
     {
         return $this->trial_ends_at && $this->trial_ends_at->isFuture();
+    }
+
+    /**
+     * Transition subscription to ACTIVE status.
+     *
+     * Enforces blueprint invariant: A subscription cannot be ACTIVE without at least one successful Payment.
+     *
+     * @throws \Exception If invariant is violated
+     */
+    public function transitionToActive(): void
+    {
+        // Enforce invariant: Must have at least one successful payment
+        $hasSuccessfulPayment = $this->payments()
+            ->where('status', PaymentConstants::PAYMENT_STATUS_SUCCESS)
+            ->exists();
+
+        if (! $hasSuccessfulPayment) {
+            throw new \Exception('Cannot activate subscription without a successful payment');
+        }
+
+        // Prevent backward transitions from EXPIRED
+        if ($this->status === SubscriptionConstants::SUBSCRIPTION_STATUS_EXPIRED) {
+            throw new \Exception('Cannot reactivate expired subscription without a new payment');
+        }
+
+        $this->update([
+            'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_ACTIVE,
+            'starts_at' => $this->starts_at ?? now(),
+        ]);
+    }
+
+    /**
+     * Transition subscription to GRACE status.
+     *
+     * Sets grace period end date based on SubscriptionConstants::RENEWAL_GRACE_DAYS.
+     */
+    public function transitionToGrace(): void
+    {
+        $gracePeriodEnd = now()->addDays(SubscriptionConstants::RENEWAL_GRACE_DAYS);
+
+        $this->update([
+            'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_GRACE,
+            'ends_at' => $gracePeriodEnd,
+        ]);
+    }
+
+    /**
+     * Transition subscription to EXPIRED status.
+     *
+     * Enforces blueprint invariant: No backward transitions allowed.
+     */
+    public function transitionToExpired(): void
+    {
+        // Can only transition from GRACE to EXPIRED
+        if ($this->status !== SubscriptionConstants::SUBSCRIPTION_STATUS_GRACE) {
+            throw new \Exception('Can only expire subscription from GRACE status');
+        }
+
+        $this->update([
+            'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_EXPIRED,
+        ]);
+    }
+
+    /**
+     * Transition subscription to CANCELLED status.
+     */
+    public function transitionToCancelled(): void
+    {
+        $this->update([
+            'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_CANCELLED,
+            'cancelled_at' => now(),
+        ]);
     }
 }

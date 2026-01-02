@@ -253,4 +253,227 @@ class SubscriptionService
             return null;
         }
     }
+
+    /**
+     * Activate a subscription after payment confirmation.
+     *
+     * Handles PaymentConfirmed event, activates subscription, and creates invoice snapshot.
+     */
+    public function activateSubscription(Payment $payment): void
+    {
+        $subscription = $payment->payable;
+        if (! $subscription instanceof Subscription) {
+            return; // Not a subscription payment
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Transition subscription to ACTIVE (enforces invariants)
+            $subscription->transitionToActive();
+
+            // Calculate subscription end date based on plan billing period
+            $plan = $subscription->plan;
+            if ($plan) {
+                $billingPeriod = $plan->billing_period ?? 'monthly';
+                $endDate = match ($billingPeriod) {
+                    'monthly' => now()->addMonth(),
+                    'yearly' => now()->addYear(),
+                    'quarterly' => now()->addMonths(3),
+                    default => now()->addMonth(),
+                };
+
+                $nextBillingAt = $endDate;
+
+                $subscription->update([
+                    'ends_at' => $endDate,
+                    'next_billing_at' => $nextBillingAt,
+                ]);
+            }
+
+            // Emit SubscriptionActivated event
+            event(new SubscriptionActivated($subscription));
+
+            // Create invoice snapshot (per blueprint section 6)
+            $this->createSubscriptionInvoice($subscription, $payment);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Subscription activation failed', [
+                'subscription_id' => $subscription->id,
+                'payment_id' => $payment->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Cancel a subscription.
+     *
+     * Handles gateway-specific cancellation and updates subscription status.
+     */
+    public function cancelSubscription(Subscription $subscription, string $reason = 'User cancellation'): GatewayResult
+    {
+        DB::beginTransaction();
+
+        try {
+            // Get gateway adapter
+            $gateway = $subscription->gateway === PaymentConstants::GATEWAY_MPESA
+                ? $this->mpesaAdapter
+                : $this->stripeAdapter;
+
+            // Attempt gateway cancellation (M-Pesa will throw UnsupportedOperationException)
+            $gatewayResult = null;
+            try {
+                $subscriptionContext = new SubscriptionContext(
+                    subscriptionId: (string) $subscription->id,
+                    gatewaySubscriptionId: $subscription->payment_reference ?? null,
+                    reason: $reason
+                );
+
+                $gatewayResult = $gateway->cancelSubscription($subscriptionContext);
+            } catch (\UnsupportedOperationException $e) {
+                // M-Pesa doesn't support cancellation - that's expected
+                $gatewayResult = new GatewayResult(
+                    success: true,
+                    errorMessage: null,
+                    metadata: ['note' => 'Cancellation handled internally']
+                );
+            }
+
+            // Transition subscription to CANCELLED
+            $subscription->transitionToCancelled();
+
+            // Emit SubscriptionCancelled event
+            event(new SubscriptionCancelled($subscription));
+
+            DB::commit();
+
+            return $gatewayResult ?? new GatewayResult(success: true, errorMessage: null, metadata: []);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Subscription cancellation failed', [
+                'subscription_id' => $subscription->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return new GatewayResult(
+                success: false,
+                errorMessage: $e->getMessage(),
+                metadata: []
+            );
+        }
+    }
+
+    /**
+     * Handle renewal failure - transition to GRACE.
+     */
+    public function handleRenewalFailure(Subscription $subscription): void
+    {
+        $subscription->transitionToGrace();
+
+        // Set grace period end date
+        $gracePeriodEnd = now()->addDays(SubscriptionConstants::RENEWAL_GRACE_DAYS);
+        $subscription->update(['ends_at' => $gracePeriodEnd]);
+    }
+
+    /**
+     * Handle renewal success - transition back to ACTIVE.
+     */
+    public function handleRenewalSuccess(Subscription $subscription, Payment $payment): void
+    {
+        DB::beginTransaction();
+
+        try {
+            // Transition to ACTIVE (enforces invariants)
+            $subscription->transitionToActive();
+
+            // Update next billing date
+            $plan = $subscription->plan;
+            if ($plan) {
+                $billingPeriod = $plan->billing_period ?? 'monthly';
+                $nextBillingAt = match (strtolower($billingPeriod)) {
+                    'monthly', 'month' => now()->addMonth(),
+                    'yearly', 'year' => now()->addYear(),
+                    'quarterly', 'quarter' => now()->addMonths(3),
+                    'weekly', 'week' => now()->addWeek(),
+                    'daily', 'day' => now()->addDay(),
+                    default => now()->addMonth(),
+                };
+
+                $subscription->update([
+                    'next_billing_at' => $nextBillingAt,
+                    'ends_at' => $nextBillingAt,
+                ]);
+            }
+
+            // Emit SubscriptionRenewed event
+            event(new SubscriptionRenewed($subscription));
+
+            // Create invoice snapshot for renewal
+            $this->createSubscriptionInvoice($subscription, $payment);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Subscription renewal success handling failed', [
+                'subscription_id' => $subscription->id,
+                'payment_id' => $payment->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Create an invoice snapshot for subscription payment.
+     *
+     * Per blueprint section 6: Invoices are generated only after PaymentConfirmed event.
+     * Invoice data is snapshotted with amount, currency, plan description, gateway (metadata).
+     */
+    private function createSubscriptionInvoice(Subscription $subscription, Payment $payment): void
+    {
+        try {
+            // Create invoice record (immutable snapshot)
+            $invoice = Invoice::create([
+                'company_id' => $subscription->company_id,
+                'user_id' => $subscription->user_id,
+                'client_id' => null, // Subscription invoices don't have a client
+                'status' => 'paid',
+                'issue_date' => now(),
+                'due_date' => now(),
+                'invoice_reference' => "SUB-{$subscription->id}-{$payment->id}",
+                'subtotal' => $payment->amount,
+                'discount' => 0,
+                'vat_amount' => 0,
+                'grand_total' => $payment->amount,
+                'total' => $payment->amount,
+                'payment_method' => $subscription->gateway,
+                'payment_details' => json_encode([
+                    'subscription_id' => $subscription->id,
+                    'payment_id' => $payment->id,
+                    'plan_code' => $subscription->plan_code,
+                    'gateway' => $subscription->gateway,
+                ]),
+                'notes' => "Subscription Payment: {$subscription->plan_code}",
+            ]);
+
+            // Create snapshot for PDF rendering
+            $this->snapshotService->createSnapshot($invoice, 'paid');
+        } catch (\Exception $e) {
+            // Log error but don't fail subscription activation
+            Log::error('Failed to create subscription invoice snapshot', [
+                'subscription_id' => $subscription->id,
+                'payment_id' => $payment->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
 }

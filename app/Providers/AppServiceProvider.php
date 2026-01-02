@@ -23,6 +23,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register PaymentConfirmed event listener for subscription invoice creation
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Payments\Events\PaymentConfirmed::class,
+            \App\Listeners\Payments\Listeners\CreateInvoiceOnPaymentConfirmed::class
+        );
+
         // Share active company with all views that use layouts.user
         // This eliminates DB queries from Blade templates
         // OPTIMIZED: Only run queries if user is authenticated and has active company
