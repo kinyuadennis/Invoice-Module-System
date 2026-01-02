@@ -37,17 +37,27 @@ class SubscriptionRepository
      */
     public function update(Subscription $subscription, array $data): Subscription
     {
+        // Store original values before update
+        $original = [];
+        foreach ($data as $key => $value) {
+            if ($subscription->isFillable($key)) {
+                $original[$key] = $subscription->getOriginal($key);
+            }
+        }
+
+        // Update the subscription
+        $subscription->update($data);
+
+        // Track changes by comparing original values with new values
         $changes = [];
         foreach ($data as $key => $value) {
-            if ($subscription->isDirty($key)) {
+            if (isset($original[$key]) && $original[$key] != $value) {
                 $changes[$key] = [
-                    'from' => $subscription->getOriginal($key),
+                    'from' => $original[$key],
                     'to' => $value,
                 ];
             }
         }
-
-        $subscription->update($data);
 
         if (! empty($changes)) {
             $this->logChange($subscription, 'updated', $changes);

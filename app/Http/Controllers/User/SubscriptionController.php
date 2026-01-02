@@ -9,6 +9,7 @@ use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Services\CurrentCompanyService;
 use App\Services\SubscriptionService;
+use App\Subscriptions\Repositories\SubscriptionRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -23,7 +24,8 @@ use Illuminate\Support\Facades\Log;
 class SubscriptionController extends Controller
 {
     public function __construct(
-        private SubscriptionService $subscriptionService
+        private SubscriptionService $subscriptionService,
+        private SubscriptionRepository $subscriptionRepository
     ) {}
 
     /**
@@ -99,6 +101,61 @@ class SubscriptionController extends Controller
             ]);
 
             return back()->withErrors(['error' => 'Failed to initiate subscription: '.$e->getMessage()]);
+        }
+    }
+
+    /**
+     * Display a listing of user's subscriptions.
+     */
+    public function index()
+    {
+        $user = auth()->user();
+        $companyId = CurrentCompanyService::requireId();
+
+        $subscriptions = Subscription::where('user_id', $user->id)
+            ->where('company_id', $companyId)
+            ->with('plan')
+            ->latest()
+            ->get();
+
+        $availablePlans = SubscriptionPlan::where('is_active', true)
+            ->orderBy('price')
+            ->get();
+
+        return view('user.subscriptions.index', [
+            'subscriptions' => $subscriptions,
+            'availablePlans' => $availablePlans,
+        ]);
+    }
+
+    /**
+     * Cancel a subscription.
+     */
+    public function cancel(Request $request, Subscription $subscription)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        // Ensure subscription belongs to user's company
+        if ($subscription->company_id !== $companyId) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Ensure subscription belongs to authenticated user
+        if ($subscription->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        try {
+            $this->subscriptionService->cancelSubscription($subscription);
+
+            return back()->with('success', 'Subscription cancelled successfully.');
+        } catch (\Exception $e) {
+            Log::error('Subscription cancellation failed', [
+                'subscription_id' => $subscription->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to cancel subscription: '.$e->getMessage()]);
         }
     }
 }

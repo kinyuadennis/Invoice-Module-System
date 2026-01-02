@@ -59,6 +59,12 @@ class ProcessGracePeriodExpirations extends Command
                 // Transition to EXPIRED (enforces invariant: only from GRACE)
                 $subscription->transitionToExpired();
 
+                // Send expiration notification
+                $user = $subscription->user;
+                if ($user) {
+                    $user->notify(new \App\Notifications\Subscriptions\SubscriptionExpiredNotification($subscription));
+                }
+
                 $this->line("  → Subscription ID {$subscription->id} transitioned to EXPIRED");
 
                 Log::info('Subscription grace period expired', [

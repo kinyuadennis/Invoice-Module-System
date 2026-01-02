@@ -59,4 +59,18 @@ return function (Schedule $schedule): void {
         ->everyMinute()
         ->withoutOverlapping()
         ->runInBackground();
+
+    // Handle country changes (gateway migration)
+    $schedule->command('subscriptions:handle-country-change')
+        ->dailyAt('03:00')
+        ->timezone('Africa/Nairobi')
+        ->withoutOverlapping()
+        ->runInBackground();
+
+    // Reconcile Stripe subscriptions (compare with Stripe API)
+    $schedule->command('subscriptions:reconcile-stripe')
+        ->dailyAt('04:00')
+        ->timezone('Africa/Nairobi')
+        ->withoutOverlapping()
+        ->runInBackground();
 };

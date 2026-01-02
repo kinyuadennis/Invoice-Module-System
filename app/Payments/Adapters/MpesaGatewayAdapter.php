@@ -156,7 +156,7 @@ class MpesaGatewayAdapter implements PaymentGatewayInterface
 
         $resultCode = $stkCallback['ResultCode'] ?? null;
         $checkoutRequestId = $stkCallback['CheckoutRequestID'];
-        $callbackMetadata = $stkCallback['CallbackMetadata']['Item'] ?? [];
+        $callbackMetadata = ($stkCallback['CallbackMetadata'] ?? [])['Item'] ?? [];
 
         // Extract metadata
         $metadata = [];

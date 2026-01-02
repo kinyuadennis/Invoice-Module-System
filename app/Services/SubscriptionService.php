@@ -31,7 +31,8 @@ class SubscriptionService
 {
     public function __construct(
         private MpesaGatewayAdapter $mpesaAdapter,
-        private StripeGatewayAdapter $stripeAdapter
+        private StripeGatewayAdapter $stripeAdapter,
+        private InvoiceSnapshotService $snapshotService
     ) {}
 
     /**
@@ -390,13 +391,19 @@ class SubscriptionService
     /**
      * Handle renewal failure - transition to GRACE.
      */
-    public function handleRenewalFailure(Subscription $subscription): void
+    public function handleRenewalFailure(Subscription $subscription, string $reason = 'Payment failed'): void
     {
         $subscription->transitionToGrace();
 
         // Set grace period end date
         $gracePeriodEnd = now()->addDays(SubscriptionConstants::RENEWAL_GRACE_DAYS);
         $subscription->update(['ends_at' => $gracePeriodEnd]);
+
+        // Send renewal failed notification
+        $user = $subscription->user;
+        if ($user) {
+            $user->notify(new \App\Notifications\Subscriptions\SubscriptionRenewalFailedNotification($subscription, $reason));
+        }
     }
 
     /**

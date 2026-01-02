@@ -20,12 +20,20 @@ use Illuminate\Support\Facades\Route;
 // Public routes (no prefix)
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Webhooks (no CSRF protection needed)
+// Webhooks (no CSRF protection needed, but rate limited for security)
 Route::prefix('webhooks')->name('webhooks.')->group(function () {
-    Route::post('/stripe', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'stripe'])->name('stripe');
-    Route::post('/mpesa/callback', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'mpesa'])->name('mpesa');
-    Route::post('/subscriptions/stripe', [\App\Http\Controllers\Webhook\SubscriptionWebhookController::class, 'stripe'])->name('subscriptions.stripe');
-    Route::post('/subscriptions/mpesa/callback', [\App\Http\Controllers\Webhook\SubscriptionWebhookController::class, 'mpesa'])->name('subscriptions.mpesa');
+    Route::post('/stripe', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'stripe'])
+        ->middleware('throttle:60,1')
+        ->name('stripe');
+    Route::post('/mpesa/callback', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'mpesa'])
+        ->middleware('throttle:60,1')
+        ->name('mpesa');
+    Route::post('/subscriptions/stripe', [\App\Http\Controllers\Webhook\SubscriptionWebhookController::class, 'stripe'])
+        ->middleware('throttle:60,1')
+        ->name('subscriptions.stripe');
+    Route::post('/subscriptions/mpesa/callback', [\App\Http\Controllers\Webhook\SubscriptionWebhookController::class, 'mpesa'])
+        ->middleware('throttle:60,1')
+        ->name('subscriptions.mpesa');
 });
 
 // Customer Portal (token-based access, no authentication required)

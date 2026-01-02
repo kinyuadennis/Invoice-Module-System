@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Config\PaymentConstants;
 use App\Http\Controllers\Controller;
+use App\Jobs\Payments\ProcessWebhookRetry;
 use App\Payments\DTOs\GatewayCallbackPayload;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
@@ -28,6 +29,14 @@ class SubscriptionWebhookController extends Controller
      */
     public function stripe(Request $request)
     {
+        // Log webhook request for audit trail (per blueprint section 7)
+        Log::info('Stripe subscription webhook received', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'timestamp' => now()->toIso8601String(),
+            'event_type' => $request->input('type'),
+        ]);
+
         $signature = $request->header('Stripe-Signature');
         $payload = $request->all();
 
@@ -55,7 +64,7 @@ class SubscriptionWebhookController extends Controller
         }
 
         $eventType = $payload['type'] ?? null;
-        $dataObject = $payload['data']['object'] ?? [];
+        $dataObject = ($payload['data'] ?? [])['object'] ?? [];
 
         try {
             // Handle different Stripe webhook events for subscriptions
@@ -81,13 +90,30 @@ class SubscriptionWebhookController extends Controller
                     );
 
                     // Confirm payment via SubscriptionService
-                    $payment = $this->subscriptionService->confirmPayment(PaymentConstants::GATEWAY_STRIPE, $callbackPayload);
+                    try {
+                        $payment = $this->subscriptionService->confirmPayment(PaymentConstants::GATEWAY_STRIPE, $callbackPayload);
 
-                    if ($payment) {
-                        return response()->json(['received' => true], 200);
+                        if ($payment) {
+                            return response()->json(['received' => true], 200);
+                        }
+
+                        return response()->json(['received' => true, 'ignored' => true], 200);
+                    } catch (\Exception $e) {
+                        // Queue retry job for failed webhook processing
+                        Log::warning('Stripe webhook processing failed, queuing retry', [
+                            'error' => $e->getMessage(),
+                            'gateway_reference' => $dataObject['id'],
+                        ]);
+
+                        ProcessWebhookRetry::dispatch(
+                            PaymentConstants::GATEWAY_STRIPE,
+                            $callbackPayload,
+                            1
+                        );
+
+                        // Return 200 to acknowledge receipt (we'll retry in background)
+                        return response()->json(['received' => true, 'queued_for_retry' => true], 200);
                     }
-
-                    return response()->json(['received' => true, 'ignored' => true], 200);
 
                 case 'invoice.payment_succeeded':
                     // Stripe subscription invoice payment succeeded (native Stripe subscriptions)
@@ -164,9 +190,39 @@ class SubscriptionWebhookController extends Controller
      */
     public function mpesa(Request $request)
     {
+        // Log webhook request for audit trail (per blueprint section 7)
+        Log::info('M-Pesa subscription webhook received', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'timestamp' => now()->toIso8601String(),
+        ]);
+
+        // Verify M-Pesa IP whitelist (per blueprint section 7)
+        $allowedIps = config('services.mpesa.allowed_ips', []);
+        $clientIp = $request->ip();
+
+        if (! empty($allowedIps) && ! in_array($clientIp, $allowedIps)) {
+            Log::warning('M-Pesa webhook rejected - IP not whitelisted', [
+                'ip' => $clientIp,
+                'allowed_ips' => $allowedIps,
+            ]);
+
+            return response()->json([
+                'ResultCode' => 1,
+                'ResultDesc' => 'Unauthorized IP',
+            ], 403);
+        }
+
         $payload = $request->all();
 
-        Log::info('M-Pesa subscription callback received', ['payload' => $payload]);
+        // Log payload (sanitized - no sensitive data per blueprint section 7)
+        $checkoutRequestId = $payload['Body']['stkCallback']['CheckoutRequestID'] ?? null;
+        $resultCode = $payload['Body']['stkCallback']['ResultCode'] ?? null;
+
+        Log::info('M-Pesa subscription callback received', [
+            'checkout_request_id' => $checkoutRequestId,
+            'result_code' => $resultCode,
+        ]);
 
         try {
             // Extract CheckoutRequestID from M-Pesa callback
@@ -191,20 +247,40 @@ class SubscriptionWebhookController extends Controller
             );
 
             // Confirm payment via SubscriptionService
-            $payment = $this->subscriptionService->confirmPayment(PaymentConstants::GATEWAY_MPESA, $callbackPayload);
+            try {
+                $payment = $this->subscriptionService->confirmPayment(PaymentConstants::GATEWAY_MPESA, $callbackPayload);
 
-            // M-Pesa expects a specific response format
-            if ($payment) {
+                // M-Pesa expects a specific response format
+                if ($payment) {
+                    return response()->json([
+                        'ResultCode' => 0,
+                        'ResultDesc' => 'Accepted',
+                    ], 200);
+                }
+
+                return response()->json([
+                    'ResultCode' => 1,
+                    'ResultDesc' => 'Payment not found or processing failed',
+                ], 200); // M-Pesa expects 200 even on failure
+            } catch (\Exception $e) {
+                // Queue retry job for failed webhook processing
+                Log::warning('M-Pesa webhook processing failed, queuing retry', [
+                    'error' => $e->getMessage(),
+                    'checkout_request_id' => $checkoutRequestId,
+                ]);
+
+                ProcessWebhookRetry::dispatch(
+                    PaymentConstants::GATEWAY_MPESA,
+                    $callbackPayload,
+                    1
+                );
+
+                // Return 200 to acknowledge receipt (we'll retry in background)
                 return response()->json([
                     'ResultCode' => 0,
-                    'ResultDesc' => 'Accepted',
+                    'ResultDesc' => 'Accepted (queued for retry)',
                 ], 200);
             }
-
-            return response()->json([
-                'ResultCode' => 1,
-                'ResultDesc' => 'Payment not found or processing failed',
-            ], 200); // M-Pesa expects 200 even on failure
         } catch (\Exception $e) {
             Log::error('M-Pesa subscription callback processing failed', [
                 'error' => $e->getMessage(),
