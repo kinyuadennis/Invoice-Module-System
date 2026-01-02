@@ -15,12 +15,9 @@ use Illuminate\Support\Facades\Cache;
 
 class InventoryController extends Controller
 {
-    protected InventoryService $inventoryService;
-
-    public function __construct(InventoryService $inventoryService)
-    {
-        $this->inventoryService = $inventoryService;
-    }
+    public function __construct(
+        protected InventoryService $inventoryService
+    ) {}
 
     public function index(Request $request)
     {

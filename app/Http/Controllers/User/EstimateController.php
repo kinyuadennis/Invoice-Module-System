@@ -16,12 +16,9 @@ use Illuminate\Support\Facades\Cache;
 
 class EstimateController extends Controller
 {
-    protected EstimateService $estimateService;
-
-    public function __construct(EstimateService $estimateService)
-    {
-        $this->estimateService = $estimateService;
-    }
+    public function __construct(
+        protected EstimateService $estimateService
+    ) {}
 
     public function index(Request $request)
     {

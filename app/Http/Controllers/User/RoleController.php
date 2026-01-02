@@ -12,12 +12,9 @@ use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
-    protected RoleService $roleService;
-
-    public function __construct(RoleService $roleService)
-    {
-        $this->roleService = $roleService;
-    }
+    public function __construct(
+        protected RoleService $roleService
+    ) {}
 
     public function index()
     {
@@ -110,10 +107,8 @@ class RoleController extends Controller
 
         $roleData = $this->roleService->formatRoleForShow($role);
 
-        // Ensure permissions is an array for the view
-        if (isset($roleData['permissions']) && is_object($roleData['permissions'])) {
-            $roleData['permissions'] = $roleData['permissions']->toArray();
-        }
+        // Convert permissions collection to grouped array for view (consistent with show method)
+        $roleData['permissions'] = collect($roleData['permissions'])->groupBy('category');
 
         return view('user.roles.edit', [
             'role' => $roleData,

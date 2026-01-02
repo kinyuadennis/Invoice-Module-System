@@ -13,12 +13,9 @@ use Illuminate\Support\Facades\Cache;
 
 class RefundController extends Controller
 {
-    protected RefundService $refundService;
-
-    public function __construct(RefundService $refundService)
-    {
-        $this->refundService = $refundService;
-    }
+    public function __construct(
+        protected RefundService $refundService
+    ) {}
 
     /**
      * Display a listing of refunds for an invoice.

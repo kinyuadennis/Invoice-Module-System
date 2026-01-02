@@ -14,12 +14,9 @@ use Illuminate\Support\Facades\Cache;
 
 class ApprovalController extends Controller
 {
-    protected ApprovalService $approvalService;
-
-    public function __construct(ApprovalService $approvalService)
-    {
-        $this->approvalService = $approvalService;
-    }
+    public function __construct(
+        protected ApprovalService $approvalService
+    ) {}
 
     /**
      * Display pending approvals.

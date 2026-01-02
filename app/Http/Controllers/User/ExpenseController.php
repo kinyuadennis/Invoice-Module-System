@@ -15,12 +15,9 @@ use Illuminate\Support\Facades\Cache;
 
 class ExpenseController extends Controller
 {
-    protected ExpenseService $expenseService;
-
-    public function __construct(ExpenseService $expenseService)
-    {
-        $this->expenseService = $expenseService;
-    }
+    public function __construct(
+        protected ExpenseService $expenseService
+    ) {}
 
     public function index(Request $request)
     {

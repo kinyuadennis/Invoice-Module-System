@@ -17,21 +17,13 @@ use Illuminate\Support\Facades\Cache;
 
 class InvoiceController extends Controller
 {
-    protected InvoiceService $invoiceService;
-
-    protected \App\Services\InvoiceSnapshotService $snapshotService;
-
-    protected \App\Services\PdfInvoiceRenderer $pdfRenderer;
-
     public function __construct(
-        InvoiceService $invoiceService,
-        \App\Services\InvoiceSnapshotService $snapshotService,
-        \App\Services\PdfInvoiceRenderer $pdfRenderer
-    ) {
-        $this->invoiceService = $invoiceService;
-        $this->snapshotService = $snapshotService;
-        $this->pdfRenderer = $pdfRenderer;
-    }
+        protected InvoiceService $invoiceService,
+        protected \App\Services\InvoiceSnapshotService $snapshotService,
+        protected \App\Services\PdfInvoiceRenderer $pdfRenderer,
+        protected \App\Http\Services\PaymentService $paymentService,
+        protected \App\Http\Services\RefundService $refundService
+    ) {}
 
     public function index(Request $request)
     {
@@ -204,11 +196,8 @@ class InvoiceController extends Controller
             ->with(['client', 'invoiceItems', 'payments', 'refunds.payment', 'refunds.user', 'company'])
             ->findOrFail($id);
 
-        $paymentService = new \App\Http\Services\PaymentService(new \App\Http\Services\InvoiceStatusService);
-        $paymentSummary = $paymentService->getPaymentSummary($invoice);
-
-        $refundService = new \App\Http\Services\RefundService;
-        $refundSummary = $refundService->getRefundSummary($invoice);
+        $paymentSummary = $this->paymentService->getPaymentSummary($invoice);
+        $refundSummary = $this->refundService->getRefundSummary($invoice);
 
         return view('user.invoices.show', [
             'invoice' => $this->invoiceService->formatInvoiceForShow($invoice),

@@ -14,12 +14,9 @@ use Illuminate\Support\Facades\Cache;
 
 class CreditNoteController extends Controller
 {
-    protected CreditNoteService $creditNoteService;
-
-    public function __construct(CreditNoteService $creditNoteService)
-    {
-        $this->creditNoteService = $creditNoteService;
-    }
+    public function __construct(
+        protected CreditNoteService $creditNoteService
+    ) {}
 
     public function index(Request $request)
     {
