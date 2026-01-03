@@ -389,6 +389,24 @@ function checkoutFlow(initialPlanId, suggestedGateway, userCountry) {
             this.processing = true;
 
             try {
+                // For Stripe, first confirm the payment method
+                let paymentMethodId = null;
+                if (this.selectedGateway === 'stripe' && window.stripeInstance && window.stripeCardElement) {
+                    // Create payment method from card element
+                    const { paymentMethod, error } = await window.stripeInstance.createPaymentMethod({
+                        type: 'card',
+                        card: window.stripeCardElement,
+                    });
+
+                    if (error) {
+                        alert(error.message);
+                        this.processing = false;
+                        return;
+                    }
+
+                    paymentMethodId = paymentMethod.id;
+                }
+
                 // Format phone number for M-Pesa
                 let phoneNumber = null;
                 if (this.selectedGateway === 'mpesa') {
@@ -398,6 +416,7 @@ function checkoutFlow(initialPlanId, suggestedGateway, userCountry) {
                 const formData = {
                     subscription_plan_id: this.selectedPlanId,
                     phone: phoneNumber,
+                    payment_method: paymentMethodId,
                     _token: document.querySelector('meta[name="csrf-token"]').content,
                 };
 
@@ -414,39 +433,14 @@ function checkoutFlow(initialPlanId, suggestedGateway, userCountry) {
                 const data = await response.json();
 
                 if (data.success) {
-                    // Redirect to payment status page
+                    // Redirect to payment status page or subscriptions page
                     if (data.payment_id) {
                         window.location.href = `{{ route("user.subscriptions.payment-status", ":payment") }}`.replace(':payment', data.payment_id);
                     } else if (data.transaction_id) {
                         // M-Pesa - redirect to status page with transaction ID
                         window.location.href = `{{ route("user.subscriptions.index") }}?payment_id=${data.payment_id || data.transaction_id}`;
-                    } else if (data.client_secret) {
-                        // Stripe - confirm payment with client secret
-                        if (window.stripeInstance && window.stripeCardElement) {
-                            window.stripeInstance.confirmCardPayment(data.client_secret, {
-                                payment_method: {
-                                    card: window.stripeCardElement,
-                                }
-                            }).then(function(result) {
-                                if (result.error) {
-                                    alert(result.error.message);
-                                    this.processing = false;
-                                } else {
-                                    if (data.payment_id) {
-                                        window.location.href = `{{ route("user.subscriptions.payment-status", ":payment") }}`.replace(':payment', data.payment_id);
-                                    } else {
-                                        window.location.href = '{{ route("user.subscriptions.index") }}';
-                                    }
-                                }
-                            }.bind(this));
-                        } else {
-                            if (data.payment_id) {
-                                window.location.href = `{{ route("user.subscriptions.payment-status", ":payment") }}`.replace(':payment', data.payment_id);
-                            } else {
-                                window.location.href = '{{ route("user.subscriptions.index") }}';
-                            }
-                        }
                     } else {
+                        // Stripe subscription created - redirect to subscriptions page
                         window.location.href = '{{ route("user.subscriptions.index") }}';
                     }
                 } else {

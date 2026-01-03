@@ -307,6 +307,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('audit-logs', \App\Http\Controllers\Admin\AuditLogController::class)->only(['index', 'show']);
     });
 });
+// Stripe webhook route (Cashier handles subscription events)
+// Note: CSRF protection is handled by Cashier's WebhookController
+Route::post('/stripe/webhook', \Laravel\Cashier\Http\Controllers\WebhookController::class)
+    ->name('cashier.webhook');
+
 // M-Pesa routes (unified callback handler - routes to appropriate handler based on payment type)
 Route::post('/mpesa/callback', [MpesaController::class, 'callback'])
     ->middleware('throttle:60,1')

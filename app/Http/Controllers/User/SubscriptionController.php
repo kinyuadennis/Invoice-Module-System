@@ -46,6 +46,7 @@ class SubscriptionController extends Controller
         $request->validate([
             'subscription_plan_id' => 'required|exists:subscription_plans,id',
             'phone' => $phoneRule,
+            'payment_method' => 'nullable|string', // Stripe payment method ID
             'customer_id' => 'nullable|string', // Optional for Stripe
         ]);
         $companyId = CurrentCompanyService::requireId();
@@ -108,11 +109,21 @@ class SubscriptionController extends Controller
             }
 
             // For paid plans, proceed with payment initiation
+            // Determine gateway based on user country
+            $gateway = $user->country === GatewayConstants::COUNTRY_KENYA ? PaymentConstants::GATEWAY_MPESA : PaymentConstants::GATEWAY_STRIPE;
+
+            // Handle Stripe subscriptions with Cashier
+            if ($gateway === PaymentConstants::GATEWAY_STRIPE && $request->payment_method) {
+                return $this->handleStripeSubscription($user, $subscription, $plan, $request->payment_method);
+            }
+
+            // For M-Pesa or Stripe without payment method yet, use service
             // Prepare user details for gateway
             $userDetails = [
                 'phone' => $request->phone ?? null,
                 'customerId' => $request->customer_id ?? null,
                 'country' => $user->country ?? null,
+                'payment_method' => $request->payment_method ?? null,
             ];
 
             // Initiate payment
@@ -146,6 +157,76 @@ class SubscriptionController extends Controller
             ]);
 
             return back()->withErrors(['error' => 'Failed to initiate subscription: '.$e->getMessage()]);
+        }
+    }
+
+    /**
+     * Handle Stripe subscription creation using Cashier.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function handleStripeSubscription(User $user, Subscription $subscription, SubscriptionPlan $plan, string $paymentMethodId)
+    {
+        try {
+            // Get Stripe price ID from plan (should be stored in plan metadata)
+            // For now, use plan slug - in production, store Stripe price ID in subscription_plans table
+            $stripePriceId = $plan->stripe_price_id ?? $plan->slug;
+
+            // Create subscription using Cashier
+            $cashierSubscription = $user->newSubscription('default', $stripePriceId)
+                ->create($paymentMethodId);
+
+            // Update our subscription record with Stripe details
+            $subscription->update([
+                'gateway' => PaymentConstants::GATEWAY_STRIPE,
+                'stripe_id' => $cashierSubscription->stripe_id,
+                'stripe_status' => $cashierSubscription->stripe_status,
+                'stripe_price' => $stripePriceId,
+                'type' => 'default',
+                'payment_method' => 'card',
+                'payment_reference' => $cashierSubscription->stripe_id,
+            ]);
+
+            // If subscription is active, update our subscription status
+            if ($cashierSubscription->stripe_status === 'active') {
+                $subscription->transitionToActive();
+                $subscription->update([
+                    'starts_at' => now(),
+                    'ends_at' => $cashierSubscription->ends_at,
+                ]);
+            }
+
+            // Create payment record for audit
+            $payment = Payment::create([
+                'company_id' => $subscription->company_id,
+                'payable_type' => Subscription::class,
+                'payable_id' => $subscription->id,
+                'amount' => $plan->price,
+                'gateway' => PaymentConstants::GATEWAY_STRIPE,
+                'status' => $cashierSubscription->stripe_status === 'active' ? PaymentConstants::PAYMENT_STATUS_SUCCESS : PaymentConstants::PAYMENT_STATUS_INITIATED,
+                'gateway_transaction_id' => $cashierSubscription->stripe_id,
+                'payment_date' => now(),
+                'paid_at' => $cashierSubscription->stripe_status === 'active' ? now() : null,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'subscription_id' => $subscription->id,
+                'payment_id' => $payment->id,
+                'stripe_subscription_id' => $cashierSubscription->stripe_id,
+                'status' => $cashierSubscription->stripe_status,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Stripe subscription creation failed', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
         }
     }
 

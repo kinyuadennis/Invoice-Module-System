@@ -41,6 +41,12 @@ class Subscription extends Model
         'payment_method',
         'payment_reference',
         'auto_renew',
+        // Cashier columns
+        'stripe_id',
+        'stripe_status',
+        'stripe_price',
+        'type',
+        'quantity',
     ];
 
     protected function casts(): array

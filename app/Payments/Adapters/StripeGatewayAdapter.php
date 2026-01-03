@@ -2,6 +2,7 @@
 
 namespace App\Payments\Adapters;
 
+use App\Models\Subscription;
 use App\Payments\Contracts\PaymentGatewayInterface;
 use App\Payments\DTOs\GatewayCallbackPayload;
 use App\Payments\DTOs\GatewayResponse;
@@ -44,7 +45,12 @@ class StripeGatewayAdapter implements PaymentGatewayInterface
         }
 
         try {
-            // Create Stripe PaymentIntent
+            // If this is a subscription payment, use Cashier
+            if ($context->subscriptionId) {
+                return $this->initiateSubscriptionPayment($context);
+            }
+
+            // For one-time payments (invoices), use PaymentIntent
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$stripeSecret,
                 'Content-Type' => 'application/x-www-form-urlencoded',
@@ -52,7 +58,6 @@ class StripeGatewayAdapter implements PaymentGatewayInterface
                 'amount' => (int) ($context->amount * 100), // Convert to cents
                 'currency' => strtolower($context->currency),
                 'metadata' => [
-                    'subscription_id' => $context->subscriptionId,
                     'reference' => $context->reference,
                 ],
                 'description' => $context->description,
@@ -78,6 +83,60 @@ class StripeGatewayAdapter implements PaymentGatewayInterface
 
             throw $e;
         }
+    }
+
+    /**
+     * Initiate a subscription payment using Cashier.
+     *
+     * @param  PaymentContext  $context  Payment context with subscription ID
+     * @return GatewayResponse Response with setup intent client secret
+     *
+     * @throws \Exception If subscription creation fails
+     */
+    private function initiateSubscriptionPayment(PaymentContext $context): GatewayResponse
+    {
+        $subscription = Subscription::find($context->subscriptionId);
+        if (! $subscription) {
+            throw new \Exception('Subscription not found');
+        }
+
+        $user = $subscription->user;
+        if (! $user) {
+            throw new \Exception('Subscription must have a user');
+        }
+
+        $plan = $subscription->plan;
+        if (! $plan) {
+            throw new \Exception('Subscription must have a plan');
+        }
+
+        // Get Stripe price ID from plan (should be stored in plan metadata or as a field)
+        // For now, we'll use the plan slug as the price identifier
+        // In production, you should store the Stripe price ID in subscription_plans table
+        $stripePriceId = $plan->stripe_price_id ?? $plan->slug;
+
+        // Create setup intent for collecting payment method
+        $setupIntent = $user->createSetupIntent([
+            'metadata' => [
+                'subscription_id' => $subscription->id,
+                'reference' => $context->reference,
+            ],
+        ]);
+
+        // Store subscription reference for later use when payment method is confirmed
+        $subscription->update([
+            'payment_reference' => $setupIntent->id,
+        ]);
+
+        return new GatewayResponse(
+            transactionId: $setupIntent->id,
+            clientSecret: $setupIntent->client_secret,
+            success: true,
+            metadata: [
+                'setup_intent_id' => $setupIntent->id,
+                'subscription_id' => $subscription->id,
+            ]
+        );
     }
 
     /**
