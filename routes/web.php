@@ -211,6 +211,10 @@ Route::middleware('auth')->group(function () {
 
         // Subscriptions
         Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::get('/subscriptions/checkout', [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
+        Route::get('/subscriptions/payment-status/{payment}', [SubscriptionController::class, 'paymentStatus'])->name('subscriptions.payment-status');
+        Route::get('/subscriptions/success', [SubscriptionController::class, 'success'])->name('subscriptions.success');
+        Route::get('/api/subscriptions/payment-status/{payment}', [SubscriptionController::class, 'getPaymentStatus'])->name('api.subscriptions.payment-status');
         Route::post('/subscriptions', [SubscriptionController::class, 'store'])->name('subscriptions.store');
         Route::post('/subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
 

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\User;
 
 use App\Config\GatewayConstants;
+use App\Config\PaymentConstants;
 use App\Config\SubscriptionConstants;
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Services\CurrentCompanyService;
@@ -83,10 +85,14 @@ class SubscriptionController extends Controller
 
             DB::commit();
 
+            // Get the payment ID from the result
+            $paymentId = $result['payment_id'] ?? null;
+
             // Return response based on gateway (client_secret for Stripe, transaction_id for M-Pesa)
             return response()->json([
                 'success' => true,
                 'subscription_id' => $subscription->id,
+                'payment_id' => $paymentId,
                 'client_secret' => $result['client_secret'] ?? null,
                 'transaction_id' => $result['transaction_id'] ?? null,
             ]);
@@ -114,7 +120,9 @@ class SubscriptionController extends Controller
 
         $subscriptions = Subscription::where('user_id', $user->id)
             ->where('company_id', $companyId)
-            ->with('plan')
+            ->with(['plan', 'payments' => function ($query) {
+                $query->latest()->limit(5);
+            }])
             ->latest()
             ->get();
 
@@ -122,9 +130,58 @@ class SubscriptionController extends Controller
             ->orderBy('price')
             ->get();
 
+        // Get recent payments for subscriptions
+        $recentPayments = Payment::where('company_id', $companyId)
+            ->where('payable_type', Subscription::class)
+            ->with(['payable.plan'])
+            ->latest()
+            ->limit(10)
+            ->get();
+
         return view('user.subscriptions.index', [
             'subscriptions' => $subscriptions,
             'availablePlans' => $availablePlans,
+            'recentPayments' => $recentPayments,
+        ]);
+    }
+
+    /**
+     * Show checkout page for subscription.
+     */
+    public function checkout(Request $request)
+    {
+        $user = $request->user();
+        $companyId = CurrentCompanyService::requireId();
+
+        // Get selected plan ID from query parameter
+        $planId = $request->query('plan');
+
+        // Get available plans
+        $availablePlans = SubscriptionPlan::where('is_active', true)
+            ->orderBy('price')
+            ->get();
+
+        // Get selected plan if provided
+        $selectedPlan = $planId ? SubscriptionPlan::find($planId) : null;
+
+        // Check if user already has an active subscription
+        $activeSubscription = Subscription::where('user_id', $user->id)
+            ->where('company_id', $companyId)
+            ->where('status', SubscriptionConstants::SUBSCRIPTION_STATUS_ACTIVE)
+            ->with('plan')
+            ->first();
+
+        // Determine suggested gateway based on user country
+        $suggestedGateway = $user->country === GatewayConstants::COUNTRY_KENYA
+            ? PaymentConstants::GATEWAY_MPESA
+            : PaymentConstants::GATEWAY_STRIPE;
+
+        return view('user.subscriptions.checkout', [
+            'availablePlans' => $availablePlans,
+            'selectedPlan' => $selectedPlan,
+            'activeSubscription' => $activeSubscription,
+            'suggestedGateway' => $suggestedGateway,
+            'userCountry' => $user->country,
         ]);
     }
 
@@ -157,5 +214,128 @@ class SubscriptionController extends Controller
 
             return back()->withErrors(['error' => 'Failed to cancel subscription: '.$e->getMessage()]);
         }
+    }
+
+    /**
+     * Display payment status page with polling.
+     */
+    public function paymentStatus(Request $request, Payment $payment)
+    {
+        $user = $request->user();
+        $companyId = CurrentCompanyService::requireId();
+
+        // Ensure payment belongs to user's company
+        if ($payment->company_id !== $companyId) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Ensure payment is for a subscription
+        if ($payment->payable_type !== Subscription::class) {
+            abort(404, 'Payment not found');
+        }
+
+        // Load subscription and plan
+        $subscription = $payment->payable;
+        $plan = $subscription?->plan;
+
+        // Determine if polling is needed (only for INITIATED status)
+        $needsPolling = $payment->status === PaymentConstants::PAYMENT_STATUS_INITIATED
+            && $payment->gateway === PaymentConstants::GATEWAY_MPESA;
+
+        return view('user.subscriptions.payment-status', [
+            'payment' => $payment,
+            'subscription' => $subscription,
+            'plan' => $plan,
+            'needsPolling' => $needsPolling,
+        ]);
+    }
+
+    /**
+     * API endpoint for polling payment status.
+     */
+    public function getPaymentStatus(Request $request, Payment $payment)
+    {
+        $user = $request->user();
+        $companyId = CurrentCompanyService::requireId();
+
+        // Ensure payment belongs to user's company
+        if ($payment->company_id !== $companyId) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Refresh payment from database
+        $payment->refresh();
+
+        // Load subscription
+        $subscription = $payment->payable;
+
+        return response()->json([
+            'status' => $payment->status,
+            'gateway' => $payment->gateway,
+            'gateway_transaction_id' => $payment->gateway_transaction_id,
+            'amount' => $payment->amount,
+            'currency' => $subscription?->company?->currency ?? 'KES',
+            'is_terminal' => $payment->isTerminal(),
+            'subscription_id' => $subscription?->id,
+            'subscription_status' => $subscription?->status,
+            'paid_at' => $payment->paid_at?->toIso8601String(),
+            'error' => $payment->gateway_metadata['error'] ?? null,
+        ]);
+    }
+
+    /**
+     * Display success confirmation page after successful payment.
+     */
+    public function success(Request $request)
+    {
+        $user = $request->user();
+        $companyId = CurrentCompanyService::requireId();
+
+        // Get payment ID from query parameter
+        $paymentId = $request->query('payment');
+        $subscriptionId = $request->query('subscription');
+
+        $payment = null;
+        $subscription = null;
+        $plan = null;
+
+        if ($paymentId) {
+            $payment = Payment::where('company_id', $companyId)
+                ->where('payable_type', Subscription::class)
+                ->find($paymentId);
+
+            if ($payment) {
+                $subscription = $payment->payable;
+                $plan = $subscription?->plan;
+            }
+        } elseif ($subscriptionId) {
+            $subscription = Subscription::where('user_id', $user->id)
+                ->where('company_id', $companyId)
+                ->with('plan')
+                ->find($subscriptionId);
+
+            if ($subscription) {
+                $plan = $subscription->plan;
+                // Get the most recent successful payment
+                $payment = Payment::where('company_id', $companyId)
+                    ->where('payable_type', Subscription::class)
+                    ->where('payable_id', $subscription->id)
+                    ->where('status', PaymentConstants::PAYMENT_STATUS_SUCCESS)
+                    ->latest()
+                    ->first();
+            }
+        }
+
+        // If no payment/subscription found, redirect to subscriptions index
+        if (! $subscription) {
+            return redirect()->route('user.subscriptions.index')
+                ->with('info', 'Subscription not found.');
+        }
+
+        return view('user.subscriptions.success', [
+            'payment' => $payment,
+            'subscription' => $subscription,
+            'plan' => $plan,
+        ]);
     }
 }

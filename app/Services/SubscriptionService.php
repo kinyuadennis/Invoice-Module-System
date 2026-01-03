@@ -145,6 +145,7 @@ class SubscriptionService
 
             return [
                 'success' => true,
+                'payment_id' => $payment->id,
                 'client_secret' => $gatewayResponse->clientSecret,
                 'transaction_id' => $gatewayResponse->transactionId,
             ];

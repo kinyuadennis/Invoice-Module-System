@@ -402,6 +402,24 @@ class HomeController extends Controller
             ],
         ];
 
+        // Add payment-related FAQs to enhanced FAQs
+        $paymentFaqs = [
+            [
+                'question' => 'How do I pay for my subscription?',
+                'answer' => 'We support M-Pesa for Kenyan users and Stripe (cards, banks, Apple Pay, Google Pay) for international users. Payment is processed securely through our payment partners. No sensitive data is stored on our servers.',
+            ],
+            [
+                'question' => 'What is the cancellation policy?',
+                'answer' => 'You can cancel your subscription at any time. Your access continues until the end of your current billing period. No refunds for partial periods, but you can cancel before the next billing cycle.',
+            ],
+            [
+                'question' => 'Is VAT included in the price?',
+                'answer' => 'Prices are displayed exclusive of VAT. VAT (16% in Kenya) will be added at checkout where applicable. International users may see different tax rates based on their location.',
+            ],
+        ];
+
+        $allFaqs = array_merge($enhancedFaqs, $paymentFaqs);
+
         return view('public.home', [
             'recentInvoices' => $recentInvoices,
             'allClients' => $allClients,
@@ -413,7 +431,7 @@ class HomeController extends Controller
             'heroHeading' => $heroHeading,
             'heroSubheadline' => $heroSubheadline,
             'featuredTestimonial' => $featuredTestimonial,
-            'enhancedFaqs' => $enhancedFaqs,
+            'enhancedFaqs' => $allFaqs,
             'customerLogos' => $customerLogos,
             'caseStudies' => $caseStudies,
             'abTestVariant' => $abTestVariant ?? 'variant1',
