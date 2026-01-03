@@ -7,6 +7,7 @@ use App\Http\Services\PlatformFeeService;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Review;
+use App\Models\SubscriptionPlan;
 use App\Traits\FormatsInvoiceNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -159,54 +160,80 @@ class HomeController extends Controller
             ],
         ];
 
-        // Pricing plans
-        $plans = [
-            [
-                'name' => 'Free',
-                'price_monthly' => 0,
-                'price_yearly' => 0,
-                'popular' => false,
-                'features' => [
-                    '3 invoices/month',
-                    'Basic templates',
-                    'Email support',
-                    'PDF export',
+        // Pricing plans - Load from database, fallback to hardcoded for development
+        $dbPlans = SubscriptionPlan::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('price')
+            ->get();
+
+        if ($dbPlans->isEmpty()) {
+            // Fallback to hardcoded plans if database is empty (for development)
+            $plans = [
+                [
+                    'name' => 'Free',
+                    'price_monthly' => 0,
+                    'price_yearly' => 0,
+                    'popular' => false,
+                    'features' => [
+                        '3 invoices/month',
+                        'Basic templates',
+                        'Email support',
+                        'PDF export',
+                    ],
+                    'cta' => 'Start Free',
+                    'social_proof' => null,
                 ],
-                'cta' => 'Start Free',
-                'social_proof' => null,
-            ],
-            [
-                'name' => 'Starter',
-                'price_monthly' => 999,
-                'price_yearly' => 9592, // 999 * 12 * 0.8 (20% discount)
-                'popular' => true,
-                'features' => [
-                    'Unlimited invoices',
-                    'M-Pesa integration',
-                    'Auto reminders',
-                    'Client portal',
-                    'Priority support',
+                [
+                    'name' => 'Starter',
+                    'price_monthly' => 999,
+                    'price_yearly' => 9592, // 999 * 12 * 0.8 (20% discount)
+                    'popular' => true,
+                    'features' => [
+                        'Unlimited invoices',
+                        'M-Pesa integration',
+                        'Auto reminders',
+                        'Client portal',
+                        'Priority support',
+                    ],
+                    'cta' => 'Start 14-Day Trial',
+                    'social_proof' => '47 businesses',
                 ],
-                'cta' => 'Start 14-Day Trial',
-                'social_proof' => '47 businesses',
-            ],
-            [
-                'name' => 'Pro',
-                'price_monthly' => 2999,
-                'price_yearly' => 28790, // 2999 * 12 * 0.8
-                'popular' => false,
-                'features' => [
-                    'Everything in Starter',
-                    'KRA eTIMS export',
-                    'Recurring billing',
-                    'Advanced analytics',
-                    'API access',
-                    'Dedicated support',
+                [
+                    'name' => 'Pro',
+                    'price_monthly' => 2999,
+                    'price_yearly' => 28790, // 2999 * 12 * 0.8
+                    'popular' => false,
+                    'features' => [
+                        'Everything in Starter',
+                        'KRA eTIMS export',
+                        'Recurring billing',
+                        'Advanced analytics',
+                        'API access',
+                        'Dedicated support',
+                    ],
+                    'cta' => 'Start 14-Day Trial',
+                    'social_proof' => null,
                 ],
-                'cta' => 'Start 14-Day Trial',
-                'social_proof' => null,
-            ],
-        ];
+            ];
+        } else {
+            // Transform database plans to match pricing-section component format
+            $plans = $dbPlans->map(function ($plan) {
+                $priceMonthly = (float) $plan->price;
+                $priceYearly = $priceMonthly * 12 * 0.8; // 20% discount for yearly
+
+                return [
+                    'id' => $plan->id,
+                    'slug' => $plan->slug,
+                    'name' => $plan->name,
+                    'price_monthly' => $priceMonthly,
+                    'price_yearly' => $priceYearly,
+                    'popular' => $plan->slug === 'starter', // Mark starter as popular
+                    'features' => is_array($plan->features) ? $plan->features : [],
+                    'cta' => $plan->slug === 'free' ? 'Start Free' : 'Start 14-Day Trial',
+                    'social_proof' => $plan->slug === 'starter' ? '47 businesses' : null,
+                ];
+            })->toArray();
+        }
 
         // Get featured testimonial for hero section (top rated, approved)
         $featuredTestimonial = Review::approved()

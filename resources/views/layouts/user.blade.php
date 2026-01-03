@@ -93,6 +93,13 @@
                             Payments
                         </a>
                         
+                        <a href="{{ route('user.subscriptions.index') }}" class="{{ request()->routeIs('user.subscriptions.*') ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-300 hover:bg-slate-800 hover:text-white border-transparent' }} group flex items-center px-2 py-2 text-sm font-medium border-l-4">
+                            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Subscriptions
+                        </a>
+                        
                         <a href="{{ route('user.recurring-invoices.index') }}" class="{{ request()->routeIs('user.recurring-invoices.*') ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-300 hover:bg-slate-800 hover:text-white border-transparent' }} group flex items-center px-2 py-2 text-sm font-medium border-l-4">
                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -331,6 +338,7 @@
                     <a href="{{ route('user.credit-notes.index') }}" class="{{ request()->routeIs('user.credit-notes.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Credit Notes</a>
                     <a href="{{ route('user.inventory.index') }}" class="{{ request()->routeIs('user.inventory.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Inventory</a>
                     <a href="{{ route('user.payments.index') }}" class="{{ request()->routeIs('user.payments.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Payments</a>
+                    <a href="{{ route('user.subscriptions.index') }}" class="{{ request()->routeIs('user.subscriptions.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Subscriptions</a>
                     <a href="{{ route('user.approvals.index') }}" class="{{ request()->routeIs('user.approvals.*') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Approvals</a>
                     <a href="{{ route('user.profile') }}" class="{{ request()->routeIs('user.profile') ? 'bg-[#374151] text-white' : 'text-slate-300 hover:bg-[#374151] hover:text-white' }} group flex items-center px-2 py-2 text-sm font-medium transition-colors duration-150">Profile</a>
                     @if(isset($activeCompany) && $activeCompany?->owner_user_id === auth()->id())

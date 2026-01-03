@@ -122,15 +122,27 @@ $suggestedGateway = $country === 'KE' ? 'mpesa' : 'stripe';
 
                     <!-- CTA Button -->
                     @auth
+                        @php
+                            $planId = $plan['id'] ?? null;
+                            $checkoutUrl = $planId 
+                                ? route('user.subscriptions.checkout', ['plan' => $planId])
+                                : route('user.subscriptions.index');
+                        @endphp
                         <a 
-                            href="{{ route('user.subscriptions.index') }}"
+                            href="{{ $checkoutUrl }}"
                             class="block w-full text-center px-6 py-4 {{ $isPopular ? 'bg-[#2B6EF6] hover:bg-[#2563EB] text-white' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white' }} font-bold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                         >
                             {{ $plan['cta'] ?? 'Subscribe Now' }}
                         </a>
                     @else
+                        @php
+                            $planSlug = $plan['slug'] ?? strtolower($plan['name'] ?? '');
+                            $registerUrl = $planSlug 
+                                ? route('register', ['plan' => $planSlug])
+                                : route('register');
+                        @endphp
                         <a 
-                            href="{{ route('register') }}"
+                            href="{{ $registerUrl }}"
                             class="block w-full text-center px-6 py-4 {{ $isPopular ? 'bg-[#2B6EF6] hover:bg-[#2563EB] text-white' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white' }} font-bold rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                         >
                             {{ $plan['cta'] ?? 'Get Started' }}

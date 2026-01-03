@@ -161,6 +161,12 @@ class SubscriptionController extends Controller
             ->orderBy('price')
             ->get();
 
+        // Check if no plans are available
+        if ($availablePlans->isEmpty()) {
+            return redirect()->route('user.subscriptions.index')
+                ->withErrors(['error' => 'No subscription plans are currently available. Please contact support.']);
+        }
+
         // Get selected plan if provided
         $selectedPlan = $planId ? SubscriptionPlan::find($planId) : null;
 

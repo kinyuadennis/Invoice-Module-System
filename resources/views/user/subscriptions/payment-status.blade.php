@@ -197,7 +197,7 @@ function paymentStatusPolling(paymentId, needsPolling) {
         polling: needsPolling,
         pollInterval: null,
         pollCount: 0,
-        maxPolls: 60, // Poll for up to 5 minutes (60 * 5 seconds)
+        maxPolls: 60, // Poll for up to 10 minutes (60 * 10 seconds)
         errorMessage: '',
 
         init() {
@@ -207,10 +207,10 @@ function paymentStatusPolling(paymentId, needsPolling) {
         },
 
         startPolling() {
-            // Poll every 5 seconds
+            // Poll every 10 seconds
             this.pollInterval = setInterval(() => {
                 this.checkStatus();
-            }, 5000);
+            }, 10000);
 
             // Also check immediately
             this.checkStatus();

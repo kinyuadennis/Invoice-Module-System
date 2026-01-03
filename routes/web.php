@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\PlatformFeeController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\Public\AuthController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\User\CompanyController;
@@ -305,4 +306,20 @@ Route::middleware('auth')->group(function () {
         Route::put('/system-settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'update'])->name('system-settings.update');
         Route::resource('audit-logs', \App\Http\Controllers\Admin\AuditLogController::class)->only(['index', 'show']);
     });
+});
+// M-Pesa routes (unified callback handler - routes to appropriate handler based on payment type)
+Route::post('/mpesa/callback', [MpesaController::class, 'callback'])
+    ->middleware('throttle:60,1')
+    ->name('mpesa.callback');
+
+// M-Pesa utility routes (for testing and status checking)
+Route::prefix('mpesa')->name('mpesa.')->group(function () {
+    // Payment status check (public route for customer portal, protected for authenticated users)
+    Route::get('/payment/{payment}/status', [MpesaController::class, 'checkStatus'])->name('payment.status');
+
+    // Configuration verification (development only)
+    Route::get('/verify-config', [MpesaController::class, 'verifyConfig'])->name('verify-config');
+
+    // Connection test (development only)
+    Route::get('/test-connection', [MpesaController::class, 'testConnection'])->name('test-connection');
 });

@@ -46,13 +46,19 @@
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $plan->description }}</p>
                             @endif
                             <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                                @foreach(explode(',', $plan->features ?? '') as $feature)
-                                    @if(trim($feature))
+                                @php
+                                    $features = is_array($plan->features) ? $plan->features : (is_string($plan->features) ? json_decode($plan->features, true) ?? explode(',', $plan->features) : []);
+                                @endphp
+                                @foreach($features as $feature)
+                                    @php
+                                        $featureText = is_string($feature) ? trim($feature) : '';
+                                    @endphp
+                                    @if($featureText)
                                         <li class="flex items-start">
                                             <svg class="w-4 h-4 text-[#2B6EF6] mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                             </svg>
-                                            {{ trim($feature) }}
+                                            {{ $featureText }}
                                         </li>
                                     @endif
                                 @endforeach

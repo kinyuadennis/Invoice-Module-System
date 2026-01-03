@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Config\SubscriptionConstants;
 use App\Http\Controllers\Controller;
+use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
@@ -29,6 +32,20 @@ class AuthController extends Controller
             'company_name' => 'nullable|string|max:255',
         ]);
 
+        // Handle plan parameter (from query string: ?plan=slug or ?plan_id=id)
+        $planId = null;
+        $planSlug = $request->query('plan');
+        $planIdParam = $request->query('plan_id');
+
+        if ($planIdParam) {
+            $planId = $planIdParam;
+        } elseif ($planSlug) {
+            $plan = SubscriptionPlan::where('slug', $planSlug)->where('is_active', true)->first();
+            if ($plan) {
+                $planId = $plan->id;
+            }
+        }
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -38,6 +55,7 @@ class AuthController extends Controller
         ]);
 
         // Create company if company name provided during registration
+        $company = null;
         if (! empty($validated['company_name'])) {
             $company = \App\Models\Company::create([
                 'owner_user_id' => $user->id,
@@ -58,6 +76,30 @@ class AuthController extends Controller
             // Create default invoice prefix
             $prefixService = app(\App\Services\InvoicePrefixService::class);
             $prefixService->createDefaultPrefix($company, $user->id);
+
+            // Activate free plan for new users (if company was created)
+            $freePlan = SubscriptionPlan::where('slug', 'free')->where('is_active', true)->first();
+            if ($freePlan && $company) {
+                Subscription::create([
+                    'user_id' => $user->id,
+                    'company_id' => $company->id,
+                    'subscription_plan_id' => $freePlan->id,
+                    'plan_code' => $freePlan->slug,
+                    'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_ACTIVE,
+                    'starts_at' => now(),
+                    'ends_at' => null, // Free plan doesn't expire
+                    'auto_renew' => false,
+                ]);
+            }
+        }
+
+        // Store plan ID in session for redirect after verification (if plan was selected and not free)
+        if ($planId) {
+            $selectedPlan = SubscriptionPlan::find($planId);
+            // Only store if it's not the free plan (free plan is auto-activated above)
+            if ($selectedPlan && $selectedPlan->slug !== 'free') {
+                $request->session()->put('pending_subscription_plan', $planId);
+            }
         }
 
         // Send verification email using Laravel's standard method
@@ -407,6 +449,15 @@ class AuthController extends Controller
         if (! $user->company_id) {
             return redirect()->route('company.setup')
                 ->with('status', 'Email verified successfully! Please complete your company setup.');
+        }
+
+        // Check if user registered with a plan selected (redirect to checkout)
+        $pendingPlanId = $request->session()->get('pending_subscription_plan');
+        if ($pendingPlanId) {
+            $request->session()->forget('pending_subscription_plan');
+
+            return redirect()->route('user.subscriptions.checkout', ['plan' => $pendingPlanId])
+                ->with('status', 'Email verified successfully! Complete your subscription setup.');
         }
 
         return redirect()->route('user.dashboard')

@@ -97,7 +97,7 @@ class PaymentTest extends TestCase
 
         // Attempt to transition again - should fail
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Payment is already in a terminal state');
+        $this->expectExceptionMessage('Payment is already in terminal state');
 
         $payment->markAsFailed();
     }
@@ -113,7 +113,7 @@ class PaymentTest extends TestCase
 
         // Attempt to transition to failed - should fail
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Payment is already in a terminal state');
+        $this->expectExceptionMessage('Payment is already in terminal state');
 
         $payment->markAsFailed();
     }
@@ -129,7 +129,7 @@ class PaymentTest extends TestCase
 
         // Attempt to transition to success - should fail
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Payment is already in a terminal state');
+        $this->expectExceptionMessage('Payment is already in terminal state');
 
         $payment->markAsSuccess();
     }
@@ -145,7 +145,7 @@ class PaymentTest extends TestCase
 
         // Attempt to transition to success - should fail
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Payment is already in a terminal state');
+        $this->expectExceptionMessage('Payment is already in terminal state');
 
         $payment->markAsSuccess();
     }
