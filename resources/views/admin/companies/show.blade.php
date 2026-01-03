@@ -54,12 +54,6 @@
                 <p class="mt-2 text-2xl font-bold text-gray-900">KES {{ number_format($stats['total_payments'] ?? 0, 2) }}</p>
             </div>
         </x-card>
-        <x-card padding="sm">
-            <div class="text-center">
-                <p class="text-sm font-medium text-gray-500">Platform Fees</p>
-                <p class="mt-2 text-2xl font-bold text-gray-900">KES {{ number_format($stats['platform_fees_collected'] ?? 0, 2) }}</p>
-            </div>
-        </x-card>
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">

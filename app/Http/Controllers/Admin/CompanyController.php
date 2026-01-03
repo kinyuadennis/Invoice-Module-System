@@ -55,7 +55,6 @@ class CompanyController extends Controller
             'pending_revenue' => (float) $company->invoices()->whereIn('status', ['draft', 'sent'])->sum('grand_total'),
             'overdue_revenue' => (float) $company->invoices()->where('status', 'overdue')->sum('grand_total'),
             'total_payments' => (float) $company->payments()->sum('amount'),
-            'platform_fees_collected' => (float) $company->platformFees()->where('fee_status', 'paid')->sum('fee_amount'),
         ];
 
         $recentInvoices = $company->invoices()

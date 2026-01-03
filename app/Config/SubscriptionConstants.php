@@ -11,37 +11,78 @@ namespace App\Config;
 class SubscriptionConstants
 {
     /**
-     * Subscription status: PENDING
+     * Subscription status: FREE
      *
-     * Subscription created but payment not yet confirmed.
+     * Free plan subscription (no payment required).
+     * Per blueprint: Cannot transition back to FREE once left.
      */
-    public const SUBSCRIPTION_STATUS_PENDING = 'PENDING';
+    public const SUBSCRIPTION_STATUS_FREE = 'free';
+
+    /**
+     * Subscription status: TRIAL_ACTIVE
+     *
+     * Subscription is in active trial period.
+     * Per blueprint: Must have corresponding trial record in trials table.
+     */
+    public const SUBSCRIPTION_STATUS_TRIAL_ACTIVE = 'trial_active';
+
+    /**
+     * Subscription status: TRIAL_EXPIRED
+     *
+     * Trial period has expired.
+     * Per blueprint: Cannot restart trial (trial_expired → trial_active forbidden).
+     */
+    public const SUBSCRIPTION_STATUS_TRIAL_EXPIRED = 'trial_expired';
 
     /**
      * Subscription status: ACTIVE
      *
      * Subscription is active with confirmed payment.
+     * Per blueprint: Must have at least one succeeded payment and valid period dates.
      */
-    public const SUBSCRIPTION_STATUS_ACTIVE = 'ACTIVE';
+    public const SUBSCRIPTION_STATUS_ACTIVE = 'active';
 
     /**
-     * Subscription status: GRACE
+     * Subscription status: PAST_DUE
      *
-     * Subscription renewal failed, in grace period.
+     * Subscription renewal payment failed, in grace period.
+     * Per blueprint: 7-day grace period before transition to canceled.
+     */
+    public const SUBSCRIPTION_STATUS_PAST_DUE = 'past_due';
+
+    /**
+     * Subscription status: CANCELED
+     *
+     * Subscription was cancelled by user or grace period expired.
+     * Per blueprint: Cannot transition back to active states (require new subscription).
+     */
+    public const SUBSCRIPTION_STATUS_CANCELED = 'canceled';
+
+    /**
+     * Legacy status: PENDING (deprecated, use appropriate status)
+     *
+     * @deprecated Use FREE, TRIAL_ACTIVE, or ACTIVE based on context
+     */
+    public const SUBSCRIPTION_STATUS_PENDING = 'PENDING';
+
+    /**
+     * Legacy status: GRACE (deprecated, use PAST_DUE)
+     *
+     * @deprecated Use PAST_DUE
      */
     public const SUBSCRIPTION_STATUS_GRACE = 'GRACE';
 
     /**
-     * Subscription status: EXPIRED
+     * Legacy status: EXPIRED (deprecated, use CANCELED)
      *
-     * Subscription grace period expired.
+     * @deprecated Use CANCELED
      */
     public const SUBSCRIPTION_STATUS_EXPIRED = 'EXPIRED';
 
     /**
-     * Subscription status: CANCELLED
+     * Legacy status: CANCELLED (deprecated, use CANCELED)
      *
-     * Subscription was cancelled by user.
+     * @deprecated Use CANCELED
      */
     public const SUBSCRIPTION_STATUS_CANCELLED = 'CANCELLED';
 

@@ -7,6 +7,7 @@ use App\Config\PaymentConstants;
 use App\Config\SubscriptionConstants;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\PaymentAttempt;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Payments\Events\PaymentConfirmed;
@@ -65,13 +66,18 @@ class SubscriptionController extends Controller
 
             // Create subscription (PENDING status) via repository (audited)
             // Gateway must be set at creation as it's immutable per blueprint invariant
+            // For free plans, use GATEWAY_STRIPE as a consistent placeholder (matches AuthController)
+            $subscriptionGateway = ($plan->price == 0 || $plan->price === null)
+                ? PaymentConstants::GATEWAY_STRIPE
+                : $gateway;
+
             $subscription = $this->subscriptionRepository->create([
                 'user_id' => $user->id,
                 'company_id' => $companyId,
                 'subscription_plan_id' => $plan->id,
                 'plan_code' => $plan->slug ?? $plan->name,
                 'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_PENDING,
-                'gateway' => $plan->price == 0 || $plan->price === null ? null : $gateway, // No gateway for free plans
+                'gateway' => $subscriptionGateway, // Consistent gateway value for free plans
                 'starts_at' => now(),
                 'auto_renew' => true,
             ]);
@@ -79,16 +85,22 @@ class SubscriptionController extends Controller
             // Handle free plans differently - activate immediately without payment
             if ($plan->price == 0 || $plan->price === null) {
                 // Create a $0 payment record FIRST (required by transitionToActive invariant)
+                // Use GATEWAY_STRIPE for consistency with AuthController and subscription gateway
                 $payment = Payment::create([
                     'company_id' => $companyId,
                     'payable_type' => Subscription::class,
                     'payable_id' => $subscription->id,
                     'amount' => 0,
-                    'gateway' => null, // No gateway for free plan
+                    'gateway' => PaymentConstants::GATEWAY_STRIPE, // Consistent with subscription gateway
                     'status' => PaymentConstants::PAYMENT_STATUS_SUCCESS,
                     'payment_date' => now(),
                     'paid_at' => now(),
-                    'gateway_metadata' => ['note' => 'Free plan activation - no payment required'],
+                    'gateway_transaction_id' => 'FREE-'.strtoupper(\Illuminate\Support\Str::uuid()),
+                    'gateway_metadata' => [
+                        'type' => 'free_plan_activation',
+                        'plan_code' => $plan->slug ?? $plan->name,
+                        'note' => 'Free plan activation - no payment required',
+                    ],
                 ]);
 
                 // Now transition to active (payment exists, so invariant is satisfied)
@@ -138,14 +150,14 @@ class SubscriptionController extends Controller
 
             DB::commit();
 
-            // Get the payment ID from the result
-            $paymentId = $result['payment_id'] ?? null;
+            // Get the payment attempt ID from the result (per blueprint: use payment_attempts)
+            $paymentAttemptId = $result['payment_attempt_id'] ?? null;
 
             // Return response based on gateway (client_secret for Stripe, transaction_id for M-Pesa)
             return response()->json([
                 'success' => true,
                 'subscription_id' => $subscription->id,
-                'payment_id' => $paymentId,
+                'payment_attempt_id' => $paymentAttemptId,
                 'client_secret' => $result['client_secret'] ?? null,
                 'transaction_id' => $result['transaction_id'] ?? null,
             ]);
@@ -183,6 +195,7 @@ class SubscriptionController extends Controller
             // Note: gateway is already set at creation, but ensure it's correct
             $subscription->update([
                 'stripe_id' => $cashierSubscription->stripe_id,
+                'gateway_subscription_id' => $cashierSubscription->stripe_id, // Per blueprint: generic gateway ID
                 'stripe_status' => $cashierSubscription->stripe_status,
                 'stripe_price' => $stripePriceId,
                 'type' => 'default',
@@ -190,27 +203,66 @@ class SubscriptionController extends Controller
                 'payment_reference' => $cashierSubscription->stripe_id,
             ]);
 
-            // Create payment record FIRST (required by transitionToActive invariant)
-            $payment = Payment::create([
-                'company_id' => $subscription->company_id,
-                'payable_type' => Subscription::class,
-                'payable_id' => $subscription->id,
-                'amount' => $plan->price,
-                'gateway' => PaymentConstants::GATEWAY_STRIPE,
-                'status' => $cashierSubscription->stripe_status === 'active' ? PaymentConstants::PAYMENT_STATUS_SUCCESS : PaymentConstants::PAYMENT_STATUS_INITIATED,
-                'gateway_transaction_id' => $cashierSubscription->stripe_id,
-                'payment_date' => now(),
-                'paid_at' => $cashierSubscription->stripe_status === 'active' ? now() : null,
-            ]);
-
-            // If subscription is active, update our subscription status
-            // Payment exists now, so invariant is satisfied
+            // Per blueprint: If subscription is immediately active, create Payment record (succeeded)
+            // If not active yet, create PaymentAttempt (will be confirmed via webhook)
             if ($cashierSubscription->stripe_status === 'active') {
+                // Subscription is active - create Payment record (succeeded)
+                $payment = Payment::create([
+                    'company_id' => $subscription->company_id,
+                    'payable_type' => Subscription::class,
+                    'payable_id' => $subscription->id,
+                    'amount' => $plan->price,
+                    'gateway' => PaymentConstants::GATEWAY_STRIPE,
+                    'status' => PaymentConstants::PAYMENT_STATUS_SUCCESS,
+                    'gateway_transaction_id' => $cashierSubscription->stripe_id,
+                    'payment_date' => now(),
+                    'paid_at' => now(),
+                    'gateway_metadata' => [
+                        'stripe_subscription_id' => $cashierSubscription->stripe_id,
+                        'stripe_price_id' => $stripePriceId,
+                    ],
+                ]);
+
+                // Update subscription with period dates
+                $subscription->update([
+                    'current_period_start' => $cashierSubscription->created,
+                    'current_period_end' => $cashierSubscription->current_period_end,
+                ]);
+
+                // Payment exists now, so invariant is satisfied
                 $subscription->transitionToActive();
                 $subscription->update([
                     'starts_at' => now(),
                     'ends_at' => $cashierSubscription->ends_at,
                 ]);
+
+                // Emit PaymentConfirmed event
+                event(new \App\Payments\Events\PaymentConfirmed($payment));
+            } else {
+                // Subscription not active yet - create PaymentAttempt (will be confirmed via webhook)
+                $idempotencyKey = (string) \Illuminate\Support\Str::uuid();
+                $lastAttempt = $subscription->paymentAttempts()
+                    ->orderBy('attempt_number', 'desc')
+                    ->first();
+                $attemptNumber = $lastAttempt ? $lastAttempt->attempt_number + 1 : 1;
+
+                $paymentAttempt = PaymentAttempt::create([
+                    'subscription_id' => $subscription->id,
+                    'amount' => $plan->price,
+                    'currency' => $subscription->company?->currency ?? 'KES',
+                    'gateway' => PaymentConstants::GATEWAY_STRIPE,
+                    'attempt_number' => $attemptNumber,
+                    'status' => PaymentAttempt::STATUS_PENDING, // Waiting for webhook confirmation
+                    'gateway_transaction_id' => $cashierSubscription->stripe_id,
+                    'idempotency_key' => $idempotencyKey,
+                    'initiated_at' => now(),
+                    'gateway_metadata' => [
+                        'stripe_subscription_id' => $cashierSubscription->stripe_id,
+                        'stripe_price_id' => $stripePriceId,
+                    ],
+                ]);
+
+                $payment = null; // No payment record yet - will be created on webhook confirmation
             }
 
             DB::commit();
@@ -218,7 +270,8 @@ class SubscriptionController extends Controller
             return response()->json([
                 'success' => true,
                 'subscription_id' => $subscription->id,
-                'payment_id' => $payment->id,
+                'payment_id' => $payment?->id,
+                'payment_attempt_id' => $paymentAttempt->id ?? null,
                 'stripe_subscription_id' => $cashierSubscription->stripe_id,
                 'status' => $cashierSubscription->stripe_status,
             ]);
@@ -348,24 +401,61 @@ class SubscriptionController extends Controller
 
     /**
      * Display payment status page with polling.
+     * Per blueprint: Status pages poll payment_attempt (gateway-agnostic).
+     * Accepts both Payment (for succeeded) and PaymentAttempt (for pending).
+     *
+     * Route model binding: Tries Payment first, then PaymentAttempt.
      */
-    public function paymentStatus(Request $request, Payment $payment)
+    public function paymentStatus(Request $request, $paymentOrAttempt)
     {
         $user = $request->user();
         $companyId = CurrentCompanyService::requireId();
 
-        // Ensure payment belongs to user's company
-        if ($payment->company_id !== $companyId) {
-            abort(403, 'Unauthorized');
-        }
+        // Determine if we have a Payment or PaymentAttempt
+        $payment = null;
+        $paymentAttempt = null;
+        $subscription = null;
 
-        // Ensure payment is for a subscription
-        if ($payment->payable_type !== Subscription::class) {
-            abort(404, 'Payment not found');
-        }
+        if ($paymentOrAttempt instanceof Payment) {
+            $payment = $paymentOrAttempt;
 
-        // Load subscription and plan
-        $subscription = $payment->payable;
+            // Ensure payment belongs to user's company
+            if ($payment->company_id !== $companyId) {
+                abort(403, 'Unauthorized');
+            }
+
+            // Ensure payment is for a subscription
+            if ($payment->payable_type !== Subscription::class) {
+                abort(404, 'Payment not found');
+            }
+
+            $subscription = $payment->payable;
+
+            // Find related payment attempt if exists
+            if ($payment->gateway_transaction_id) {
+                $paymentAttempt = PaymentAttempt::where('gateway_transaction_id', $payment->gateway_transaction_id)
+                    ->where('subscription_id', $subscription->id)
+                    ->first();
+            }
+        } elseif ($paymentOrAttempt instanceof PaymentAttempt) {
+            $paymentAttempt = $paymentOrAttempt;
+            $subscription = $paymentAttempt->subscription;
+
+            // Ensure subscription belongs to user's company
+            if ($subscription->company_id !== $companyId) {
+                abort(403, 'Unauthorized');
+            }
+
+            // Find related payment if attempt succeeded
+            if ($paymentAttempt->status === PaymentAttempt::STATUS_SUCCEEDED) {
+                $payment = Payment::where('gateway_transaction_id', $paymentAttempt->gateway_transaction_id)
+                    ->where('payable_type', Subscription::class)
+                    ->where('payable_id', $subscription->id)
+                    ->first();
+            }
+        } else {
+            abort(404, 'Payment or payment attempt not found');
+        }
 
         // Handle edge case: subscription was deleted
         if (! $subscription) {
@@ -386,19 +476,18 @@ class SubscriptionController extends Controller
                 ->with('error', 'The subscription plan no longer exists.');
         }
 
-        // Determine if polling is needed:
-        // - M-Pesa: Poll if payment is INITIATED
-        // - Stripe: Poll if payment is INITIATED and subscription is not ACTIVE yet
-        $needsPolling = $payment->status === PaymentConstants::PAYMENT_STATUS_INITIATED
+        // Per blueprint: Poll if attempt is not in terminal state
+        $needsPolling = $paymentAttempt
+            && ! $paymentAttempt->isTerminal()
             && (
-                $payment->gateway === PaymentConstants::GATEWAY_MPESA
-                || ($payment->gateway === PaymentConstants::GATEWAY_STRIPE
-                    && $subscription
+                $paymentAttempt->gateway === PaymentConstants::GATEWAY_MPESA
+                || ($paymentAttempt->gateway === PaymentConstants::GATEWAY_STRIPE
                     && $subscription->status !== SubscriptionConstants::SUBSCRIPTION_STATUS_ACTIVE)
             );
 
         return view('user.subscriptions.payment-status', [
             'payment' => $payment,
+            'paymentAttempt' => $paymentAttempt,
             'subscription' => $subscription,
             'plan' => $plan,
             'needsPolling' => $needsPolling,
@@ -407,27 +496,57 @@ class SubscriptionController extends Controller
 
     /**
      * API endpoint for polling payment status.
+     * Per blueprint: Returns state from payment_attempt (gateway-agnostic).
      */
-    public function getPaymentStatus(Request $request, Payment $payment)
+    public function getPaymentStatus(Request $request, $paymentOrAttempt)
     {
         $user = $request->user();
         $companyId = CurrentCompanyService::requireId();
 
-        // Ensure payment belongs to user's company
-        if ($payment->company_id !== $companyId) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+        $paymentAttempt = null;
+        $payment = null;
+        $subscription = null;
+
+        // Determine if we have a Payment or PaymentAttempt
+        if ($paymentOrAttempt instanceof Payment) {
+            $payment = $paymentOrAttempt;
+
+            // Ensure payment belongs to user's company
+            if ($payment->company_id !== $companyId) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            if ($payment->payable_type !== Subscription::class) {
+                return response()->json(['error' => 'Payment not found'], 404);
+            }
+
+            $subscription = $payment->payable;
+
+            // Find related payment attempt
+            if ($payment->gateway_transaction_id) {
+                $paymentAttempt = PaymentAttempt::where('gateway_transaction_id', $payment->gateway_transaction_id)
+                    ->where('subscription_id', $subscription->id)
+                    ->first();
+            }
+        } elseif ($paymentOrAttempt instanceof PaymentAttempt) {
+            $paymentAttempt = $paymentOrAttempt;
+            $subscription = $paymentAttempt->subscription;
+
+            // Ensure subscription belongs to user's company
+            if ($subscription->company_id !== $companyId) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            // Find related payment if attempt succeeded
+            if ($paymentAttempt->status === PaymentAttempt::STATUS_SUCCEEDED) {
+                $payment = Payment::where('gateway_transaction_id', $paymentAttempt->gateway_transaction_id)
+                    ->where('payable_type', Subscription::class)
+                    ->where('payable_id', $subscription->id)
+                    ->first();
+            }
+        } else {
+            return response()->json(['error' => 'Payment or payment attempt not found'], 404);
         }
-
-        // Ensure payment is for a subscription
-        if ($payment->payable_type !== Subscription::class) {
-            return response()->json(['error' => 'Payment not found'], 404);
-        }
-
-        // Refresh payment from database
-        $payment->refresh();
-
-        // Load subscription
-        $subscription = $payment->payable;
 
         // Handle edge case: subscription was deleted
         if (! $subscription) {
@@ -443,21 +562,55 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        // Refresh from database
+        $paymentAttempt?->refresh();
+        $payment?->refresh();
         $subscription->refresh();
 
-        return response()->json([
-            'status' => $payment->status,
-            'gateway' => $payment->gateway,
-            'gateway_transaction_id' => $payment->gateway_transaction_id,
-            'amount' => $payment->amount,
-            'currency' => $subscription?->company?->currency ?? 'KES',
-            'is_terminal' => $payment->isTerminal(),
-            'subscription_id' => $subscription?->id,
-            'subscription_status' => $subscription?->status,
-            'stripe_subscription_id' => $subscription?->stripe_id, // Include Stripe subscription ID
-            'paid_at' => $payment->paid_at?->toIso8601String(),
-            'error' => $payment->gateway_metadata['error'] ?? null,
-        ]);
+        // Per blueprint: Return state from payment_attempt
+        if ($paymentAttempt) {
+            // Map PaymentAttempt status to PaymentConstants status for backward compatibility
+            $statusMap = [
+                PaymentAttempt::STATUS_INITIATED => PaymentConstants::PAYMENT_STATUS_INITIATED,
+                PaymentAttempt::STATUS_PENDING => PaymentConstants::PAYMENT_STATUS_INITIATED,
+                PaymentAttempt::STATUS_SUCCEEDED => PaymentConstants::PAYMENT_STATUS_SUCCESS,
+                PaymentAttempt::STATUS_FAILED => PaymentConstants::PAYMENT_STATUS_FAILED,
+                PaymentAttempt::STATUS_TIMED_OUT => PaymentConstants::PAYMENT_STATUS_TIMEOUT,
+            ];
+
+            return response()->json([
+                'status' => $statusMap[$paymentAttempt->status] ?? $paymentAttempt->status,
+                'gateway' => $paymentAttempt->gateway,
+                'gateway_transaction_id' => $paymentAttempt->gateway_transaction_id,
+                'amount' => $paymentAttempt->amount,
+                'currency' => $paymentAttempt->currency,
+                'is_terminal' => $paymentAttempt->isTerminal(),
+                'subscription_id' => $subscription->id,
+                'subscription_status' => $subscription->status,
+                'stripe_subscription_id' => $subscription->stripe_id,
+                'paid_at' => $payment?->paid_at?->toIso8601String(),
+                'error' => $paymentAttempt->error_message,
+            ]);
+        }
+
+        // Fallback: If we only have a Payment (succeeded), return that
+        if ($payment) {
+            return response()->json([
+                'status' => $payment->status,
+                'gateway' => $payment->gateway,
+                'gateway_transaction_id' => $payment->gateway_transaction_id,
+                'amount' => $payment->amount,
+                'currency' => $subscription->company?->currency ?? 'KES',
+                'is_terminal' => true, // Payment records are always terminal (succeeded)
+                'subscription_id' => $subscription->id,
+                'subscription_status' => $subscription->status,
+                'stripe_subscription_id' => $subscription->stripe_id,
+                'paid_at' => $payment->paid_at?->toIso8601String(),
+                'error' => null,
+            ]);
+        }
+
+        return response()->json(['error' => 'Payment attempt not found'], 404);
     }
 
     /**

@@ -59,16 +59,6 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="platform_fee_rate" class="block text-sm font-medium text-gray-700 mb-2">
-                            Platform Fee Rate (%)
-                        </label>
-                        <input type="number" name="platform_fee_rate" id="platform_fee_rate" value="{{ old('platform_fee_rate', $settings['platform_fee_rate'] ?? 2.5) }}" step="0.01" min="0" max="100" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <p class="mt-1 text-xs text-gray-500">Default platform fee percentage</p>
-                        @error('platform_fee_rate')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
                 </div>
 
                 <!-- Invoice Settings -->
