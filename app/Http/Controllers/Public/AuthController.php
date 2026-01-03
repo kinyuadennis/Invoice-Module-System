@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Config\PaymentConstants;
 use App\Config\SubscriptionConstants;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
@@ -78,18 +79,61 @@ class AuthController extends Controller
             $prefixService->createDefaultPrefix($company, $user->id);
 
             // Activate free plan for new users (if company was created)
+            // Per Subscription model invariant: A subscription cannot be ACTIVE without at least one successful Payment
             $freePlan = SubscriptionPlan::where('slug', 'free')->where('is_active', true)->first();
             if ($freePlan && $company) {
-                Subscription::create([
-                    'user_id' => $user->id,
-                    'company_id' => $company->id,
-                    'subscription_plan_id' => $freePlan->id,
-                    'plan_code' => $freePlan->slug,
-                    'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_ACTIVE,
-                    'starts_at' => now(),
-                    'ends_at' => null, // Free plan doesn't expire
-                    'auto_renew' => false,
-                ]);
+                $subscriptionService = app(\App\Services\SubscriptionService::class);
+                $subscriptionRepository = app(\App\Subscriptions\Repositories\SubscriptionRepository::class);
+
+                \Illuminate\Support\Facades\DB::beginTransaction();
+
+                try {
+                    // Create subscription with PENDING status (will be activated after payment is created)
+                    $subscription = $subscriptionRepository->create([
+                        'user_id' => $user->id,
+                        'company_id' => $company->id,
+                        'subscription_plan_id' => $freePlan->id,
+                        'plan_code' => $freePlan->slug,
+                        'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_PENDING,
+                        'gateway' => PaymentConstants::GATEWAY_STRIPE, // Gateway field is immutable, set it now
+                        'starts_at' => now(),
+                        'ends_at' => null, // Free plan doesn't expire
+                        'auto_renew' => false,
+                    ]);
+
+                    // Create a successful payment record for the free subscription (amount = 0)
+                    // This satisfies the invariant: "A subscription cannot be ACTIVE without at least one successful Payment"
+                    $payment = \App\Models\Payment::create([
+                        'company_id' => $company->id,
+                        'payable_type' => \App\Models\Subscription::class,
+                        'payable_id' => $subscription->id,
+                        'amount' => 0, // Free plan has zero cost
+                        'gateway' => PaymentConstants::GATEWAY_STRIPE,
+                        'status' => PaymentConstants::PAYMENT_STATUS_SUCCESS,
+                        'payment_date' => now(),
+                        'paid_at' => now(),
+                        'gateway_transaction_id' => 'FREE-'.strtoupper(\Illuminate\Support\Str::uuid()),
+                        'gateway_metadata' => [
+                            'type' => 'free_plan_activation',
+                            'plan_code' => $freePlan->slug,
+                        ],
+                    ]);
+
+                    // Activate subscription using the proper state machine method
+                    // This enforces all invariants and creates invoice snapshot
+                    $subscriptionService->activateSubscription($payment);
+
+                    \Illuminate\Support\Facades\DB::commit();
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\DB::rollBack();
+                    \Illuminate\Support\Facades\Log::error('Failed to activate free subscription for new user', [
+                        'user_id' => $user->id,
+                        'company_id' => $company->id,
+                        'plan_id' => $freePlan->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Don't throw - allow registration to continue even if free subscription activation fails
+                }
             }
         }
 

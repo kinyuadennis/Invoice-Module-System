@@ -40,7 +40,7 @@ class StripeGatewayAdapter implements PaymentGatewayInterface
         $stripeSecret = config('services.stripe.secret');
 
         if (! $stripeSecret) {
-            throw new \Exception('Stripe credentials not configured');
+            throw new \Exception('Stripe credentials not configured. Please configure STRIPE_SECRET in your .env file.');
         }
 
         try {
@@ -140,7 +140,7 @@ class StripeGatewayAdapter implements PaymentGatewayInterface
         $stripeSecret = config('services.stripe.secret');
 
         if (! $stripeSecret) {
-            throw new \Exception('Stripe credentials not configured');
+            throw new \Exception('Stripe credentials not configured. Please configure STRIPE_SECRET in your .env file.');
         }
 
         if (! $context->gatewaySubscriptionId) {

@@ -45,7 +45,7 @@ class MpesaGatewayAdapter implements PaymentGatewayInterface
         $callbackUrl = config('services.mpesa.callback_url');
 
         if (! $consumerKey || ! $consumerSecret || ! $shortcode || ! $passkey) {
-            throw new \Exception('M-Pesa credentials not configured');
+            throw new \Exception('M-Pesa credentials not configured. Please configure MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET, MPESA_SHORTCODE, and MPESA_PASSKEY in your .env file.');
         }
 
         try {

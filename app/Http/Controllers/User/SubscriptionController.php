@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
+use App\Payments\Events\PaymentConfirmed;
 use App\Services\CurrentCompanyService;
 use App\Services\SubscriptionService;
 use App\Subscriptions\Repositories\SubscriptionRepository;
@@ -69,6 +70,44 @@ class SubscriptionController extends Controller
                 'auto_renew' => true,
             ]);
 
+            // Handle free plans differently - activate immediately without payment
+            if ($plan->price == 0 || $plan->price === null) {
+                // Activate subscription directly
+                $subscription->transitionToActive();
+
+                // Set subscription end date (free plans don't expire, but set a far future date)
+                $subscription->update([
+                    'ends_at' => null, // Free plan doesn't expire
+                    'next_billing_at' => null, // No billing for free plan
+                ]);
+
+                // Create a $0 payment record for audit trail
+                $payment = Payment::create([
+                    'company_id' => $companyId,
+                    'payable_type' => Subscription::class,
+                    'payable_id' => $subscription->id,
+                    'amount' => 0,
+                    'gateway' => null, // No gateway for free plan
+                    'status' => PaymentConstants::PAYMENT_STATUS_SUCCESS,
+                    'payment_date' => now(),
+                    'paid_at' => now(),
+                    'gateway_metadata' => ['note' => 'Free plan activation - no payment required'],
+                ]);
+
+                // Emit PaymentConfirmed event to trigger invoice creation
+                event(new PaymentConfirmed($payment));
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'subscription_id' => $subscription->id,
+                    'payment_id' => $payment->id,
+                    'message' => 'Free plan activated successfully',
+                ]);
+            }
+
+            // For paid plans, proceed with payment initiation
             // Prepare user details for gateway
             $userDetails = [
                 'phone' => $request->phone ?? null,
