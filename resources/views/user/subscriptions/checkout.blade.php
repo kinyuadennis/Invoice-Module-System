@@ -5,6 +5,40 @@
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div x-data="checkoutFlow({{ $selectedPlan?->id ?? 'null' }}, '{{ $suggestedGateway }}', '{{ $userCountry ?? 'KE' }}')" x-init="init()">
+        <!-- Error Display -->
+        <div x-show="errorMessage" x-cloak class="mb-6">
+            <div class="bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <svg class="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-1">Error</h4>
+                        <p class="text-sm text-red-800 dark:text-red-300" x-text="errorMessage"></p>
+                    </div>
+                    <button @click="errorMessage = ''" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div x-show="successMessage" x-cloak class="mb-6">
+            <div class="bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-700 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <svg class="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-sm text-green-800 dark:text-green-300" x-text="successMessage"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Progress Stepper -->
         <x-shared.progress-stepper 
             :current-step="currentStep"
@@ -301,6 +335,8 @@ function checkoutFlow(initialPlanId, suggestedGateway, userCountry) {
         phoneError: '',
         termsAccepted: false,
         processing: false,
+        errorMessage: '',
+        successMessage: '',
 
         init() {
             // If plan is pre-selected, set its details
@@ -387,6 +423,8 @@ function checkoutFlow(initialPlanId, suggestedGateway, userCountry) {
             }
 
             this.processing = true;
+            this.errorMessage = '';
+            this.successMessage = '';
 
             try {
                 // For Stripe, first confirm the payment method
@@ -399,8 +437,12 @@ function checkoutFlow(initialPlanId, suggestedGateway, userCountry) {
                     });
 
                     if (error) {
-                        alert(error.message);
+                        this.errorMessage = error.message || 'Failed to create payment method. Please check your card details.';
                         this.processing = false;
+                        // Scroll to error
+                        this.$nextTick(() => {
+                            document.querySelector('[x-show="errorMessage"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        });
                         return;
                     }
 
@@ -432,25 +474,54 @@ function checkoutFlow(initialPlanId, suggestedGateway, userCountry) {
 
                 const data = await response.json();
 
-                if (data.success) {
-                    // Redirect to payment status page or subscriptions page
-                    if (data.payment_id) {
-                        window.location.href = `{{ route("user.subscriptions.payment-status", ":payment") }}`.replace(':payment', data.payment_id);
-                    } else if (data.transaction_id) {
-                        // M-Pesa - redirect to status page with transaction ID
-                        window.location.href = `{{ route("user.subscriptions.index") }}?payment_id=${data.payment_id || data.transaction_id}`;
+                if (!response.ok) {
+                    // Handle HTTP errors (validation, etc.)
+                    if (data.errors) {
+                        const errorMessages = Object.values(data.errors).flat();
+                        this.errorMessage = errorMessages.join(' ') || 'Validation failed. Please check your input.';
                     } else {
-                        // Stripe subscription created - redirect to subscriptions page
-                        window.location.href = '{{ route("user.subscriptions.index") }}';
+                        this.errorMessage = data.message || data.error || 'Payment initiation failed. Please try again.';
                     }
-                } else {
-                    alert(data.error || 'Payment initiation failed. Please try again.');
                     this.processing = false;
+                    // Scroll to error
+                    this.$nextTick(() => {
+                        document.querySelector('[x-show="errorMessage"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    });
+                    return;
+                }
+
+                if (data.success) {
+                    // Show success message briefly before redirect
+                    this.successMessage = 'Payment initiated successfully! Redirecting...';
+                    
+                    // Redirect to payment status page or subscriptions page
+                    setTimeout(() => {
+                        if (data.payment_id) {
+                            window.location.href = `{{ route("user.subscriptions.payment-status", ":payment") }}`.replace(':payment', data.payment_id);
+                        } else if (data.transaction_id) {
+                            // M-Pesa - redirect to status page with transaction ID
+                            window.location.href = `{{ route("user.subscriptions.index") }}?payment_id=${data.payment_id || data.transaction_id}`;
+                        } else {
+                            // Stripe subscription created - redirect to subscriptions page
+                            window.location.href = '{{ route("user.subscriptions.index") }}';
+                        }
+                    }, 1000);
+                } else {
+                    this.errorMessage = data.error || data.message || 'Payment initiation failed. Please try again.';
+                    this.processing = false;
+                    // Scroll to error
+                    this.$nextTick(() => {
+                        document.querySelector('[x-show="errorMessage"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    });
                 }
             } catch (error) {
                 console.error('Payment submission error:', error);
-                alert('An error occurred. Please try again.');
+                this.errorMessage = 'An unexpected error occurred. Please try again or contact support if the problem persists.';
                 this.processing = false;
+                // Scroll to error
+                this.$nextTick(() => {
+                    document.querySelector('[x-show="errorMessage"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
             }
         },
     };

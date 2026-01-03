@@ -29,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
             \App\Listeners\Payments\Listeners\CreateInvoiceOnPaymentConfirmed::class
         );
 
+        // Register Subscription observer to sync payment records
+        \App\Models\Subscription::observe(\App\Observers\SubscriptionObserver::class);
+
         // Share active company with all views that use layouts.user
         // This eliminates DB queries from Blade templates
         // OPTIMIZED: Only run queries if user is authenticated and has active company

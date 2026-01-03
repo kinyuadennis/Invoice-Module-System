@@ -60,29 +60,25 @@ class SubscriptionController extends Controller
         DB::beginTransaction();
 
         try {
+            // Determine gateway based on user country (must be set at creation per blueprint invariant)
+            $gateway = $user->country === GatewayConstants::COUNTRY_KENYA ? PaymentConstants::GATEWAY_MPESA : PaymentConstants::GATEWAY_STRIPE;
+
             // Create subscription (PENDING status) via repository (audited)
+            // Gateway must be set at creation as it's immutable per blueprint invariant
             $subscription = $this->subscriptionRepository->create([
                 'user_id' => $user->id,
                 'company_id' => $companyId,
                 'subscription_plan_id' => $plan->id,
                 'plan_code' => $plan->slug ?? $plan->name,
                 'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_PENDING,
+                'gateway' => $plan->price == 0 || $plan->price === null ? null : $gateway, // No gateway for free plans
                 'starts_at' => now(),
                 'auto_renew' => true,
             ]);
 
             // Handle free plans differently - activate immediately without payment
             if ($plan->price == 0 || $plan->price === null) {
-                // Activate subscription directly
-                $subscription->transitionToActive();
-
-                // Set subscription end date (free plans don't expire, but set a far future date)
-                $subscription->update([
-                    'ends_at' => null, // Free plan doesn't expire
-                    'next_billing_at' => null, // No billing for free plan
-                ]);
-
-                // Create a $0 payment record for audit trail
+                // Create a $0 payment record FIRST (required by transitionToActive invariant)
                 $payment = Payment::create([
                     'company_id' => $companyId,
                     'payable_type' => Subscription::class,
@@ -93,6 +89,15 @@ class SubscriptionController extends Controller
                     'payment_date' => now(),
                     'paid_at' => now(),
                     'gateway_metadata' => ['note' => 'Free plan activation - no payment required'],
+                ]);
+
+                // Now transition to active (payment exists, so invariant is satisfied)
+                $subscription->transitionToActive();
+
+                // Set subscription end date (free plans don't expire, but set a far future date)
+                $subscription->update([
+                    'ends_at' => null, // Free plan doesn't expire
+                    'next_billing_at' => null, // No billing for free plan
                 ]);
 
                 // Emit PaymentConfirmed event to trigger invoice creation
@@ -109,8 +114,6 @@ class SubscriptionController extends Controller
             }
 
             // For paid plans, proceed with payment initiation
-            // Determine gateway based on user country
-            $gateway = $user->country === GatewayConstants::COUNTRY_KENYA ? PaymentConstants::GATEWAY_MPESA : PaymentConstants::GATEWAY_STRIPE;
 
             // Handle Stripe subscriptions with Cashier
             if ($gateway === PaymentConstants::GATEWAY_STRIPE && $request->payment_method) {
@@ -177,8 +180,8 @@ class SubscriptionController extends Controller
                 ->create($paymentMethodId);
 
             // Update our subscription record with Stripe details
+            // Note: gateway is already set at creation, but ensure it's correct
             $subscription->update([
-                'gateway' => PaymentConstants::GATEWAY_STRIPE,
                 'stripe_id' => $cashierSubscription->stripe_id,
                 'stripe_status' => $cashierSubscription->stripe_status,
                 'stripe_price' => $stripePriceId,
@@ -187,16 +190,7 @@ class SubscriptionController extends Controller
                 'payment_reference' => $cashierSubscription->stripe_id,
             ]);
 
-            // If subscription is active, update our subscription status
-            if ($cashierSubscription->stripe_status === 'active') {
-                $subscription->transitionToActive();
-                $subscription->update([
-                    'starts_at' => now(),
-                    'ends_at' => $cashierSubscription->ends_at,
-                ]);
-            }
-
-            // Create payment record for audit
+            // Create payment record FIRST (required by transitionToActive invariant)
             $payment = Payment::create([
                 'company_id' => $subscription->company_id,
                 'payable_type' => Subscription::class,
@@ -208,6 +202,16 @@ class SubscriptionController extends Controller
                 'payment_date' => now(),
                 'paid_at' => $cashierSubscription->stripe_status === 'active' ? now() : null,
             ]);
+
+            // If subscription is active, update our subscription status
+            // Payment exists now, so invariant is satisfied
+            if ($cashierSubscription->stripe_status === 'active') {
+                $subscription->transitionToActive();
+                $subscription->update([
+                    'starts_at' => now(),
+                    'ends_at' => $cashierSubscription->ends_at,
+                ]);
+            }
 
             DB::commit();
 
@@ -362,11 +366,36 @@ class SubscriptionController extends Controller
 
         // Load subscription and plan
         $subscription = $payment->payable;
-        $plan = $subscription?->plan;
 
-        // Determine if polling is needed (only for INITIATED status)
+        // Handle edge case: subscription was deleted
+        if (! $subscription) {
+            return redirect()->route('user.subscriptions.index')
+                ->with('error', 'The subscription associated with this payment no longer exists.');
+        }
+
+        // Ensure subscription belongs to user
+        if ($subscription->user_id !== $user->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $plan = $subscription->plan;
+
+        // Handle edge case: plan was deleted
+        if (! $plan) {
+            return redirect()->route('user.subscriptions.index')
+                ->with('error', 'The subscription plan no longer exists.');
+        }
+
+        // Determine if polling is needed:
+        // - M-Pesa: Poll if payment is INITIATED
+        // - Stripe: Poll if payment is INITIATED and subscription is not ACTIVE yet
         $needsPolling = $payment->status === PaymentConstants::PAYMENT_STATUS_INITIATED
-            && $payment->gateway === PaymentConstants::GATEWAY_MPESA;
+            && (
+                $payment->gateway === PaymentConstants::GATEWAY_MPESA
+                || ($payment->gateway === PaymentConstants::GATEWAY_STRIPE
+                    && $subscription
+                    && $subscription->status !== SubscriptionConstants::SUBSCRIPTION_STATUS_ACTIVE)
+            );
 
         return view('user.subscriptions.payment-status', [
             'payment' => $payment,
@@ -389,11 +418,32 @@ class SubscriptionController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        // Ensure payment is for a subscription
+        if ($payment->payable_type !== Subscription::class) {
+            return response()->json(['error' => 'Payment not found'], 404);
+        }
+
         // Refresh payment from database
         $payment->refresh();
 
         // Load subscription
         $subscription = $payment->payable;
+
+        // Handle edge case: subscription was deleted
+        if (! $subscription) {
+            return response()->json([
+                'error' => 'Subscription not found',
+                'status' => 'error',
+                'is_terminal' => true,
+            ], 404);
+        }
+
+        // Ensure subscription belongs to user
+        if ($subscription->user_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $subscription->refresh();
 
         return response()->json([
             'status' => $payment->status,
@@ -404,6 +454,7 @@ class SubscriptionController extends Controller
             'is_terminal' => $payment->isTerminal(),
             'subscription_id' => $subscription?->id,
             'subscription_status' => $subscription?->status,
+            'stripe_subscription_id' => $subscription?->stripe_id, // Include Stripe subscription ID
             'paid_at' => $payment->paid_at?->toIso8601String(),
             'error' => $payment->gateway_metadata['error'] ?? null,
         ]);

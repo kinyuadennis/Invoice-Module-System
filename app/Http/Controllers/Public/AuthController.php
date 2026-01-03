@@ -483,20 +483,26 @@ class AuthController extends Controller
                 ->with('status', 'Email verified successfully!');
         }
 
-        // Redirect to onboarding if not completed, otherwise to company setup or dashboard
+        // Check if user registered with a plan selected (preserve through onboarding)
+        $pendingPlanId = $request->session()->get('pending_subscription_plan');
+
+        // Redirect to onboarding if not completed, but preserve plan selection
         if (! $user->onboarding_completed) {
+            // Keep pending_subscription_plan in session for after onboarding
             return redirect()->route('user.onboarding.index')
-                ->with('status', 'Email verified successfully! Let\'s get you set up.');
+                ->with('status', 'Email verified successfully! Let\'s get you set up.')
+                ->with('pending_subscription_plan', $pendingPlanId); // Preserve plan selection
         }
 
         // Redirect to company setup if user doesn't have a company
         if (! $user->company_id) {
+            // Keep pending_subscription_plan in session for after company setup
             return redirect()->route('company.setup')
-                ->with('status', 'Email verified successfully! Please complete your company setup.');
+                ->with('status', 'Email verified successfully! Please complete your company setup.')
+                ->with('pending_subscription_plan', $pendingPlanId); // Preserve plan selection
         }
 
-        // Check if user registered with a plan selected (redirect to checkout)
-        $pendingPlanId = $request->session()->get('pending_subscription_plan');
+        // Now redirect to checkout if plan was selected
         if ($pendingPlanId) {
             $request->session()->forget('pending_subscription_plan');
 

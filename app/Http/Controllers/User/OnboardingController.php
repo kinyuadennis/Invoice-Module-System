@@ -200,6 +200,15 @@ class OnboardingController extends Controller
                 $user->update(['onboarding_completed' => true]);
                 $request->session()->forget('onboarding_step');
 
+                // Check if user registered with a plan selected (redirect to checkout)
+                $pendingPlanId = $request->session()->get('pending_subscription_plan');
+                if ($pendingPlanId) {
+                    $request->session()->forget('pending_subscription_plan');
+
+                    return redirect()->route('user.subscriptions.checkout', ['plan' => $pendingPlanId])
+                        ->with('success', 'Welcome! Complete your subscription setup.');
+                }
+
                 return redirect()->route('user.dashboard')
                     ->with('success', 'Welcome! Your account is set up and ready to use.');
         }
@@ -260,6 +269,15 @@ class OnboardingController extends Controller
 
         $user->update(['onboarding_completed' => true]);
         $request->session()->forget('onboarding_step');
+
+        // Check if user registered with a plan selected (redirect to checkout)
+        $pendingPlanId = $request->session()->get('pending_subscription_plan');
+        if ($pendingPlanId) {
+            $request->session()->forget('pending_subscription_plan');
+
+            return redirect()->route('user.subscriptions.checkout', ['plan' => $pendingPlanId])
+                ->with('success', 'Welcome! Complete your subscription setup.');
+        }
 
         return redirect()->route('user.dashboard')
             ->with('success', 'Welcome! Your account is set up and ready to use.');
