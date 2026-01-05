@@ -19,6 +19,7 @@
             this.modalOpen = false;
         }
     }"
+    @close-modal="closeModal()"
     class="relative">
     <!-- Feedback Button -->
     @if($showButton)
@@ -57,7 +58,7 @@
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-slate-900">Share Your Feedback</h3>
                 <button
-                    @click="$root.closeModal()"
+                    @click="closeModal()"
                     class="text-slate-400 hover:text-slate-600 transition-colors"
                     aria-label="Close">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +132,7 @@
                 <div class="flex gap-3">
                     <button
                         type="button"
-                        @click="$root.closeModal()"
+                        @click="$dispatch('close-modal')"
                         class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
                         Cancel
                     </button>
@@ -192,12 +193,7 @@
 
                         setTimeout(() => {
                             this.success = false;
-                            this.$dispatch('feedback-submitted');
-                            // Close the modal by accessing the parent scope
-                            const parentScope = this.$root;
-                            if (parentScope && typeof parentScope.closeModal === 'function') {
-                                parentScope.closeModal();
-                            }
+                            this.$dispatch('close-modal');
                         }, 800); // Reduced from 2000ms to 800ms for faster dismissal
                     } catch (error) {
                         this.error = error.message || 'Failed to submit feedback. Please try again.';

@@ -153,6 +153,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
         Route::post('/invoices/{id}/record-payment', [InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');
+        Route::post('/invoices/bulk-delete', [InvoiceController::class, 'bulkDelete'])->name('invoices.bulk-delete');
+        Route::post('/invoices/bulk-status', [InvoiceController::class, 'bulkStatus'])->name('invoices.bulk-status');
+        Route::post('/invoices/bulk-send', [InvoiceController::class, 'bulkSend'])->name('invoices.bulk-send');
 
         // Refund routes
         Route::get('/invoices/{invoiceId}/refunds', [\App\Http\Controllers\User\RefundController::class, 'index'])->name('invoices.refunds.index');

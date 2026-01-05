@@ -1,329 +1,173 @@
-# InvoiceHub - Comprehensive Site Documentation
+# InvoiceHub - Comprehensive Site Documentation & Modernization Plan
 
 **Last Updated:** 2026-01-08  
 **Application:** InvoiceHub - Professional Invoice Management System for Kenyan Businesses  
 **Tech Stack:** Laravel 12, PHP 8.3, Alpine.js 3.15, Tailwind CSS 4, MySQL  
-**Current Completion:** ~75% → Target: 100%
+**Current Completion:** ~75% → Target: 100% (Aligned with Industry Standards)
 
 ---
 
-## Table of Contents
+## 1. Executive Summary & Core Value Propositions
 
-1. [Application Overview](#application-overview)
-2. [User Section](#user-section)
-3. [Admin Section](#admin-section)
-4. [Landing/Public Section](#landingpublic-section)
-5. [System Architecture](#system-architecture)
-6. [Database Schema](#database-schema)
-7. [Key Features & Workflows](#key-features--workflows)
-8. [Implementation Roadmap](#implementation-roadmap)
-9. [Future Integrations](#future-integrations)
+InvoiceHub aims to be a top-tier invoicing platform for Kenyan SMEs, matching global standards set by FreshBooks, Xero, and Wave, while ensuring strict local compliance (KRA eTIMS, M-PESA).
 
----
+### Industry Standard Features (Adopted)
+*   **Core:** Dashboard, Invoice Creation, Client Management, Reporting.
+*   **Automation:** Recurring invoices, Payment reminders.
+*   **Integration:** Payments (Stripe/M-PESA), Email/WhatsApp notifications.
 
-## Application Overview
-
-### What is InvoiceHub?
-
-InvoiceHub is a comprehensive, KRA eTIMS-compliant invoice management platform specifically designed for Kenyan SMEs. It enables businesses to create professional invoices, accept M-PESA payments, manage clients, track expenses, and stay tax-compliant.
-
-### Core Value Propositions
-
-1. **KRA eTIMS Compliance** - All invoices meet Kenyan tax authority requirements
-2. **M-PESA Integration** - Native support for Kenya's most popular payment method
-3. **Multi-Company Support** - Users can manage multiple businesses from one account
-4. **Dual Invoice Creation** - Both wizard and one-page builder interfaces
-5. **Automated Workflows** - Reminders, recurring invoices, approvals
-6. **Professional Templates** - Multiple customizable templates
-7. **Real-time Calculations** - VAT (16%), platform fees (3%), discounts
-
-### Target Audience
-
-- Kenyan SMEs and freelancers
-- Businesses requiring KRA-compliant invoicing
-- Companies needing M-PESA payment integration
-- Organizations managing multiple clients and invoices
+### Specialized Value Propositions
+1.  **KRA eTIMS Compliance** - All invoices meet Kenyan tax authority requirements.
+2.  **M-PESA Integration** - Native support for Kenya's most popular payment method.
+3.  **Visual Excellence** - Premium UI with micro-animations and dark mode support.
 
 ---
 
-## User Section (`/app/*`)
+## 2. Homepage and Hero Section (Public/Landing)
 
-### Authentication & Access
+**Focus:** clear value proposition, high conversion, trust signals.
 
-**Routes:**
-- `/login` - User login
-- `/register` - User registration
-- `/forgot-password` - Password reset
-- `/email/verify` - Email verification
+### Implementation Checklist
+- [ ] **Load Time < 3s:** Optimize assets and queries.
+- [ ] **Hero Message:** "Send compliant invoices & get paid via M-PESA in seconds."
+- [ ] **Visuals:** High-quality screenshots of the dashboard/invoice builder.
+- [ ] **Call-to-Action (CTA):** Prominent "Start Free Trial" buttons.
+- [ ] **Social Proof:** Testimonials, "Trusted by X Businesses" stats.
+- [ ] **Demo:** Interactive breakdown or video walkthrough.
+- [ ] **Mobile Responsiveness:** Perfect rendering on mobile devices.
 
-**Features:**
-- Email verification required
-- Password reset via email
-- Session-based authentication
-- Remember me functionality
-
-### Onboarding Flow (`/onboarding`)
-
-**Status:** ✅ COMPLETED
-
-**Steps:**
-1. Welcome & Introduction
-2. Company Setup (with KRA PIN validation)
-3. Invoice Customization
-4. Payment Methods Setup
-5. First Invoice Creation (guided)
-6. Completion & Dashboard Tour
-
-### Dashboard (`/app/dashboard`)
-
-**Status:** ✅ COMPLETED (Enhanced)
-
-**Main Features:**
-
-#### KPI Cards
-- **Total Revenue** - Sum of all paid invoices (with trend)
-- **Outstanding** - Unpaid invoice amounts
-- **Total Invoices** - Count by status
-- **Recent Activity** - Latest invoices, payments, clients
-
-#### Visual Analytics
-- **Revenue Chart** (Last 6 months)
-- **Status Distribution** (Doughnut chart)
-- **Top Clients** (Bar chart)
-
-#### Quick Actions
-- New Invoice
-- New Estimate
-- New Client
-- Record Payment
-- Add Company
-- View Reports
-
-#### Recent Invoices Table
-- List of recent invoices with status
-- Quick actions (view, edit, send, PDF)
-- Filters by status, date range
-
-________________________________________
-
-### Invoice Management (`/app/invoices`)
-
-**Current Features:**
-- ✅ List invoices with filters (status, date, search)
-- ✅ Create invoice (wizard or one-page builder)
-- ✅ Edit invoice
-- ✅ Delete invoice
-- ✅ View invoice details
-- ✅ Generate PDF
-- ✅ Send via Email & WhatsApp
-- ✅ Duplicate invoice
-- ✅ Record payment
-- ✅ Autosave drafts
-- ✅ Preview invoice
-- ✅ eTIMS export/submit
-
-**Routes:**
-```
-GET    /app/invoices                    # List invoices
-POST   /app/invoices                    # Create invoice
-GET    /app/invoices/create             # Create form
-GET    /app/invoices/{id}               # Show invoice
-PUT    /app/invoices/{id}               # Update invoice
-DELETE /app/invoices/{id}               # Delete invoice
-GET    /app/invoices/{id}/pdf           # Generate PDF
-POST   /app/invoices/{id}/send-email    # Send email
-POST   /app/invoices/preview            # Preview
-```
-
-**Features In Progress:**
-- 🚧 Bulk operations (Delete, Send, Change Status)
-
-________________________________________
-
-### Estimates/Quotes (`/app/estimates`)
-
-**Status:** ✅ COMPLETED
-
-**Features:**
-- Create estimates/quotes
-- Send to clients
-- Track acceptance/rejection
-- Convert accepted estimate to invoice
-- Expiry date management
-- PDF generation
-
-________________________________________
-
-### Expenses Tracking (`/app/expenses`)
-
-**Status:** ✅ COMPLETED
-
-**Features:**
-- Record expenses with categories
-- Upload receipts (images/PDFs)
-- Link expenses to clients/invoices
-- Expense reports by category, date range
-- Tax-deductible tracking
-- Recurring expenses
-
-________________________________________
-
-### Credit Notes (`/app/credit-notes`)
-
-**Status:** ✅ COMPLETED
-
-**Features:**
-- Issue credit notes for refunds/adjustments
-- Link to original invoice
-- eTIMS-compliant reversals
-- Apply credit to future invoices
-- PDF generation
-- Email to client
-
-________________________________________
-
-### Refunds (`/app/refunds`)
-
-**Status:** ✅ COMPLETED
-
-**Features:**
-- Process refunds for paid invoices
-- Link refunds to payments
-- Generate refund receipts
-
-________________________________________
-
-### Client Management (`/app/clients`)
-
-**Current Features:**
-- ✅ Search clients (Global Search & AJAX)
-- ✅ Create client (Inline & Full form)
-- ✅ Client scoping per company
-- ✅ KRA PIN validation
-- ✅ Phone number normalization
-
-________________________________________
-
-### Recurring Invoices (`/app/recurring-invoices`)
-
-**Status:** ✅ COMPLETED
-
-**Features:**
-- Create recurring invoice templates
-- Set frequency (daily, weekly, monthly, yearly)
-- Auto-generate invoices
-- Pause/resume/cancel
-- Manual generation
-
-________________________________________
-
-### Reports (`/app/reports`)
-
-**Current Features:**
-- ✅ Revenue reports
-- ✅ Invoice reports
-- ✅ Payment reports
-- ✅ CSV export
-
-________________________________________
-
-### Payments (`/app/payments`)
-
-**Current Features:**
-- ✅ List all payments
-- ✅ View payment details
-- ✅ Payment status tracking
-- ✅ M-PESA & Stripe integration
-- ✅ Bank Reconciliation (Controller exists)
-
-________________________________________
-
-## Admin Section (`/admin/*`)
-
-### Admin Dashboard (`/admin/dashboard`)
-
-**Features:**
-- System overview metrics
-- Recent activity
-- User statistics
-- Company statistics
-
-### Management Modules
-- **User Management**
-- **Company Management**
-- **Invoice Management**
-- **Payment Management**
-- **Client Management**
-- **Review Management**
-- **Platform Fees**
-- **Billing Management**
-- **System Settings**
-- **Audit Logs**
+### Research Insights
+*   *Note:* 70% of users decide within 10 seconds. Hero videos boost sign-ups by 20-30%.
 
 ---
 
-## Landing/Public Section (`/`)
+## 3. Sign-Up and Onboarding Process
 
-**Features:**
-- Hero section with CTA
-- Features showcase
-- Pricing Page
-- About Page
-- Testimonials
-- Login/Register/Forgot Password
+**Focus:** Frictionless entry, minimal barriers.
 
----
+### Best Practices & Status
+*   **Social Login:** ✅ Google/GitHub implemented. (Reviewing Apple/Microsoft additions).
+*   **Wizard:** ✅ Multi-step wizard currently collects Company Name, KRA PIN, Currency, and Logo.
+*   **Guest Mode:** ⏳ Consider allowing "Try before sign-up" (Invoice2go style).
+*   **2FA:** ⏳ Two-factor authentication for enhanced security.
 
-## Database Schema
-
-**Core Tables:**
-- `invoices`, `invoice_items`
-- `estimates`, `estimate_items`
-- `expenses`, `expense_categories`
-- `credit_notes`, `credit_note_items`
-- `companies`, `company_payment_methods`
-- `users`, `clients`, `payments`
-- `recurring_invoices`, `refunds`
+### Implementation Checklist
+- [x] **Social Logins:** Reduce drop-offs by 50%.
+- [x] **Setup Wizard:** 3-5 screens max (Company Details, Branding, First Invoice).
+- [ ] **Welcome Email Series:** Automated "Getting Started" tips.
+- [ ] **Contextual Help:** Tooltips during the first run.
 
 ---
 
-## Implementation Roadmap
+## 4. Dashboard & User Interface (`/app/dashboard`)
 
-### Phase 1: Core Features (Completed)
-- ✅ User Authentication & Onboarding
-- ✅ Company Management
-- ✅ Invoice CRUD (Create, Read, Update, Delete)
-- ✅ Estimates & Quotes
-- ✅ Expenses Tracking
-- ✅ Client Management
+**Focus:** Central command center, quick access to metrics and actions.
 
-### Phase 2: Enhanced Functionality (Completed/In Progress)
-- ✅ Dashboard Visuals (Revenue Chart, Quick Actions)
-- ✅ Global Search
-- ✅ Credit Notes & Refunds
-- ✅ Recurring Invoices
-- ✅ Reports & Export
-- 🚧 Bulk Actions for Invoices (Current Task)
+### Current Features (Aligned with Industry Leaders)
+*   **KPI Cards:** Revenue, Outstanding, Overdue.
+*   **Visual Analytics:** ✅ Revenue Chart (Last 6 months), Client Distribution.
+*   **Quick Actions:** ✅ Create Invoice, Record Payment, Add Client.
+*   **Activity Feed:** Real-time log of recent actions.
+*   **Search:** ✅ Global search for invoices/clients.
 
-### Phase 3: Advanced Integrations (Future)
-- ⏳ Advanced AI Insights
-- ⏳ Inventory Management
-- ⏳ Multi-currency improvements
+### Implementation Checklist
+- [x] **Real-time Widgets:** Update without page refresh.
+- [x] **Responsive Navigation:** Collapsible sidebar for mobile.
+- [x] **Search Filters:** Date range, status, client.
+- [ ] **Predictive Insights:** AI-driven "Likely late payers" alerts (Future).
+- [ ] **Customization:** Drag-and-drop widgets (Future).
+
+### Research Insights
+*   *Note:* Dashboards with AI elements increase efficiency by 25%. Mobile access is critical (80% of users).
 
 ---
 
-## Future Integrations
+## 5. Client Management (`/app/clients`)
 
-### Modern Invoicing Platforms Integration
-**Goal:** Seamlessly connect InvoiceHub with external modern platforms to expand capabilities.
+**Focus:** Organized customer data integrated with billing.
 
-**Planned Integrations:**
-1.  **Payment Gateways:**
-    *   **Direct Bank Feeds:** PSD2/Open Banking integration for real-time reconciliation.
-    *   **Crypto Payments:** Accept stablecoins (USDC/USDT) for international clients.
-2.  **Accounting Software:**
-    *   **Xero/QuickBooks/SAGE:** Two-way sync for accountants.
-3.  **E-Commerce:**
-    *   **Shopify/WooCommerce:** Auto-generate invoices from store orders.
-4.  **Communication:**
-    *   **Slack/Microsoft Teams:** Notifications for paid invoices or approvals.
+### Features
+*   **List View:** ✅ Searchable, sortable table.
+*   **CRM Data:** ✅ Email, Phone, KRA PIN, Address.
+*   **History:** ✅ Linked invoices and payment history.
+*   **Import/Export:** ⏳ CSV upload/download (In Progress).
+
+### Implementation Checklist
+- [x] **Search & Sort:** Instant filtering.
+- [ ] **Bulk Import:** From CSV/Contacts.
+- [x] **Data Validation:** Email and Phone (E.164 normalization) checks.
+- [ ] **Notes & Tags:** "VIP", "Bad Payer", etc.
+
+---
+
+## 6. Invoice Management (`/app/invoices`)
+
+**Focus:** Full lifecycle (Draft -> Sent -> Paid), automation, customization.
+
+### Core Operations
+*   **Creation:** ✅ Wizard & One-Page Builder.
+*   **Sending:** ✅ Email (PDF attached) & WhatsApp.
+*   **Tracking:** ✅ Statuses: Draft, Sent, Paid, Overdue, Cancelled.
+*   **Bulk Actions:** 🚧 Bulk Delete, Bulk Status Change (Current Priority).
+
+### Implementation Checklist
+- [x] **Templates:** Professional, mobile-friendly designs.
+- [x] **Auto-Calculations:** VAT (16%), Discounts, Fees.
+- [x] **Payment Links:** Click-to-pay button in PDF/Email.
+- [ ] **Recurring Invoices:** Automated generation and sending.
+- [ ] **Audit Logs:** Who changed what and when.
+
+---
+
+## 7. Payment & Financial Integrations (`/app/payments`)
+
+**Focus:** Seamless collection, automated reconciliation.
+
+### Features
+*   **Gateways:** ✅ Stripe (International), M-PESA (Local).
+*   **Reconciliation:** ⏳ Bank feeds matching (Future).
+*   **Refunds:** ✅ Full and partial refund support.
+*   **Currencies:** Multi-currency support (USD, KES, EUR, GBP).
+
+### Implementation Checklist
+- [x] **Click-to-Pay:** Reduce manual follow-up.
+- [x] **Partial Payments:** Allow deposits or installments.
+- [x] **Auto-Status Update:** Webhook listeners for real-time "Paid" status.
+- [ ] **Expense Linking:** Link expenses to billable invoices.
+
+---
+
+## 8. Technical Architecture & Roadmap
+
+### Phase 1: Core Foundation (Completed)
+- [x] User Auth & Onboarding
+- [x] Company Management
+- [x] Invoice CRUD & PDF Generation
+- [x] Client Management
+
+### Phase 2: Enhanced Functionality (Current)
+- [x] **Visual Dashboard:** Revenue Charts & Insights.
+- [x] **Global Search:** Fast access to data.
+- [x] **Estimates & Expenses:** Full lifecycle management.
+- [ ] **Bulk Actions:** Manage large datasets efficiently.
+- [ ] **Credit Notes:** Handle returns/adjustments.
+
+### Phase 3: Advanced & Intelligence (Future)
+- [ ] **AI Features:** Invoice data extraction (OCR), predictive cash flow.
+- [ ] **Open Banking:** Direct bank feed integration.
+- [ ] **E-commerce:** Shopify/WooCommerce plugins.
+- [ ] **Mobile App:** Native iOS/Android wrappers.
+
+---
+
+## 9. Research & Validation
+
+### Benchmarks to Meet
+*   **UX:** Registration < 2 mins, First Invoice < 5 mins.
+*   **Performance:** Dashboard load < 1s.
+*   **Adoption:** Target 40% conversion on free trial.
+
+### User Feedback Loop
+*   **Feedback Modal:** Implemented on dashboard.
+*   **NPS Scoring:** Periodic survey emails.
+*   **Usage Analytics:** Track "Most Used Features" to prioritize updates.

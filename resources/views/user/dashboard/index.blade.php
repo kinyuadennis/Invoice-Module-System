@@ -7,8 +7,8 @@
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-600">Welcome back, {{ auth()->user()->name }}!</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Welcome back, {{ auth()->user()->name }}!</p>
         </div>
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <!-- Quick Actions -->
@@ -69,11 +69,12 @@
 
     @if(!auth()->user()->onboarding_completed || (isset($companies) && $companies->count() === 0))
     <!-- Quick Setup Card -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6" id="dashboard-quick-setup">
+    <div class="bg-white dark:bg-slate-800 border border-blue-100 dark:border-slate-700 shadow-lg shadow-blue-500/5 rounded-xl p-6 relative overflow-hidden" id="dashboard-quick-setup">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full blur-3xl -mr-32 -mt-32 opacity-50 pointer-events-none"></div>
         <div class="flex items-start justify-between">
             <div class="flex-1">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Complete Your Setup</h3>
-                <p class="text-sm text-gray-600 mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Complete Your Setup</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     @if(!auth()->user()->onboarding_completed)
                     Finish setting up your account to get the most out of InvoiceHub.
                     @elseif(isset($companies) && $companies->count() === 0)
@@ -106,15 +107,15 @@
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'paid']) }}'">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-[#2B6EF6] rounded-lg p-3">
+                <div class="flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 shadow-lg shadow-blue-500/30">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($stats['totalRevenue'] ?? 0, 2) }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Revenue</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">KES {{ number_format($stats['totalRevenue'] ?? 0, 2) }}</dd>
                     </dl>
                 </div>
             </div>
@@ -122,15 +123,15 @@
 
         <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'sent']) }}'">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-yellow-500 rounded-lg p-3">
+                <div class="flex-shrink-0 bg-gradient-to-br from-amber-400 to-amber-500 rounded-xl p-3 shadow-lg shadow-amber-500/30">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Outstanding</dt>
-                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($stats['outstanding'] ?? 0, 2) }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Outstanding</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">KES {{ number_format($stats['outstanding'] ?? 0, 2) }}</dd>
                         <dd class="text-xs text-gray-500 mt-1">{{ $stats['outstandingCount'] ?? 0 }} invoice(s)</dd>
                     </dl>
                 </div>
@@ -139,15 +140,15 @@
 
         <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'overdue']) }}'">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-red-500 rounded-lg p-3">
+                <div class="flex-shrink-0 bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-3 shadow-lg shadow-red-500/30">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Overdue</dt>
-                        <dd class="text-lg font-semibold text-gray-900">{{ $stats['overdueCount'] ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Overdue</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $stats['overdueCount'] ?? 0 }}</dd>
                         <dd class="text-xs text-red-600 mt-1">KES {{ number_format($stats['overdue'] ?? 0, 2) }}</dd>
                     </dl>
                 </div>
@@ -156,15 +157,15 @@
 
         <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'paid']) }}'">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-green-500 rounded-lg p-3">
+                <div class="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-3 shadow-lg shadow-emerald-500/30">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Paid Invoices</dt>
-                        <dd class="text-lg font-semibold text-gray-900">{{ $stats['paidCount'] ?? 0 }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Paid Invoices</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ $stats['paidCount'] ?? 0 }}</dd>
                     </dl>
                 </div>
             </div>
@@ -176,15 +177,15 @@
         <!-- Total Expenses -->
         <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index') }}'">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-red-500 rounded-lg p-3">
+                <div class="flex-shrink-0 bg-gradient-to-br from-rose-500 to-rose-600 rounded-xl p-3 shadow-lg shadow-rose-500/30">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Total Expenses</dt>
-                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($expenseStats['total_expenses'] ?? 0, 2) }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Expenses</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">KES {{ number_format($expenseStats['total_expenses'] ?? 0, 2) }}</dd>
                         <dd class="text-xs text-gray-500 mt-1">{{ $expenseStats['expense_count'] ?? 0 }} expense(s)</dd>
                     </dl>
                 </div>
@@ -194,15 +195,15 @@
         <!-- This Month Expenses -->
         <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index', ['date_range' => 'month']) }}'">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-orange-500 rounded-lg p-3">
+                <div class="flex-shrink-0 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl p-3 shadow-lg shadow-orange-500/30">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">This Month Expenses</dt>
-                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($expenseStats['this_month_expenses'] ?? 0, 2) }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">This Month Expenses</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">KES {{ number_format($expenseStats['this_month_expenses'] ?? 0, 2) }}</dd>
                         <dd class="text-xs text-gray-500 mt-1">{{ $expenseStats['this_month_count'] ?? 0 }} expense(s)</dd>
                     </dl>
                 </div>
@@ -219,7 +220,7 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Net Cash Flow</dt>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Net Cash Flow</dt>
                         <dd class="text-lg font-semibold {{ ($cashFlow['net_cash_flow'] ?? 0) >= 0 ? 'text-green-600' : 'text-red-600' }}">
                             KES {{ number_format($cashFlow['net_cash_flow'] ?? 0, 2) }}
                         </dd>
@@ -236,15 +237,15 @@
         <!-- Tax Deductible Expenses -->
         <x-card padding="sm" class="hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index', ['tax_deductible' => '1']) }}'">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-purple-500 rounded-lg p-3">
+                <div class="flex-shrink-0 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-3 shadow-lg shadow-purple-500/30">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Tax Deductible</dt>
-                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($expenseStats['tax_deductible'] ?? 0, 2) }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Tax Deductible</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">KES {{ number_format($expenseStats['tax_deductible'] ?? 0, 2) }}</dd>
                         <dd class="text-xs text-gray-500 mt-1">Eligible for tax deduction</dd>
                     </dl>
                 </div>
@@ -264,8 +265,8 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Avg Invoice Value</dt>
-                        <dd class="text-lg font-semibold text-gray-900">KES {{ number_format($stats['averageInvoiceValue'] ?? 0, 2) }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg Invoice Value</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">KES {{ number_format($stats['averageInvoiceValue'] ?? 0, 2) }}</dd>
                     </dl>
                 </div>
             </div>
@@ -282,8 +283,8 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">Estimate Conversion</dt>
-                        <dd class="text-lg font-semibold text-gray-900">{{ number_format($additionalMetrics['invoiceConversionRate'] ?? 0, 1) }}%</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Estimate Conversion</dt>
+                        <dd class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{{ number_format($additionalMetrics['invoiceConversionRate'] ?? 0, 1) }}%</dd>
                         <dd class="text-xs text-gray-500 mt-1">{{ $additionalMetrics['convertedEstimates'] ?? 0 }} / {{ $additionalMetrics['totalEstimates'] ?? 0 }} converted</dd>
                         <dd class="mt-2">
                             <div class="w-full bg-gray-200 rounded-full h-2">
@@ -307,7 +308,7 @@
                 <div class="ml-5 w-0 flex-1">
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Payment Success Rate</dt>
-                        <dd class="text-lg font-semibold text-gray-900">{{ number_format($additionalMetrics['paymentSuccessRate'] ?? 0, 1) }}%</dd>
+                        <dd class="text-2xl font-bold text-gray-900 tracking-tight">{{ number_format($additionalMetrics['paymentSuccessRate'] ?? 0, 1) }}%</dd>
                         <dd class="text-xs text-gray-500 mt-1">{{ $additionalMetrics['paidOnTimeCount'] ?? 0 }} paid on time</dd>
                         <dd class="mt-2">
                             <div class="w-full bg-gray-200 rounded-full h-2">
@@ -325,7 +326,7 @@
         <!-- eTIMS Compliance Card -->
         <x-card>
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">eTIMS Compliance</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">eTIMS Compliance</h3>
                 <span class="px-3 py-1 text-xs font-medium rounded-full {{ ($complianceData['etimsComplianceRate'] ?? 0) >= 95 ? 'bg-green-100 text-green-800' : (($complianceData['etimsComplianceRate'] ?? 0) >= 80 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
                     {{ number_format($complianceData['etimsComplianceRate'] ?? 0, 1) }}%
                 </span>
@@ -425,20 +426,20 @@
     <x-card>
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h2 class="text-lg font-semibold text-gray-900">Invoice Status Overview</h2>
-                <p class="text-sm text-gray-500 mt-1">Distribution of invoices by status</p>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Invoice Status Overview</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Distribution of invoices by status</p>
             </div>
             <div class="flex gap-2 flex-wrap">
-                <a href="{{ route('user.invoices.index', ['status' => 'draft']) }}" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                <a href="{{ route('user.invoices.index', ['status' => 'draft']) }}" class="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 dark:bg-slate-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors">
                     Draft
                 </a>
-                <a href="{{ route('user.invoices.index', ['status' => 'sent']) }}" class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
+                <a href="{{ route('user.invoices.index', ['status' => 'sent']) }}" class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
                     Sent
                 </a>
-                <a href="{{ route('user.invoices.index', ['status' => 'paid']) }}" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors">
+                <a href="{{ route('user.invoices.index', ['status' => 'paid']) }}" class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
                     Paid
                 </a>
-                <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">
+                <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors">
                     Overdue
                 </a>
             </div>
@@ -452,13 +453,13 @@
             <div class="space-y-3">
                 @foreach($statusDistribution as $status)
                 @if($status['count'] > 0)
-                <a href="{{ route('user.invoices.index', ['status' => strtolower($status['name'])]) }}" class="block p-4 rounded-lg border-2 border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
+                <a href="{{ route('user.invoices.index', ['status' => strtolower($status['name'])]) }}" class="block p-4 rounded-lg border-2 border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 hover:shadow-md transition-all">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
                             <div class="w-4 h-4 rounded-full" style="background-color: {{ $status['bgColor'] }}"></div>
                             <div>
-                                <div class="text-sm font-semibold text-gray-900">{{ $status['name'] }}</div>
-                                <div class="text-xs text-gray-500">{{ $status['percentage'] }}% of total</div>
+                                <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $status['name'] }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ $status['percentage'] }}% of total</div>
                             </div>
                         </div>
                         <div class="text-right">
@@ -482,7 +483,7 @@
         <!-- Revenue Trends Chart -->
         @if(isset($insights['revenue_trends']) && count($insights['revenue_trends']) > 0)
         <x-card>
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Revenue Trends (Last 12 Months)</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Revenue Trends (Last 12 Months)</h2>
             <div style="position: relative; height: 300px; max-width: 100%;">
                 <canvas id="revenueChart"></canvas>
             </div>
@@ -492,7 +493,7 @@
         <!-- Invoice Aging Report -->
         @if(isset($insights['invoice_aging']))
         <x-card>
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Invoice Aging Report</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Invoice Aging Report</h2>
             <div class="space-y-4">
                 @foreach($insights['invoice_aging'] as $ageGroup => $data)
                 @if($data['count'] > 0)
@@ -515,7 +516,7 @@
         <!-- DSO Metrics -->
         @if(isset($insights['dso']))
         <x-card>
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Days Sales Outstanding (DSO)</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Days Sales Outstanding (DSO)</h2>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">30-Day DSO</span>
@@ -540,7 +541,7 @@
         <!-- Top Clients -->
         @if(isset($insights['top_clients']) && count($insights['top_clients']) > 0)
         <x-card>
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Top Clients by Revenue</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Clients by Revenue</h2>
             <div style="position: relative; height: 300px; max-width: 100%;">
                 <canvas id="topClientsChart"></canvas>
             </div>
@@ -554,7 +555,7 @@
         <!-- Payment Method Breakdown -->
         @if(isset($paymentMethodBreakdown) && count($paymentMethodBreakdown['breakdown'] ?? []) > 0)
         <x-card>
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Methods</h2>
             <div style="position: relative; height: 300px; max-width: 100%;">
                 <canvas id="paymentMethodChart"></canvas>
             </div>
@@ -564,7 +565,7 @@
         <!-- Cash Flow Forecast -->
         @if(isset($cashFlowForecast) && count($cashFlowForecast) > 0)
         <x-card>
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Cash Flow Forecast (Next 3 Months)</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cash Flow Forecast (Next 3 Months)</h2>
             <div style="position: relative; height: 300px; max-width: 100%;">
                 <canvas id="cashFlowForecastChart"></canvas>
             </div>
@@ -577,14 +578,14 @@
     <x-card>
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h2 class="text-lg font-semibold text-gray-900">All Companies Overview</h2>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">All Companies Overview</h2>
                 <p class="text-sm text-gray-600">Summary across all your companies</p>
             </div>
             <a href="{{ route('user.companies.index') }}" class="text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">Manage Companies</a>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-slate-700">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Revenue</th>
@@ -594,9 +595,9 @@
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach($multiCompanyOverview['companies'] as $company)
-                    <tr class="hover:bg-gray-50 {{ $company['isActive'] ? 'bg-blue-50' : '' }}">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 {{ $company['isActive'] ? 'bg-blue-50 dark:bg-blue-900/20' : '' }}">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="text-sm font-medium text-gray-900">{{ $company['name'] }}</div>
@@ -775,7 +776,7 @@
     @if(isset($inventoryAlerts) && (($inventoryAlerts['out_of_stock_count'] ?? 0) > 0 || ($inventoryAlerts['low_stock_count'] ?? 0) > 0))
     <x-card>
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-gray-900">Inventory Alerts</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Inventory Alerts</h2>
             <a href="{{ route('user.inventory.index') }}" class="text-sm text-[#2B6EF6] hover:text-[#2563EB] font-medium">View all inventory</a>
         </div>
 
@@ -831,7 +832,7 @@
     <x-card padding="none">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <div>
-                <h2 class="text-lg font-semibold text-gray-900">Recent Activity</h2>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
                 <p class="text-sm text-gray-600">Latest activity across invoices, payments, and estimates</p>
             </div>
             <div class="flex items-center gap-3">
@@ -909,8 +910,8 @@
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No recent activity</h3>
-            <p class="mt-1 text-sm text-gray-500">Activity will appear here as you use the system.</p>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No recent activity</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Activity will appear here as you use the system.</p>
             <div class="mt-6">
                 <a href="{{ route('user.invoices.create') }}">
                     <x-button variant="primary">Create Invoice</x-button>
@@ -925,6 +926,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     (function() {
+        // Set default chart colors for better visibility in both light and dark modes
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.scale.grid.color = 'rgba(148, 163, 184, 0.1)';
+
         // Store chart instances to prevent re-initialization
         let revenueChartInstance = null;
         let statusChartInstance = null;
@@ -1311,155 +1316,7 @@
 </script>
 
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Revenue Trends Chart
-        const revenueCtx = document.getElementById('revenueChart');
-        if (revenueCtx) {
-            const revenueData = @json($insights['revenue_trends'] ?? []);
-            new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: revenueData.map(d => d.month),
-                    datasets: [{
-                        label: 'Revenue',
-                        data: revenueData.map(d => d.revenue),
-                        borderColor: '#4F46E5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'KES ' + value.toLocaleString();
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
 
-        // Status Chart
-        const statusCtx = document.getElementById('statusChart');
-        if (statusCtx) {
-            const statusData = @json($statusDistribution ?? []);
-            new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: statusData.map(d => d.name),
-                    datasets: [{
-                        data: statusData.map(d => d.count),
-                        backgroundColor: statusData.map(d => d.color),
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            position: 'right'
-                        }
-                    }
-                }
-            });
-        }
-
-        // Top Clients Chart
-        const topClientsCtx = document.getElementById('topClientsChart');
-        if (topClientsCtx) {
-            const clientsData = @json($insights['top_clients'] ?? []);
-            new Chart(topClientsCtx, {
-                type: 'bar',
-                data: {
-                    labels: clientsData.map(d => d.client_name),
-                    datasets: [{
-                        label: 'Revenue',
-                        data: clientsData.map(d => d.revenue),
-                        backgroundColor: '#4F46E5',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        // Payment Method Chart
-        const paymentMethodCtx = document.getElementById('paymentMethodChart');
-        if (paymentMethodCtx) {
-            const paymentData = @json($paymentMethodBreakdown['breakdown'] ?? []);
-            new Chart(paymentMethodCtx, {
-                type: 'pie',
-                data: {
-                    labels: paymentData.map(d => d.method),
-                    datasets: [{
-                        data: paymentData.map(d => d.total_amount),
-                        backgroundColor: ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#6366F1'],
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-
-        // Cash Flow Forecast Chart
-        const cashFlowCtx = document.getElementById('cashFlowForecastChart');
-        if (cashFlowCtx) {
-            const flowData = @json($cashFlowForecast ?? []);
-            new Chart(cashFlowCtx, {
-                type: 'bar',
-                data: {
-                    labels: flowData.map(d => d.month),
-                    datasets: [{
-                            label: 'Inflow',
-                            data: flowData.map(d => d.projected_inflow),
-                            backgroundColor: '#10B981'
-                        },
-                        {
-                            label: 'Outflow',
-                            data: flowData.map(d => d.projected_outflow),
-                            backgroundColor: '#EF4444'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-    });
-</script>
 
 <script>
     // Dashboard Tour
@@ -1585,5 +1442,5 @@
 </script>
 @endpush
 <!-- Feedback Form Component -->
-<x-feedback-form />
+<x-feedback-form class="dark:text-gray-100" />
 @endsection
