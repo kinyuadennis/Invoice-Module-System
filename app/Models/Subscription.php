@@ -344,13 +344,13 @@ class Subscription extends Model
         ];
 
         // Check if transition is valid
+        // Per blueprint: canceled → any active state is FORBIDDEN (not in validFromStates)
         if (! in_array($this->status, $validFromStates)) {
-            throw new \Exception("Cannot transition to active from {$this->status}. Valid from: free, trial_active, trial_expired, past_due.");
-        }
-
-        // Per blueprint: canceled → any active state is FORBIDDEN
-        if ($this->status === SubscriptionConstants::SUBSCRIPTION_STATUS_CANCELED) {
-            throw new \Exception('Cannot reactivate canceled subscription. Require new subscription.');
+            $message = "Cannot transition to active from {$this->status}. Valid from: free, trial_active, trial_expired, past_due.";
+            if ($this->status === SubscriptionConstants::SUBSCRIPTION_STATUS_CANCELED) {
+                $message = 'Cannot reactivate canceled subscription. Require new subscription.';
+            }
+            throw new \Exception($message);
         }
 
         // Enforce invariant: Must have at least one succeeded payment

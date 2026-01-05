@@ -205,8 +205,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/invoices/{invoice}/etims/generate-qr', [\App\Http\Controllers\User\EtimsController::class, 'generateQrCode'])->name('invoices.etims.generate-qr');
         Route::post('/invoices/{invoice}/etims/submit', [\App\Http\Controllers\User\EtimsController::class, 'submit'])->name('invoices.etims.submit');
 
+        Route::get('/clients/create', [\App\Http\Controllers\User\ClientController::class, 'create'])->name('clients.create');
         Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
         Route::get('/clients/search', [\App\Http\Controllers\User\ClientController::class, 'search'])->name('clients.search');
+        Route::get('/payments/create', [\App\Http\Controllers\User\PaymentController::class, 'create'])->name('payments.create');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
 
@@ -265,6 +267,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/data-export/clients/excel', [\App\Http\Controllers\User\DataImportExportController::class, 'exportClientsExcel'])->name('data-export.clients.excel');
         Route::get('/data-export/invoices/csv', [\App\Http\Controllers\User\DataImportExportController::class, 'exportInvoices'])->name('data-export.invoices.csv');
         Route::get('/data-export/invoices/excel', [\App\Http\Controllers\User\DataImportExportController::class, 'exportInvoicesExcel'])->name('data-export.invoices.excel');
+        Route::get('/data-export/invoices/excel', [\App\Http\Controllers\User\DataImportExportController::class, 'exportInvoicesExcel'])->name('data-export.invoices.excel');
+
+        // Global Search
+        Route::get('/search', [\App\Http\Controllers\User\SearchController::class, 'index'])->name('search.index');
     });
 
     // Admin area (prefix: /admin)
@@ -276,7 +282,7 @@ Route::middleware('auth')->group(function () {
                 return redirect()->route('login')->with('error', 'Please log in to access the admin area.');
             }
             if ($user->role !== 'admin') {
-                abort(403, 'Unauthorized. Your role is: '.($user->role ?? 'not set').'. Required role: admin');
+                abort(403, 'Unauthorized. Your role is: ' . ($user->role ?? 'not set') . '. Required role: admin');
             }
 
             return redirect()->route('admin.dashboard');

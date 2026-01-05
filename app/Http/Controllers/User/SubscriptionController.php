@@ -249,13 +249,14 @@ class SubscriptionController extends Controller
                     ->first();
                 $attemptNumber = $lastAttempt ? $lastAttempt->attempt_number + 1 : 1;
 
+                // Per blueprint: Payment attempts start as INITIATED, then transition to PENDING when gateway accepts
                 $paymentAttempt = PaymentAttempt::create([
                     'subscription_id' => $subscription->id,
                     'amount' => $plan->price,
                     'currency' => $subscription->company?->currency ?? 'KES',
                     'gateway' => PaymentConstants::GATEWAY_STRIPE,
                     'attempt_number' => $attemptNumber,
-                    'status' => PaymentAttempt::STATUS_PENDING, // Waiting for webhook confirmation
+                    'status' => PaymentAttempt::STATUS_INITIATED, // Start as initiated, webhook will transition to pending/succeeded
                     'gateway_transaction_id' => $cashierSubscription->stripe_id,
                     'idempotency_key' => $idempotencyKey,
                     'initiated_at' => now(),
