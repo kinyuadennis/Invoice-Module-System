@@ -94,7 +94,7 @@ class AuthController extends Controller
                         'company_id' => $company->id,
                         'subscription_plan_id' => $freePlan->id,
                         'plan_code' => $freePlan->slug,
-                        'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_PENDING,
+                        'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_FREE,
                         'gateway' => PaymentConstants::GATEWAY_STRIPE, // Gateway field is immutable, set it now
                         'starts_at' => now(),
                         'ends_at' => null, // Free plan doesn't expire

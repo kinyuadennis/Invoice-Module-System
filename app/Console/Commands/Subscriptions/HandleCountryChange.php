@@ -4,6 +4,7 @@ namespace App\Console\Commands\Subscriptions;
 
 use App\Config\GatewayConstants;
 use App\Config\PaymentConstants;
+use App\Config\SubscriptionConstants;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\SubscriptionService;
@@ -43,7 +44,16 @@ class HandleCountryChange extends Command
         $this->info('Checking for users with country changes requiring gateway migration...');
 
         // Find active subscriptions where user country doesn't match gateway
-        $mismatchedSubscriptions = Subscription::whereIn('status', ['PENDING', 'ACTIVE', 'GRACE'])
+        // Include both new blueprint statuses and legacy statuses for backward compatibility
+        $mismatchedSubscriptions = Subscription::whereIn('status', [
+            SubscriptionConstants::SUBSCRIPTION_STATUS_FREE,
+            SubscriptionConstants::SUBSCRIPTION_STATUS_ACTIVE,
+            SubscriptionConstants::SUBSCRIPTION_STATUS_PAST_DUE,
+            // Legacy statuses for backward compatibility
+            'PENDING',
+            'ACTIVE',
+            'GRACE',
+        ])
             ->with(['user', 'plan'])
             ->get()
             ->filter(function ($subscription) {
@@ -93,12 +103,13 @@ class HandleCountryChange extends Command
                 // Create new subscription with correct gateway
                 // Note: This assumes the user wants to continue subscription
                 // In production, you might want to prompt user or send notification
+                // Per blueprint: New subscriptions start as 'free' status
                 $newSubscription = Subscription::create([
                     'user_id' => $user->id,
                     'company_id' => $subscription->company_id,
                     'subscription_plan_id' => $subscription->subscription_plan_id,
                     'plan_code' => $subscription->plan_code,
-                    'status' => 'PENDING',
+                    'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_FREE,
                     'gateway' => $newGateway,
                     'auto_renew' => $subscription->auto_renew,
                     'starts_at' => now(),

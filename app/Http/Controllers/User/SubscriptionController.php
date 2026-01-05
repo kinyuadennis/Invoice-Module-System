@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
+use App\Models\User;
 use App\Payments\Events\PaymentConfirmed;
 use App\Services\CurrentCompanyService;
 use App\Services\SubscriptionService;
@@ -71,12 +72,14 @@ class SubscriptionController extends Controller
                 ? PaymentConstants::GATEWAY_STRIPE
                 : $gateway;
 
+            // Per blueprint: New subscriptions start as 'free' status
+            // They transition to 'active' when payment is confirmed
             $subscription = $this->subscriptionRepository->create([
                 'user_id' => $user->id,
                 'company_id' => $companyId,
                 'subscription_plan_id' => $plan->id,
                 'plan_code' => $plan->slug ?? $plan->name,
-                'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_PENDING,
+                'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_FREE,
                 'gateway' => $subscriptionGateway, // Consistent gateway value for free plans
                 'starts_at' => now(),
                 'auto_renew' => true,
@@ -290,9 +293,9 @@ class SubscriptionController extends Controller
     /**
      * Display a listing of user's subscriptions.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $user = auth()->user();
+        $user = $request->user();
         $companyId = CurrentCompanyService::requireId();
 
         $subscriptions = Subscription::where('user_id', $user->id)
@@ -411,6 +414,14 @@ class SubscriptionController extends Controller
         $user = $request->user();
         $companyId = CurrentCompanyService::requireId();
 
+        // Resolve paymentOrAttempt if it's an integer ID (fallback if route binding fails)
+        if (is_numeric($paymentOrAttempt) && ! ($paymentOrAttempt instanceof Payment) && ! ($paymentOrAttempt instanceof PaymentAttempt)) {
+            $paymentOrAttempt = Payment::find($paymentOrAttempt) ?? PaymentAttempt::find($paymentOrAttempt);
+            if (! $paymentOrAttempt) {
+                abort(404, 'Payment or payment attempt not found');
+            }
+        }
+
         // Determine if we have a Payment or PaymentAttempt
         $payment = null;
         $paymentAttempt = null;
@@ -502,6 +513,14 @@ class SubscriptionController extends Controller
     {
         $user = $request->user();
         $companyId = CurrentCompanyService::requireId();
+
+        // Resolve paymentOrAttempt if it's an integer ID (fallback if route binding fails)
+        if (is_numeric($paymentOrAttempt) && ! ($paymentOrAttempt instanceof Payment) && ! ($paymentOrAttempt instanceof PaymentAttempt)) {
+            $paymentOrAttempt = Payment::find($paymentOrAttempt) ?? PaymentAttempt::find($paymentOrAttempt);
+            if (! $paymentOrAttempt) {
+                return response()->json(['error' => 'Payment or payment attempt not found'], 404);
+            }
+        }
 
         $paymentAttempt = null;
         $payment = null;
