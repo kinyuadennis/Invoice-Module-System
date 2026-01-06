@@ -4,7 +4,16 @@ A modern, comprehensive invoice management platform built with **Laravel 12** an
 
 ---
 
+
+## 📚 Documentation
+- [Architecture Overview](docs/architecture.md)
+- [Component Documentation](docs/components.md)
+- [API Reference](docs/api.md)
+- [UI Guidelines](docs/ui-guidelines.md)
+- [Changelog](docs/changelog.md)
+
 ## 🚀 Key Features
+
 
 ### **Dual Invoice Creation Interfaces**
 - **6-Step Invoice Wizard** — Guided step-by-step invoice creation for structured workflows

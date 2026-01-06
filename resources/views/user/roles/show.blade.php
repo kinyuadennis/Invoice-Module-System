@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">{{ $role['name'] }}</h1>
-            <p class="mt-1 text-sm text-gray-600">View role details and manage users</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View role details and manage users</p>
         </div>
         <div class="flex items-center space-x-3">
             @if(!($role['is_system'] ?? false))
@@ -89,7 +89,7 @@
                                 <h4 class="font-medium text-gray-900 mb-2 capitalize">{{ str_replace('-', ' ', $category) }}</h4>
                                 <ul class="space-y-1">
                                     @foreach($categoryPermissions as $permission)
-                                        <li class="text-sm text-gray-600 flex items-center">
+                                        <li class="text-sm text-gray-600 dark:text-gray-300 flex items-center">
                                             <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                             </svg>
@@ -126,7 +126,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             {{ $user['name'] }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                             {{ $user['email'] }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

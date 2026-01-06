@@ -16,7 +16,7 @@
             <!-- Header -->
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold text-gray-900">Configure Invoice Number Preferences</h3>
-                <button @click="open = false" class="text-gray-400 hover:text-gray-600">
+                <button @click="open = false" class="text-gray-400 hover:text-gray-600 dark:text-gray-300">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -25,7 +25,7 @@
 
             <!-- Info Section -->
             <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p class="text-sm text-gray-700 mb-3">
+                <p class="text-sm text-gray-700 dark:text-gray-200 mb-3">
                     Configure multiple transaction number series to auto-generate transaction numbers with unique prefixes according to your business needs.
                 </p>
                 <button 
@@ -39,7 +39,7 @@
             <!-- Main Content -->
             <div class="space-y-6">
                 <div class="p-4 bg-gray-50 rounded-lg">
-                    <p class="text-sm text-gray-700 mb-4">
+                    <p class="text-sm text-gray-700 dark:text-gray-200 mb-4">
                         Your invoice numbers are set on auto-generate mode to save your time. Are you sure about changing this setting?
                     </p>
 
@@ -60,7 +60,7 @@
                                 <!-- Prefix Configuration -->
                                 <div class="mt-3 space-y-3">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Prefix</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Prefix</label>
                                         <div class="flex gap-2">
                                             <input 
                                                 type="text"
@@ -126,7 +126,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Next Number</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Next Number</label>
                                         <div class="flex gap-2">
                                             <input 
                                                 type="text"
@@ -189,7 +189,7 @@
             <div class="mt-6 flex gap-3 justify-end">
                 <button 
                     @click="open = false"
-                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                     Cancel
                 </button>

@@ -21,7 +21,7 @@
         @else
             <div class="flex items-baseline">
                 <span class="text-4xl font-black text-gray-900">KSh {{ number_format($monthlyEquivalent, 0) }}</span>
-                <span class="text-gray-600 ml-2">/month</span>
+                <span class="text-gray-600 dark:text-gray-300 ml-2">/month</span>
             </div>
             @if($billing === 'yearly')
                 <p class="text-sm text-gray-500 mt-1">
@@ -34,7 +34,7 @@
 
     <!-- Social Proof -->
     @if(isset($plan['social_proof']))
-        <div class="mb-6 text-sm text-gray-600">
+        <div class="mb-6 text-sm text-gray-600 dark:text-gray-300">
             <span class="font-semibold text-emerald-600">{{ $plan['social_proof'] }}</span> use this plan
         </div>
     @endif
@@ -46,7 +46,7 @@
                 <svg class="w-5 h-5 text-emerald-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
-                <span class="text-sm text-gray-700">{{ $feature }}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-200">{{ $feature }}</span>
             </li>
         @endforeach
     </ul>

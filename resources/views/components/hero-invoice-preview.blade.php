@@ -16,7 +16,7 @@
                     <span x-show="currentStep > 1">✓</span>
                     <span x-show="currentStep <= 1">1</span>
                 </div>
-                <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">Client</span>
+                <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:block">Client</span>
             </div>
             <div class="w-12 h-0.5 bg-gray-200">
                 <div 
@@ -35,7 +35,7 @@
                     <span x-show="currentStep > 2">✓</span>
                     <span x-show="currentStep <= 2">2</span>
                 </div>
-                <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">Items</span>
+                <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:block">Items</span>
             </div>
             <div class="w-12 h-0.5 bg-gray-200">
                 <div 
@@ -53,7 +53,7 @@
                 >
                     3
                 </div>
-                <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">Preview</span>
+                <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:block">Preview</span>
             </div>
         </div>
     </div>
@@ -81,7 +81,7 @@
                     @endforeach
                     <option value="new">+ Add New Client</option>
                 </select>
-                <p class="mt-3 text-sm text-gray-600">
+                <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
                     <span x-show="selectedClient">Selected: <strong x-text="getClientName(selectedClient)"></strong></span>
                     <span x-show="!selectedClient">Select a client to continue</span>
                 </p>
@@ -140,7 +140,7 @@
                     <button 
                         @click="currentStep = 1"
                         type="button"
-                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                         Back
                     </button>
@@ -164,14 +164,14 @@
                 class="backdrop-blur-md bg-white/80 rounded-3xl p-6 shadow-2xl border border-white/20"
             >
                 <h3 class="text-xl font-bold text-gray-900 mb-4">Ready to Create?</h3>
-                <p class="text-gray-600 mb-6">
+                <p class="text-gray-600 dark:text-gray-300 mb-6">
                     Review your invoice preview on the right. Click below to create your free account and generate this invoice.
                 </p>
                 <div class="flex gap-3">
                     <button 
                         @click="currentStep = 2"
                         type="button"
-                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                         Edit Items
                     </button>
@@ -217,16 +217,16 @@
                 <!-- Totals -->
                 <div class="space-y-2 pt-6 border-t border-gray-200" x-show="totals.subtotal > 0">
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Subtotal</span>
+                        <span class="text-gray-600 dark:text-gray-300">Subtotal</span>
                         <span class="text-gray-900 font-medium" x-text="formatCurrency(totals.subtotal)"></span>
                     </div>
                     <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">VAT (16%)</span>
+                        <span class="text-gray-600 dark:text-gray-300">VAT (16%)</span>
                         <span class="text-gray-900 font-medium" x-text="formatCurrency(totals.tax)"></span>
                     </div>
                     <div class="flex justify-between text-sm items-center">
                         <div class="flex items-center gap-2">
-                            <span class="text-gray-600">Platform Fee (3%)</span>
+                            <span class="text-gray-600 dark:text-gray-300">Platform Fee (3%)</span>
                             <span 
                                 class="text-xs text-indigo-600 cursor-help"
                                 title="Platform fee supports service maintenance"

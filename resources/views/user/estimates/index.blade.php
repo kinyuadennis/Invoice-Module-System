@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Estimates</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage and track all your estimates and quotes</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage and track all your estimates and quotes</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('user.estimates.create') }}">
@@ -112,10 +112,10 @@
                             @endphp
                             <x-badge :variant="$statusVariant">{{ ucfirst($estimate['status'] ?? 'draft') }}</x-badge>
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $estimate['issue_date'] ? \Carbon\Carbon::parse($estimate['issue_date'])->format('M d, Y') : 'N/A' }}
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $estimate['expiry_date'] ? \Carbon\Carbon::parse($estimate['expiry_date'])->format('M d, Y') : 'N/A' }}
                         </td>
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900">
@@ -125,7 +125,7 @@
                             <div class="flex items-center justify-end space-x-2">
                                 <a href="{{ route('user.estimates.show', $estimate['id']) }}" class="text-indigo-600 hover:text-indigo-900" title="View">View</a>
                                 @if(($estimate['status'] ?? 'draft') === 'draft')
-                                    <a href="{{ route('user.estimates.edit', $estimate['id']) }}" class="text-gray-600 hover:text-gray-900" title="Edit">Edit</a>
+                                    <a href="{{ route('user.estimates.edit', $estimate['id']) }}" class="text-gray-600 dark:text-gray-300 hover:text-gray-900" title="Edit">Edit</a>
                                 @endif
                                 @if(($estimate['status'] ?? 'draft') === 'draft')
                                     <form method="POST" action="{{ route('user.estimates.destroy', $estimate['id']) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this estimate?');">

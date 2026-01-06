@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Inventory</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage your inventory and track stock levels</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage your inventory and track stock levels</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('user.inventory.create') }}">
@@ -28,7 +28,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Total Items</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Total Items</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $stats['total_items'] ?? 0 }}</p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-lg">
@@ -41,7 +41,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Low Stock</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Low Stock</p>
                         <p class="text-2xl font-bold text-red-600">{{ $stats['low_stock_count'] ?? 0 }}</p>
                     </div>
                     <div class="p-3 bg-red-100 rounded-lg">
@@ -54,11 +54,11 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Out of Stock</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Out of Stock</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $stats['out_of_stock_count'] ?? 0 }}</p>
                     </div>
                     <div class="p-3 bg-gray-100 rounded-lg">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </div>
@@ -67,7 +67,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Stock Value</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Stock Value</p>
                         <p class="text-2xl font-bold text-gray-900">KES {{ number_format($stats['total_stock_value'] ?? 0, 2) }}</p>
                     </div>
                     <div class="p-3 bg-green-100 rounded-lg">
@@ -169,10 +169,10 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $item['sku'] ?? '-' }}
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $item['category'] ?? '-' }}
                         </td>
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium">
@@ -184,7 +184,7 @@
                                 <span class="text-gray-400">Not tracked</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                             KES {{ number_format($item['cost_price'], 2) }}
                         </td>
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900">
@@ -193,7 +193,7 @@
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
                                 <a href="{{ route('user.inventory.show', $item['id']) }}" class="text-indigo-600 hover:text-indigo-900" title="View">View</a>
-                                <a href="{{ route('user.inventory.edit', $item['id']) }}" class="text-gray-600 hover:text-gray-900" title="Edit">Edit</a>
+                                <a href="{{ route('user.inventory.edit', $item['id']) }}" class="text-gray-600 dark:text-gray-300 hover:text-gray-900" title="Edit">Edit</a>
                             </div>
                         </td>
                     </tr>

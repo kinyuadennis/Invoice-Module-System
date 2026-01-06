@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Audit Logs</h1>
-            <p class="mt-1 text-sm text-gray-600">System activity and compliance tracking</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">System activity and compliance tracking</p>
         </div>
     </div>
 
@@ -16,8 +16,8 @@
     <x-card>
         <form method="GET" action="{{ route('admin.audit-logs.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-                <label for="action" class="block text-sm font-medium text-gray-700 mb-1">Action</label>
-                <select name="action" id="action" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <label for="action" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Action</label>
+                <select name="action" id="action" class="w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="">All Actions</option>
                     @foreach($actions as $action)
                         <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ ucfirst($action) }}</option>
@@ -26,8 +26,8 @@
             </div>
 
             <div>
-                <label for="model_type" class="block text-sm font-medium text-gray-700 mb-1">Model Type</label>
-                <select name="model_type" id="model_type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <label for="model_type" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Model Type</label>
+                <select name="model_type" id="model_type" class="w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="">All Types</option>
                     @foreach($modelTypes as $type)
                         <option value="{{ $type }}" {{ request('model_type') === $type ? 'selected' : '' }}>{{ class_basename($type) }}</option>
@@ -36,8 +36,8 @@
             </div>
 
             <div>
-                <label for="user_id" class="block text-sm font-medium text-gray-700 mb-1">User</label>
-                <select name="user_id" id="user_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <label for="user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">User</label>
+                <select name="user_id" id="user_id" class="w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="">All Users</option>
                     @foreach($users as $user)
                         <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -46,20 +46,20 @@
             </div>
 
             <div>
-                <label for="date_from" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <label for="date_from" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">From Date</label>
+                <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}" class="w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
 
             <div>
-                <label for="date_to" class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                <input type="date" name="date_to" id="date_to" value="{{ request('date_to') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <label for="date_to" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">To Date</label>
+                <input type="date" name="date_to" id="date_to" value="{{ request('date_to') }}" class="w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
 
             <div class="md:col-span-5 flex gap-2">
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     Filter
                 </button>
-                <a href="{{ route('admin.audit-logs.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                <a href="{{ route('admin.audit-logs.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
                     Clear
                 </a>
             </div>
@@ -97,7 +97,7 @@
                                 default => 'default'
                             }">{{ ucfirst($log->action) }}</x-badge>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ class_basename($log->model_type) }}
                             @if($log->model_id)
                                 <span class="text-gray-400">#{{ $log->model_id }}</span>
@@ -119,7 +119,7 @@
             </x-table>
 
             <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-gray-200">
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-[#333333]">
                 {{ $auditLogs->links() }}
             </div>
         @else

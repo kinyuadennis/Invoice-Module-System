@@ -1,4 +1,4 @@
-<div class="py-12 bg-white" id="invoicing-in-action">
+<div class="py-12 bg-white dark:bg-[#242424]" id="invoicing-in-action">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-base text-blue-600 font-semibold tracking-wide uppercase">Invoicing in Action</h2>
@@ -22,10 +22,10 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">KRA eTIMS Compliant</h3>
-                        <p class="text-gray-600">
+                        <p class="text-gray-600 dark:text-gray-300">
                             Generate tax-compliant invoices instantly. Automatic VAT calculations, eTIMS QR codes, and KRA-approved formats built in.
                         </p>
-                        <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                        <ul class="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -53,10 +53,10 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">M-PESA Payments</h3>
-                        <p class="text-gray-600">
+                        <p class="text-gray-600 dark:text-gray-300">
                             Accept payments instantly via Safaricom M-PESA. Send STK push requests and get real-time payment confirmations.
                         </p>
-                        <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                        <ul class="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -84,10 +84,10 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">Business Insights</h3>
-                        <p class="text-gray-600">
+                        <p class="text-gray-600 dark:text-gray-300">
                             Track your business performance with visual dashboards. Monitor revenue, invoice status, and payment trends.
                         </p>
-                        <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                        <ul class="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -115,10 +115,10 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">Automated Reminders</h3>
-                        <p class="text-gray-600">
+                        <p class="text-gray-600 dark:text-gray-300">
                             Never chase payments again. Automatic reminders sent via WhatsApp or email when invoices are due.
                         </p>
-                        <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                        <ul class="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -173,7 +173,7 @@
                             }
                         }
                     }"
-                    class="relative bg-gradient-to-br from-blue-50 to-gray-50 rounded-xl shadow-2xl p-6 border border-gray-200">
+                    class="relative bg-gradient-to-br from-blue-50 to-gray-50 rounded-xl shadow-2xl p-6 border border-gray-200 dark:border-[#333333]">
                     <div class="mb-4 flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <div class="h-3 w-3 rounded-full bg-red-500"></div>
@@ -183,7 +183,7 @@
                         <div class="text-xs text-gray-500 font-medium">Live Demo</div>
                     </div>
 
-                    <div class="relative rounded-lg overflow-hidden shadow-xl bg-white" style="aspect-ratio: 16/10;">
+                    <div class="relative rounded-lg overflow-hidden shadow-xl bg-white dark:bg-[#242424]" style="aspect-ratio: 16/10;">
                         <template x-for="(slide, index) in slides" :key="index">
                             <div
                                 x-show="currentSlide === index"

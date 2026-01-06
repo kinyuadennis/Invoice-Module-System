@@ -6,7 +6,7 @@
 <div class="max-w-4xl">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Edit Company</h1>
-        <p class="mt-1 text-sm text-gray-600">Update company information</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update company information</p>
     </div>
 
     <form method="POST" action="{{ route('admin.companies.update', $company->id) }}" enctype="multipart/form-data">
@@ -58,14 +58,14 @@
                         </div>
 
                         <div>
-                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Company Address
                             </label>
                             <textarea
                                 id="address"
                                 name="address"
                                 rows="3"
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="w-full rounded-lg border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >{{ old('address', $company->address) }}</textarea>
                             @error('address')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -114,13 +114,13 @@
                             <img
                                 src="{{ Storage::url($company->logo) }}"
                                 alt="{{ $company->name }} Logo"
-                                class="w-32 h-32 object-contain rounded-lg border border-gray-200"
+                                class="w-32 h-32 object-contain rounded-lg border border-gray-200 dark:border-[#333333]"
                             />
                         </div>
                     @endif
 
                     <div>
-                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="logo" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                             Upload New Logo
                         </label>
                         <input

@@ -8,14 +8,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Features Built for Kenyan Businesses</h2>
-            <p class="mt-4 text-lg text-gray-600">Everything you need to get paid faster and stay compliant</p>
+            <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">Everything you need to get paid faster and stay compliant</p>
         </div>
 
         <!-- Category Tabs -->
         <div class="flex flex-wrap justify-center gap-4 mb-12" x-data="{ activeTab: 'all' }">
             <button 
                 @click="activeTab = 'all'"
-                :class="activeTab === 'all' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                :class="activeTab === 'all' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-200 hover:bg-gray-200'"
                 class="px-6 py-2 rounded-lg font-semibold transition-colors"
             >
                 All Features
@@ -23,7 +23,7 @@
             @foreach($categories as $category)
                 <button 
                     @click="activeTab = '{{ $category }}'"
-                    :class="activeTab === '{{ $category }}' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                    :class="activeTab === '{{ $category }}' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-200 hover:bg-gray-200'"
                     class="px-6 py-2 rounded-lg font-semibold transition-colors capitalize"
                 >
                     {{ ucfirst($category) }}
@@ -54,23 +54,23 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             <tr>
-                                <td class="py-3 px-4 text-gray-700">Invoice Creation Time</td>
-                                <td class="py-3 px-4 text-center text-gray-600">30 minutes</td>
+                                <td class="py-3 px-4 text-gray-700 dark:text-gray-200">Invoice Creation Time</td>
+                                <td class="py-3 px-4 text-center text-gray-600 dark:text-gray-300">30 minutes</td>
                                 <td class="py-3 px-4 text-center text-emerald-600 font-semibold">60 seconds</td>
                             </tr>
                             <tr>
-                                <td class="py-3 px-4 text-gray-700">Payment Tracking</td>
-                                <td class="py-3 px-4 text-center text-gray-600">Manual spreadsheets</td>
+                                <td class="py-3 px-4 text-gray-700 dark:text-gray-200">Payment Tracking</td>
+                                <td class="py-3 px-4 text-center text-gray-600 dark:text-gray-300">Manual spreadsheets</td>
                                 <td class="py-3 px-4 text-center text-emerald-600 font-semibold">Automated</td>
                             </tr>
                             <tr>
-                                <td class="py-3 px-4 text-gray-700">KRA Compliance</td>
-                                <td class="py-3 px-4 text-center text-gray-600">Manual entry</td>
+                                <td class="py-3 px-4 text-gray-700 dark:text-gray-200">KRA Compliance</td>
+                                <td class="py-3 px-4 text-center text-gray-600 dark:text-gray-300">Manual entry</td>
                                 <td class="py-3 px-4 text-center text-emerald-600 font-semibold">Auto-generated</td>
                             </tr>
                             <tr>
-                                <td class="py-3 px-4 text-gray-700">Payment Reminders</td>
-                                <td class="py-3 px-4 text-center text-gray-600">Manual calls/emails</td>
+                                <td class="py-3 px-4 text-gray-700 dark:text-gray-200">Payment Reminders</td>
+                                <td class="py-3 px-4 text-center text-gray-600 dark:text-gray-300">Manual calls/emails</td>
                                 <td class="py-3 px-4 text-center text-emerald-600 font-semibold">Automated</td>
                             </tr>
                         </tbody>

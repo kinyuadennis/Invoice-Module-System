@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Services\AdminDashboardService;
 use App\Models\Company;
 use App\Models\Invoice;
-use App\Models\PlatformFee;
 
 class DashboardController extends Controller
 {
@@ -66,7 +65,6 @@ class DashboardController extends Controller
             'topCompanies' => $topCompanies,
             'recentCompanies' => $recentCompanies,
             'recentInvoices' => $recentInvoices,
-            'platformFeesCollected' => PlatformFee::where('fee_status', 'paid')->sum('fee_amount'),
         ]);
     }
 }

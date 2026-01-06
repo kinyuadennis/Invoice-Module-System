@@ -7,9 +7,9 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Subscription Details</h1>
-            <p class="mt-1 text-sm text-gray-600">Detailed subscription information</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Detailed subscription information</p>
         </div>
-        <a href="{{ route('admin.billing.subscriptions') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+        <a href="{{ route('admin.billing.subscriptions') }}" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300">
             Back to Subscriptions
         </a>
     </div>
@@ -78,7 +78,7 @@
     <!-- Billing History -->
     @if($subscription->billingHistory->count() > 0)
     <x-card padding="none">
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-[#333333]">
             <h2 class="text-lg font-semibold text-gray-900">Billing History</h2>
         </div>
         <x-table>
@@ -106,7 +106,7 @@
                             default => 'default'
                         }">{{ ucfirst($billing->status) }}</x-badge>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                         {{ $billing->transaction_id ?? 'N/A' }}
                     </td>
                 </tr>

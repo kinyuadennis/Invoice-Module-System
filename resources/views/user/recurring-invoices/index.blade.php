@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Recurring Invoices</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage automated recurring invoice templates</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage automated recurring invoice templates</p>
         </div>
         <a href="{{ route('user.recurring-invoices.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
             Create Recurring Invoice
@@ -26,7 +26,7 @@
                 <option value="completed" {{ ($filters['status'] ?? '') === 'completed' ? 'selected' : '' }}>Completed</option>
             </select>
             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Filter</button>
-            <a href="{{ route('user.recurring-invoices.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Clear</a>
+            <a href="{{ route('user.recurring-invoices.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300">Clear</a>
         </form>
     </x-card>
     @endif
@@ -52,7 +52,7 @@
                                     default => 'default'
                                 }">{{ ucfirst($recurring->status) }}</x-badge>
                             </div>
-                            <p class="mt-1 text-sm text-gray-600">{{ $recurring->description }}</p>
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ $recurring->description }}</p>
                             <div class="mt-2 flex flex-wrap gap-4 text-sm text-gray-500">
                                 <span>Client: {{ $recurring->client->name }}</span>
                                 <span>Frequency: Every {{ $recurring->interval }} {{ str($recurring->frequency)->plural() }}</span>

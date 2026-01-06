@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Invoice {{ $invoice['invoice_number'] ?? 'N/A' }}</h1>
-        <p class="mt-1 text-sm text-gray-600">View invoice details</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View invoice details</p>
     </div>
 
     <x-card>

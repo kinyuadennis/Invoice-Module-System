@@ -61,7 +61,9 @@ return [
         'shortcode' => env('MPESA_SHORTCODE'),
         'passkey' => env('MPESA_PASSKEY'),
         'environment' => env('MPESA_ENVIRONMENT', 'sandbox'), // 'sandbox' or 'production'
-        'callback_url' => env('MPESA_CALLBACK_URL', env('APP_URL').'/webhooks/mpesa/callback'),
+        // Default to subscription callback route. For invoice payments, use /webhooks/mpesa/callback
+        // In production, set MPESA_CALLBACK_URL in .env with your ngrok/public URL
+        'callback_url' => env('MPESA_CALLBACK_URL', env('APP_URL').'/webhooks/subscriptions/mpesa/callback'),
     ],
 
     'etims' => [

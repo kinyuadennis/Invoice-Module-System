@@ -7,13 +7,13 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Revenue Report</h1>
-            <p class="mt-1 text-sm text-gray-600">Track revenue trends and performance</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Track revenue trends and performance</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('user.reports.export.revenue-csv', $filters) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+            <a href="{{ route('user.reports.export.revenue-csv', $filters) }}" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300">
                 Export CSV
             </a>
-            <a href="{{ route('user.reports.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+            <a href="{{ route('user.reports.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300">
                 Back to Reports
             </a>
         </div>
@@ -23,11 +23,11 @@
     <x-card>
         <form method="GET" action="{{ route('user.reports.revenue') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Start Date</label>
                 <input type="date" name="start_date" id="start_date" value="{{ $filters['start_date'] ?? '' }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div>
-                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">End Date</label>
                 <input type="date" name="end_date" id="end_date" value="{{ $filters['end_date'] ?? '' }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div class="flex items-end">
@@ -78,7 +78,7 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $client->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ number_format($client->total_revenue, 2) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $client->invoice_count }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $client->invoice_count }}</td>
                         </tr>
                     @endforeach
                 </tbody>

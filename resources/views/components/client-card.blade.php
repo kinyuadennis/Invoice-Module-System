@@ -16,7 +16,7 @@
         </div>
         <div class="flex-1 min-w-0">
             <h3 class="text-base font-semibold text-gray-900 truncate">{{ $client['name'] }}</h3>
-            <p class="text-sm text-gray-600 truncate">{{ $client['email'] }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 truncate">{{ $client['email'] }}</p>
         </div>
     </div>
 </div>

@@ -17,16 +17,16 @@
             <x-input type="text" name="title" label="Review Title" value="{{ old('title', $review->title) }}" required />
             
             <div>
-                <label for="content" class="block text-sm font-medium text-gray-700 mb-1">Review Content <span class="text-red-500">*</span></label>
-                <textarea name="content" id="content" rows="4" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>{{ old('content', $review->content) }}</textarea>
+                <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Review Content <span class="text-red-500">*</span></label>
+                <textarea name="content" id="content" rows="4" class="block w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>{{ old('content', $review->content) }}</textarea>
                 @error('content')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label for="rating" class="block text-sm font-medium text-gray-700 mb-1">Rating <span class="text-red-500">*</span></label>
-                <select name="rating" id="rating" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                <label for="rating" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Rating <span class="text-red-500">*</span></label>
+                <select name="rating" id="rating" class="block w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                     <option value="">Select Rating</option>
                     @for($i = 5; $i >= 1; $i--)
                         <option value="{{ $i }}" {{ old('rating', $review->rating) == $i ? 'selected' : '' }}>{{ $i }} Star{{ $i > 1 ? 's' : '' }}</option>
@@ -38,7 +38,7 @@
             </div>
 
             <div class="flex items-center">
-                <input type="checkbox" name="approved" id="approved" value="1" {{ old('approved', $review->approved) ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                <input type="checkbox" name="approved" id="approved" value="1" {{ old('approved', $review->approved) ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-[#404040] rounded">
                 <label for="approved" class="ml-2 block text-sm text-gray-900">Approved</label>
             </div>
 

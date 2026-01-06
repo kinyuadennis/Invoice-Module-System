@@ -6,7 +6,7 @@
 <div class="bg-white rounded-xl shadow-lg p-8 md:p-12">
     <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Business Details</h1>
-        <p class="text-gray-600">Add your business address and tax information</p>
+        <p class="text-gray-600 dark:text-gray-300">Add your business address and tax information</p>
     </div>
 
     <form method="POST" action="{{ route('user.onboarding.store') }}" class="space-y-6">
@@ -14,7 +14,7 @@
         <input type="hidden" name="step" value="3">
 
         <div>
-            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Company Address
             </label>
             <textarea
@@ -44,7 +44,7 @@
         </div>
 
         <div>
-            <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="currency" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Currency
             </label>
             <select
@@ -63,7 +63,7 @@
         </div>
 
         <div>
-            <label for="timezone" class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="timezone" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Timezone
             </label>
             <select
@@ -80,7 +80,7 @@
         </div>
 
         <div class="flex gap-4 pt-4">
-            <button type="submit" name="action" value="back" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+            <button type="submit" name="action" value="back" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
                 Back
             </button>
             <button type="submit" name="action" value="next" class="flex-1 px-6 py-3 bg-[#2B6EF6] text-white font-semibold rounded-lg hover:bg-[#2563EB] transition-colors">

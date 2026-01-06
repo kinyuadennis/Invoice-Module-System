@@ -6,7 +6,7 @@
 <div class="bg-white rounded-xl shadow-lg p-8 md:p-12">
     <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Logo & Branding</h1>
-        <p class="text-gray-600">Upload your company logo to personalize your invoices</p>
+        <p class="text-gray-600 dark:text-gray-300">Upload your company logo to personalize your invoices</p>
     </div>
 
     <form method="POST" action="{{ route('user.onboarding.store') }}" enctype="multipart/form-data" class="space-y-6">
@@ -14,7 +14,7 @@
         <input type="hidden" name="step" value="4">
 
         <div>
-            <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="logo" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Company Logo
             </label>
             <div class="mt-1 flex items-center space-x-6">
@@ -50,10 +50,10 @@
         </div>
 
         <div class="flex gap-4 pt-4">
-            <button type="submit" name="action" value="back" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+            <button type="submit" name="action" value="back" class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
                 Back
             </button>
-            <button type="submit" name="action" value="skip" class="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+            <button type="submit" name="action" value="skip" class="px-6 py-3 border border-gray-300 text-gray-700 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
                 Skip
             </button>
             <button type="submit" name="action" value="next" class="flex-1 px-6 py-3 bg-[#2B6EF6] text-white font-semibold rounded-lg hover:bg-[#2563EB] transition-colors">

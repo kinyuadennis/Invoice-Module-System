@@ -53,7 +53,7 @@
                     <div class="space-y-4">
                         <!-- Payment Method Type -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method Type *</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Payment Method Type *</label>
                             <select 
                                 x-model="form.type"
                                 @change="updateFormFields()"
@@ -72,7 +72,7 @@
 
                         <!-- Custom Name -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Custom Name (Optional)</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Custom Name (Optional)</label>
                             <input 
                                 type="text"
                                 x-model="form.name"
@@ -86,7 +86,7 @@
                             <h4 class="font-medium text-gray-900">Bank Transfer Details</h4>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Bank Name</label>
                                     <input 
                                         type="text"
                                         x-model="form.bank_name"
@@ -94,7 +94,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Account Name</label>
                                     <input 
                                         type="text"
                                         x-model="form.account_name"
@@ -102,7 +102,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Account Number *</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Account Number *</label>
                                     <input 
                                         type="text"
                                         x-model="form.account_number"
@@ -110,7 +110,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">SWIFT Code</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">SWIFT Code</label>
                                     <input 
                                         type="text"
                                         x-model="form.swift_code"
@@ -118,7 +118,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Branch Code</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Branch Code</label>
                                     <input 
                                         type="text"
                                         x-model="form.branch_code"
@@ -126,7 +126,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Clearing Days</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Clearing Days</label>
                                     <input 
                                         type="number"
                                         x-model="form.clearing_days"
@@ -138,7 +138,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Instructions</label>
                                 <textarea 
                                     x-model="form.bank_instructions"
                                     rows="3"
@@ -153,7 +153,7 @@
                             <h4 class="font-medium text-gray-900">MPesa Details</h4>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Paybill Number *</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Paybill Number *</label>
                                     <input 
                                         type="text"
                                         x-model="form.mpesa_paybill"
@@ -161,7 +161,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Account Number</label>
                                     <input 
                                         type="text"
                                         x-model="form.mpesa_account_number"
@@ -169,7 +169,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Clearing Days</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Clearing Days</label>
                                     <input 
                                         type="number"
                                         x-model="form.clearing_days"
@@ -182,7 +182,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Instructions</label>
                                 <textarea 
                                     x-model="form.mpesa_instructions"
                                     rows="3"
@@ -196,7 +196,7 @@
                         <div x-show="form.type === 'paypal' || form.type === 'stripe'" class="space-y-3 border-t pt-4">
                             <h4 class="font-medium text-gray-900" x-text="form.type === 'paypal' ? 'PayPal Details' : 'Stripe Details'"></h4>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Link *</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Payment Link *</label>
                                 <input 
                                     type="url"
                                     x-model="form.payment_link"
@@ -205,7 +205,7 @@
                                 >
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Merchant ID</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Merchant ID</label>
                                 <input 
                                     type="text"
                                     x-model="form.merchant_id"
@@ -213,7 +213,7 @@
                                 >
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Clearing Days</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Clearing Days</label>
                                 <input 
                                     type="number"
                                     x-model="form.clearing_days"
@@ -225,7 +225,7 @@
                                 <p class="mt-1 text-xs text-gray-500">Usually 1-3 business days</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Instructions</label>
                                 <textarea 
                                     x-model="form.online_instructions"
                                     rows="3"
@@ -240,7 +240,7 @@
                             <h4 class="font-medium text-gray-900">Mobile Money Details</h4>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Provider</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Provider</label>
                                     <input 
                                         type="text"
                                         x-model="form.mobile_money_provider"
@@ -249,7 +249,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Mobile Number *</label>
                                     <input 
                                         type="text"
                                         x-model="form.mobile_money_number"
@@ -257,7 +257,7 @@
                                     >
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Clearing Days</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Clearing Days</label>
                                     <input 
                                         type="number"
                                         x-model="form.clearing_days"
@@ -270,7 +270,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Instructions</label>
                                 <textarea 
                                     x-model="form.mobile_money_instructions"
                                     rows="3"
@@ -284,7 +284,7 @@
                         <div x-show="form.type === 'cash'" class="space-y-3 border-t pt-4">
                             <h4 class="font-medium text-gray-900">Cash Payment Details</h4>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Clearing Days</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Clearing Days</label>
                                 <input 
                                     type="number"
                                     x-model="form.clearing_days"
@@ -296,7 +296,7 @@
                                 <p class="mt-1 text-xs text-gray-500">Cash is usually instant (0 days)</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Instructions</label>
                                 <textarea 
                                     x-model="form.cash_instructions"
                                     rows="3"
@@ -313,7 +313,7 @@
                                 x-model="form.is_enabled"
                                 class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             >
-                            <label class="text-sm font-medium text-gray-700">Enable this payment method</label>
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-200">Enable this payment method</label>
                         </div>
                     </div>
                 </div>
@@ -330,7 +330,7 @@
                     <button 
                         type="button"
                         @click="open = false"
-                        class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                     >
                         Cancel
                     </button>

@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Edit Estimate</h1>
-        <p class="mt-1 text-sm text-gray-600">Update estimate details</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update estimate details</p>
     </div>
 
     <form method="POST" action="{{ route('user.estimates.update', $estimate['id'] ?? 0) }}" class="space-y-6">
@@ -55,19 +55,19 @@
                     @foreach($estimate['items'] as $index => $item)
                         <div class="grid grid-cols-12 gap-4 items-end item-row">
                             <div class="col-span-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
                                 <input type="text" name="items[{{ $index }}][description]" value="{{ $item['description'] }}" class="w-full rounded-lg border-gray-300" required>
                             </div>
                             <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Quantity</label>
                                 <input type="number" name="items[{{ $index }}][quantity]" value="{{ $item['quantity'] }}" step="0.01" min="0.01" class="w-full rounded-lg border-gray-300" required>
                             </div>
                             <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Unit Price</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Unit Price</label>
                                 <input type="number" name="items[{{ $index }}][unit_price]" value="{{ $item['unit_price'] }}" step="0.01" min="0" class="w-full rounded-lg border-gray-300" required>
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Total</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Total</label>
                                 <input type="text" value="KES {{ number_format($item['total_price'], 2) }}" class="w-full rounded-lg border-gray-300 bg-gray-50" readonly>
                                 <input type="hidden" name="items[{{ $index }}][total_price]" value="{{ $item['total_price'] }}">
                             </div>
@@ -83,19 +83,19 @@
                 @else
                     <div class="grid grid-cols-12 gap-4 items-end item-row">
                         <div class="col-span-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
                             <input type="text" name="items[0][description]" class="w-full rounded-lg border-gray-300" required>
                         </div>
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Quantity</label>
                             <input type="number" name="items[0][quantity]" value="1" step="0.01" min="0.01" class="w-full rounded-lg border-gray-300" required>
                         </div>
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Unit Price</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Unit Price</label>
                             <input type="number" name="items[0][unit_price]" step="0.01" min="0" class="w-full rounded-lg border-gray-300" required>
                         </div>
                         <div class="col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Total</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Total</label>
                             <input type="text" value="KES 0.00" class="w-full rounded-lg border-gray-300 bg-gray-50" readonly>
                             <input type="hidden" name="items[0][total_price]" value="0">
                         </div>
@@ -109,7 +109,7 @@
                     </div>
                 @endif
             </div>
-            <button type="button" onclick="addItemRow()" class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+            <button type="button" onclick="addItemRow()" class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200">
                 + Add Item
             </button>
         </x-card>
@@ -119,11 +119,11 @@
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Additional Information</h2>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</label>
                     <textarea name="notes" rows="3" class="w-full rounded-lg border-gray-300">{{ old('notes', $estimate['notes'] ?? '') }}</textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Terms & Conditions</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Terms & Conditions</label>
                     <textarea name="terms_and_conditions" rows="3" class="w-full rounded-lg border-gray-300">{{ old('terms_and_conditions', $estimate['terms_and_conditions'] ?? '') }}</textarea>
                 </div>
             </div>
@@ -131,7 +131,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end space-x-3">
-            <a href="{{ route('user.estimates.show', $estimate['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('user.estimates.show', $estimate['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50">
                 Cancel
             </a>
             <x-button type="submit" variant="primary">Update Estimate</x-button>
@@ -148,19 +148,19 @@
         row.className = 'grid grid-cols-12 gap-4 items-end item-row';
         row.innerHTML = `
             <div class="col-span-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
                 <input type="text" name="items[${index}][description]" class="w-full rounded-lg border-gray-300" required>
             </div>
             <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Quantity</label>
                 <input type="number" name="items[${index}][quantity]" value="1" step="0.01" min="0.01" class="w-full rounded-lg border-gray-300" required>
             </div>
             <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Unit Price</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Unit Price</label>
                 <input type="number" name="items[${index}][unit_price]" step="0.01" min="0" class="w-full rounded-lg border-gray-300" required>
             </div>
             <div class="col-span-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Total</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Total</label>
                 <input type="text" value="KES 0.00" class="w-full rounded-lg border-gray-300 bg-gray-50" readonly>
                 <input type="hidden" name="items[${index}][total_price]" value="0">
             </div>

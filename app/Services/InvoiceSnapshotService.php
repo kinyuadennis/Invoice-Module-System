@@ -10,10 +10,6 @@ class InvoiceSnapshotService
 {
     /**
      * Create an immutable snapshot of the invoice.
-     *
-     * @param Invoice $invoice
-     * @param string $status
-     * @return InvoiceSnapshot
      */
     public function createSnapshot(Invoice $invoice, string $status): InvoiceSnapshot
     {
@@ -65,7 +61,7 @@ class InvoiceSnapshotService
                 'tax' => $invoice->tax,
                 'vat_amount' => $invoice->vat_amount,
                 'discount' => $invoice->discount,
-                'platform_fee' => $invoice->platform_fee,
+                'platform_fee' => $invoice->platform_fee ?? 0, // Legacy field, will be removed
                 'grand_total' => $invoice->grand_total,
             ],
             'compliance' => [
@@ -89,9 +85,6 @@ class InvoiceSnapshotService
 
     /**
      * Find the latest snapshot for an invoice.
-     *
-     * @param Invoice $invoice
-     * @return InvoiceSnapshot|null
      */
     public function findLatestSnapshot(Invoice $invoice): ?InvoiceSnapshot
     {
@@ -100,9 +93,6 @@ class InvoiceSnapshotService
 
     /**
      * Resolve the logo path to an absolute file path.
-     *
-     * @param string|null $logoPath
-     * @return string|null
      */
     private function resolveLogoPath(?string $logoPath): ?string
     {
@@ -116,7 +106,7 @@ class InvoiceSnapshotService
         }
 
         // Check if it exists in storage
-        $fullPath = public_path('storage/' . $logoPath);
+        $fullPath = public_path('storage/'.$logoPath);
         if (file_exists($fullPath)) {
             return $fullPath;
         }

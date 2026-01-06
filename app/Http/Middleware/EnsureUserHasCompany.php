@@ -34,8 +34,8 @@ class EnsureUserHasCompany
         // Redirect to company setup if user doesn't have any companies
         // Use count() only once, cache the result
         if ($user->ownedCompanies()->count() === 0) {
-            return redirect()->route('company.setup')
-                ->with('error', 'Please set up your company first.');
+            return redirect()->route('user.onboarding.index')
+                ->with('message', 'Welcome! Let\'s set up your account.');
         }
 
         // Use CurrentCompanyService which has request-level caching

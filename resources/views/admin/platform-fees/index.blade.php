@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Platform Fees</h1>
-        <p class="mt-1 text-sm text-gray-600">Track all platform fees collected</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Track all platform fees collected</p>
     </div>
 
     <!-- Filters -->
@@ -64,10 +64,10 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ $fee['invoice']['invoice_reference'] ?? $fee['invoice']['invoice_number'] ?? 'N/A' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $fee['invoice']['client']['name'] ?? 'Unknown' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             @if($fee['invoice']['company'])
                                 <a href="{{ route('admin.companies.show', $fee['invoice']['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900">
                                     {{ $fee['invoice']['company']['name'] }}
@@ -76,7 +76,7 @@
                                 <span class="text-gray-400">No Company</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $fee['invoice']['user']['name'] ?? 'Unknown' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">

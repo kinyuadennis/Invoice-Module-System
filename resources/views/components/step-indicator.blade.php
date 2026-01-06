@@ -24,7 +24,7 @@
                     <!-- Step Label (hidden on mobile) -->
                     <span 
                         :class="i <= currentStep ? 'text-emerald-600' : 'text-gray-400'"
-                        class="mt-2 text-xs font-medium text-gray-600 hidden sm:block"
+                        class="mt-2 text-xs font-medium text-gray-600 dark:text-gray-300 hidden sm:block"
                     >
                         Step <span x-text="i"></span>
                     </span>

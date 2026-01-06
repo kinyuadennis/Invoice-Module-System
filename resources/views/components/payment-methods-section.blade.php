@@ -8,7 +8,7 @@
         <div class="flex items-center justify-between mb-6">
             <div>
                 <h2 class="text-xl font-semibold text-gray-900">Payment Methods</h2>
-                <p class="mt-1 text-sm text-gray-600">Configure how customers can pay your invoices</p>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Configure how customers can pay your invoices</p>
             </div>
             <button 
                 type="button"
@@ -43,12 +43,12 @@
                                         </span>
                                         <span 
                                             x-show="!method.is_enabled"
-                                            class="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full"
+                                            class="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 dark:text-gray-300 rounded-full"
                                         >
                                             Disabled
                                         </span>
                                     </div>
-                                    <div class="text-sm text-gray-600 mb-2" x-text="getMethodDetails(method)"></div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-300 mb-2" x-text="getMethodDetails(method)"></div>
                                     <div class="flex items-center gap-4 text-xs text-gray-500">
                                         <span x-text="'Clears in: ' + getClearingTime(method.clearing_days)"></span>
                                         <span x-show="method.type === 'bank_transfer' && method.bank_name" x-text="'Bank: ' + method.bank_name"></span>

@@ -6,7 +6,7 @@
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Create New Client</h1>
-        <p class="mt-1 text-sm text-gray-600">Add a new client to your database</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Add a new client to your database</p>
     </div>
 
     <x-card padding="lg">
@@ -14,7 +14,7 @@
             @csrf
 
             <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Client Name *</label>
+                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Client Name *</label>
                 <input
                     type="text"
                     name="name"
@@ -30,7 +30,7 @@
             </div>
 
             <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Email Address</label>
                 <input
                     type="email"
                     name="email"
@@ -44,7 +44,7 @@
             </div>
 
             <div>
-                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Phone Number</label>
                 <input
                     type="tel"
                     name="phone"
@@ -58,7 +58,7 @@
             </div>
 
             <div>
-                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Address</label>
                 <textarea
                     name="address"
                     id="address"
@@ -71,7 +71,7 @@
             </div>
 
             <div>
-                <label for="kra_pin" class="block text-sm font-medium text-gray-700 mb-1">KRA PIN</label>
+                <label for="kra_pin" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">KRA PIN</label>
                 <input
                     type="text"
                     name="kra_pin"
@@ -86,7 +86,7 @@
             </div>
 
             <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
-                <a href="{{ url()->previous() }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <a href="{{ url()->previous() }}" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                     Cancel
                 </a>
                 <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">

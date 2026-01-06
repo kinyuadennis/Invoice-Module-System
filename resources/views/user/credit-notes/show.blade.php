@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Credit Note {{ $creditNote['credit_note_number'] ?? 'CN-' . str_pad($creditNote['id'], 3, '0', STR_PAD_LEFT) }}</h1>
-            <p class="mt-1 text-sm text-gray-600">View credit note details</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View credit note details</p>
         </div>
         <div class="flex items-center space-x-3 flex-wrap gap-2">
             @if(($creditNote['status'] ?? 'draft') === 'draft')
@@ -181,10 +181,10 @@
                                 @foreach($creditNote['items'] as $item)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ number_format($item['quantity'], 2) }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['unit_price'], 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">{{ number_format($item['quantity'], 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">KES {{ number_format($item['unit_price'], 2) }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">KES {{ number_format($item['total_price'], 2) }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                             <div>
                                                 <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $item['credit_reason'] ?? 'other')) }}</span>
                                                 @if(isset($item['credit_reason_details']))
@@ -205,12 +205,12 @@
                 <div class="flex justify-end">
                     <div class="w-full md:w-1/3 space-y-2">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Subtotal:</span>
+                            <span class="text-gray-600 dark:text-gray-300">Subtotal:</span>
                             <span class="font-medium text-gray-900">KES {{ number_format($creditNote['subtotal'] ?? 0, 2) }}</span>
                         </div>
                         @if(($creditNote['vat_amount'] ?? 0) > 0)
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">VAT (16%):</span>
+                                <span class="text-gray-600 dark:text-gray-300">VAT (16%):</span>
                                 <span class="font-medium text-gray-900">KES {{ number_format($creditNote['vat_amount'], 2) }}</span>
                             </div>
                         @endif
@@ -251,7 +251,7 @@
         <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-bold text-gray-900">Apply Credit Note to Invoice</h3>
-                <button onclick="document.getElementById('apply-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <button onclick="document.getElementById('apply-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 dark:text-gray-300">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -261,7 +261,7 @@
             <form method="POST" action="{{ route('user.credit-notes.apply-to-invoice', $creditNote['id']) }}">
                 @csrf
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Invoice</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Select Invoice</label>
                     <select name="invoice_id" class="w-full rounded-lg border-gray-300" required>
                         <option value="">Select an invoice...</option>
                         @foreach($availableInvoices as $invoice)
@@ -276,7 +276,7 @@
                 </div>
                 
                 <div class="flex gap-3">
-                    <button type="button" onclick="document.getElementById('apply-modal').classList.add('hidden')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                    <button type="button" onclick="document.getElementById('apply-modal').classList.add('hidden')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50">
                         Cancel
                     </button>
                     <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">

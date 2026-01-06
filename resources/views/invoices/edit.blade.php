@@ -6,7 +6,7 @@
 <div class="space-y-6" x-data="invoiceForm()">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Edit Invoice</h1>
-        <p class="mt-1 text-sm text-gray-600">Update invoice details</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update invoice details</p>
     </div>
 
     <form method="POST" action="{{ route('invoices.update', $invoice['id'] ?? 0) }}" @submit.prevent="submitForm">
@@ -72,7 +72,7 @@
                 <template x-for="(item, index) in items" :key="index">
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-12 items-end">
                         <div class="sm:col-span-5">
-                            <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">Description</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" x-show="index === 0">Description</label>
                             <input 
                                 type="text" 
                                 x-model="item.description"
@@ -83,7 +83,7 @@
                             >
                         </div>
                         <div class="sm:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">Quantity</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" x-show="index === 0">Quantity</label>
                             <input 
                                 type="number" 
                                 x-model.number="item.quantity"
@@ -95,7 +95,7 @@
                             >
                         </div>
                         <div class="sm:col-span-3">
-                            <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">Rate</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" x-show="index === 0">Rate</label>
                             <input 
                                 type="number" 
                                 x-model.number="item.rate"
@@ -108,7 +108,7 @@
                             >
                         </div>
                         <div class="sm:col-span-1 text-right">
-                            <label class="block text-sm font-medium text-gray-700 mb-1" x-show="index === 0">Amount</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1" x-show="index === 0">Amount</label>
                             <p class="text-base font-medium text-gray-900 mt-2 sm:mt-0" x-text="formatCurrency(item.quantity * item.rate)"></p>
                         </div>
                         <div class="sm:col-span-1 flex justify-end">
@@ -144,11 +144,11 @@
             <x-card>
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Summary</h2>
                 <div class="space-y-2 text-sm">
-                    <div class="flex justify-between text-gray-600">
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300">
                         <span>Subtotal</span>
                         <span class="font-medium text-gray-900" x-text="formatCurrency(subtotal)"></span>
                     </div>
-                    <div class="flex justify-between text-gray-600">
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300">
                         <span>Tax (<span x-text="taxRate"></span>%)</span>
                         <span class="font-medium text-gray-900" x-text="formatCurrency(tax)"></span>
                     </div>

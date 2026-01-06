@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between bg-white rounded-lg shadow-sm p-4 border border-gray-200">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Create New Invoice</h1>
-            <p class="text-sm text-gray-600 mt-1">Fill in the details below to create your invoice</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Fill in the details below to create your invoice</p>
         </div>
         <a href="{{ route('user.company.invoice-customization') }}" class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

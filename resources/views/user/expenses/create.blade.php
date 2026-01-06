@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Record New Expense</h1>
-        <p class="mt-1 text-sm text-gray-600">Track your business expenses</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Track your business expenses</p>
     </div>
 
     <form method="POST" action="{{ route('user.expenses.store') }}" enctype="multipart/form-data" class="space-y-6">
@@ -114,14 +114,14 @@
                             {{ old('tax_deductible', true) ? 'checked' : '' }}
                             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         >
-                        <label for="tax_deductible" class="ml-2 text-sm text-gray-700">
+                        <label for="tax_deductible" class="ml-2 text-sm text-gray-700 dark:text-gray-200">
                             Tax Deductible
                         </label>
                     </div>
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Receipt (Optional)
                     </label>
                     <input 
@@ -134,7 +134,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</label>
                     <textarea 
                         name="notes" 
                         rows="3"
@@ -147,7 +147,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end space-x-3">
-            <a href="{{ route('user.expenses.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('user.expenses.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50">
                 Cancel
             </a>
             <x-button type="submit" variant="primary">Create Expense</x-button>

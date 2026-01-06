@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\PlatformFeeController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\Public\AuthController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\User\CompanyController;
@@ -14,15 +15,26 @@ use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\InvoiceController;
 use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes (no prefix)
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Webhooks (no CSRF protection needed)
+// Webhooks (no CSRF protection needed, but rate limited for security)
 Route::prefix('webhooks')->name('webhooks.')->group(function () {
-    Route::post('/stripe', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'stripe'])->name('stripe');
-    Route::post('/mpesa/callback', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'mpesa'])->name('mpesa');
+    Route::post('/stripe', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'stripe'])
+        ->middleware('throttle:60,1')
+        ->name('stripe');
+    Route::post('/mpesa/callback', [\App\Http\Controllers\Webhook\PaymentWebhookController::class, 'mpesa'])
+        ->middleware('throttle:60,1')
+        ->name('mpesa');
+    Route::post('/subscriptions/stripe', [\App\Http\Controllers\Webhook\SubscriptionWebhookController::class, 'stripe'])
+        ->middleware('throttle:60,1')
+        ->name('subscriptions.stripe');
+    Route::post('/subscriptions/mpesa/callback', [\App\Http\Controllers\Webhook\SubscriptionWebhookController::class, 'mpesa'])
+        ->middleware('throttle:60,1')
+        ->name('subscriptions.mpesa');
 });
 
 // Customer Portal (token-based access, no authentication required)
@@ -141,6 +153,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
         Route::post('/invoices/{id}/send-whatsapp', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.send-whatsapp');
         Route::post('/invoices/{id}/record-payment', [InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');
+        Route::post('/invoices/bulk-delete', [InvoiceController::class, 'bulkDelete'])->name('invoices.bulk-delete');
+        Route::post('/invoices/bulk-status', [InvoiceController::class, 'bulkStatus'])->name('invoices.bulk-status');
+        Route::post('/invoices/bulk-send', [InvoiceController::class, 'bulkSend'])->name('invoices.bulk-send');
 
         // Refund routes
         Route::get('/invoices/{invoiceId}/refunds', [\App\Http\Controllers\User\RefundController::class, 'index'])->name('invoices.refunds.index');
@@ -193,10 +208,24 @@ Route::middleware('auth')->group(function () {
         Route::post('/invoices/{invoice}/etims/generate-qr', [\App\Http\Controllers\User\EtimsController::class, 'generateQrCode'])->name('invoices.etims.generate-qr');
         Route::post('/invoices/{invoice}/etims/submit', [\App\Http\Controllers\User\EtimsController::class, 'submit'])->name('invoices.etims.submit');
 
+        Route::get('/clients/create', [\App\Http\Controllers\User\ClientController::class, 'create'])->name('clients.create');
         Route::post('/clients', [\App\Http\Controllers\User\ClientController::class, 'store'])->name('clients.store');
         Route::get('/clients/search', [\App\Http\Controllers\User\ClientController::class, 'search'])->name('clients.search');
+        Route::get('/payments/create', [\App\Http\Controllers\User\PaymentController::class, 'create'])->name('payments.create');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
+
+        // Subscriptions
+        Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::get('/subscriptions/checkout', [SubscriptionController::class, 'checkout'])->name('subscriptions.checkout');
+        // Payment status routes - accept both Payment and PaymentAttempt
+        // Per blueprint: Status pages poll payment_attempt (gateway-agnostic)
+        Route::get('/subscriptions/payment-status/{paymentOrAttempt}', [SubscriptionController::class, 'paymentStatus'])->name('subscriptions.payment-status');
+        Route::get('/subscriptions/success', [SubscriptionController::class, 'success'])->name('subscriptions.success');
+        Route::get('/api/subscriptions/payment-status/{paymentOrAttempt}', [SubscriptionController::class, 'getPaymentStatus'])->name('api.subscriptions.payment-status');
+        Route::post('/subscriptions', [SubscriptionController::class, 'store'])->name('subscriptions.store');
+        Route::post('/subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
@@ -241,6 +270,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/data-export/clients/excel', [\App\Http\Controllers\User\DataImportExportController::class, 'exportClientsExcel'])->name('data-export.clients.excel');
         Route::get('/data-export/invoices/csv', [\App\Http\Controllers\User\DataImportExportController::class, 'exportInvoices'])->name('data-export.invoices.csv');
         Route::get('/data-export/invoices/excel', [\App\Http\Controllers\User\DataImportExportController::class, 'exportInvoicesExcel'])->name('data-export.invoices.excel');
+        Route::get('/data-export/invoices/excel', [\App\Http\Controllers\User\DataImportExportController::class, 'exportInvoicesExcel'])->name('data-export.invoices.excel');
+
+        // Global Search
+        Route::get('/search', [\App\Http\Controllers\User\SearchController::class, 'index'])->name('search.index');
     });
 
     // Admin area (prefix: /admin)
@@ -252,7 +285,7 @@ Route::middleware('auth')->group(function () {
                 return redirect()->route('login')->with('error', 'Please log in to access the admin area.');
             }
             if ($user->role !== 'admin') {
-                abort(403, 'Unauthorized. Your role is: '.($user->role ?? 'not set').'. Required role: admin');
+                abort(403, 'Unauthorized. Your role is: ' . ($user->role ?? 'not set') . '. Required role: admin');
             }
 
             return redirect()->route('admin.dashboard');
@@ -284,4 +317,25 @@ Route::middleware('auth')->group(function () {
         Route::put('/system-settings', [\App\Http\Controllers\Admin\SystemSettingsController::class, 'update'])->name('system-settings.update');
         Route::resource('audit-logs', \App\Http\Controllers\Admin\AuditLogController::class)->only(['index', 'show']);
     });
+});
+// Stripe webhook route (Cashier handles subscription events)
+// Note: CSRF protection is handled by Cashier's WebhookController
+Route::post('/stripe/webhook', [\Laravel\Cashier\Http\Controllers\WebhookController::class, 'handleWebhook'])
+    ->name('cashier.webhook');
+
+// M-Pesa routes (unified callback handler - routes to appropriate handler based on payment type)
+Route::post('/mpesa/callback', [MpesaController::class, 'callback'])
+    ->middleware('throttle:60,1')
+    ->name('mpesa.callback');
+
+// M-Pesa utility routes (for testing and status checking)
+Route::prefix('mpesa')->name('mpesa.')->group(function () {
+    // Payment status check (public route for customer portal, protected for authenticated users)
+    Route::get('/payment/{payment}/status', [MpesaController::class, 'checkStatus'])->name('payment.status');
+
+    // Configuration verification (development only)
+    Route::get('/verify-config', [MpesaController::class, 'verifyConfig'])->name('verify-config');
+
+    // Connection test (development only)
+    Route::get('/test-connection', [MpesaController::class, 'testConnection'])->name('test-connection');
 });

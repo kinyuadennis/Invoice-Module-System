@@ -12,7 +12,7 @@
         'paid' => 'bg-emerald-100 text-emerald-700',
         'overdue' => 'bg-rose-100 text-rose-700',
         'sent' => 'bg-indigo-100 text-indigo-700',
-        default => 'bg-gray-100 text-gray-700',
+        default => 'bg-gray-100 text-gray-700 dark:text-gray-200',
     };
 @endphp
 
@@ -20,7 +20,7 @@
     <div class="flex items-start justify-between mb-4">
         <div>
             <h3 class="text-lg font-bold text-gray-900">{{ $invoice['invoice_number'] }}</h3>
-            <p class="text-sm text-gray-600 mt-1">{{ $invoice['client_name'] }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ $invoice['client_name'] }}</p>
         </div>
         <span class="px-3 py-1 {{ $statusColor }} rounded-full text-xs font-semibold uppercase">
             {{ $invoice['status'] }}

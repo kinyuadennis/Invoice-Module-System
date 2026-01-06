@@ -12,6 +12,7 @@ use App\Services\InvoicePrefixService;
 use App\Traits\FormatsInvoiceData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceService
 {
@@ -257,7 +258,7 @@ class InvoiceService
                 $this->getInventoryService()->deductStockForInvoice($invoice);
             } catch (\Exception $e) {
                 // Log error but don't fail invoice creation
-                \Log::warning("Failed to auto-deduct stock for invoice {$invoice->id}: ".$e->getMessage());
+                \Log::warning("Failed to auto-deduct stock for invoice {$invoice->id}: " . $e->getMessage());
             }
         }
 
@@ -427,7 +428,7 @@ class InvoiceService
             try {
                 $this->getInventoryService()->restoreStockForInvoice($invoice);
             } catch (\Exception $e) {
-                \Log::warning("Failed to restore stock for cancelled invoice {$invoice->id}: ".$e->getMessage());
+                \Log::warning("Failed to restore stock for cancelled invoice {$invoice->id}: " . $e->getMessage());
             }
         }
         // If status changed from draft to sent/paid, deduct stock
@@ -435,7 +436,7 @@ class InvoiceService
             try {
                 $this->getInventoryService()->deductStockForInvoice($invoice);
             } catch (\Exception $e) {
-                \Log::warning("Failed to auto-deduct stock for invoice {$invoice->id}: ".$e->getMessage());
+                \Log::warning("Failed to auto-deduct stock for invoice {$invoice->id}: " . $e->getMessage());
             }
         }
 
@@ -509,7 +510,25 @@ class InvoiceService
      */
     public function formatInvoiceForShow(Invoice $invoice): array
     {
-        return $this->formatInvoiceWithDetails($invoice);
+        $data = $this->formatInvoiceWithDetails($invoice);
+
+        if ($invoice->relationLoaded('auditLogs')) {
+            $data['audit_logs'] = $invoice->auditLogs->map(function ($log) {
+                return [
+                    'id' => $log->id,
+                    'description' => $log->description,
+                    'created_at' => $log->created_at,
+                    'user' => $log->user ? [
+                        'name' => $log->user->name,
+                        'email' => $log->user->email,
+                    ] : null,
+                ];
+            })->toArray();
+        } else {
+            $data['audit_logs'] = [];
+        }
+
+        return $data;
     }
 
     /**

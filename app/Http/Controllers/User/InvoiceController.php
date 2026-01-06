@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
@@ -193,7 +194,7 @@ class InvoiceController extends Controller
 
         // Ensure invoice belongs to user's active company
         $invoice = Invoice::where('company_id', $companyId)
-            ->with(['client', 'invoiceItems', 'payments', 'refunds.payment', 'refunds.user', 'company'])
+            ->with(['client', 'invoiceItems', 'payments', 'refunds.payment', 'refunds.user', 'company', 'auditLogs.user'])
             ->findOrFail($id);
 
         $paymentSummary = $this->paymentService->getPaymentSummary($invoice);
@@ -260,7 +261,7 @@ class InvoiceController extends Controller
 
             if (! $statusService->updateStatus($invoice, $newStatus)) {
                 return back()->withErrors([
-                    'status' => 'Invalid status transition from '.$invoice->status.' to '.$newStatus.'.',
+                    'status' => 'Invalid status transition from ' . $invoice->status . ' to ' . $newStatus . '.',
                 ]);
             }
 
@@ -526,12 +527,11 @@ class InvoiceController extends Controller
             $pdfContent = $this->pdfRenderer->render($snapshot);
 
             // Generate filename
-            $filename = 'invoice-'.($snapshot->snapshot_data['invoice_details']['full_number'] ?? $invoice->invoice_number ?? $invoice->id).'.pdf';
+            $filename = 'invoice-' . ($snapshot->snapshot_data['invoice_details']['full_number'] ?? $invoice->invoice_number ?? $invoice->id) . '.pdf';
 
             return response($pdfContent)
                 ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
-
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
         } catch (\Exception $e) {
             \Log::error('PDF generation error', [
                 'invoice_id' => $invoice->id,
@@ -602,6 +602,122 @@ class InvoiceController extends Controller
             'success' => true,
             'message' => 'Invoice email has been queued for sending.',
             'status' => $invoice->status,
+        ]);
+    }
+
+    /**
+     * Bulk delete invoices.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:invoices,id',
+        ]);
+
+        $ids = $validated['ids'];
+
+        // Only allow deletion of draft invoices
+        $count = Invoice::where('company_id', $companyId)
+            ->whereIn('id', $ids)
+            ->where('status', 'draft')
+            ->delete();
+
+        // Clear dashboard cache
+        Cache::forget("dashboard_data_{$companyId}");
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$count} invoices deleted successfully.",
+            'count' => $count,
+        ]);
+    }
+
+    /**
+     * Bulk update invoice status.
+     */
+    public function bulkStatus(Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:invoices,id',
+            'status' => 'required|in:sent,paid,cancelled',
+        ]);
+
+        $ids = $validated['ids'];
+        $status = $validated['status'];
+        $statusService = new \App\Http\Services\InvoiceStatusService;
+        $updatedCount = 0;
+
+        $invoices = Invoice::where('company_id', $companyId)
+            ->whereIn('id', $ids)
+            ->get();
+
+        foreach ($invoices as $invoice) {
+            if ($statusService->updateStatus($invoice, $status)) {
+                $updatedCount++;
+                // Create snapshot
+                $this->snapshotService->createSnapshot($invoice, $status);
+            }
+        }
+
+        // Clear dashboard cache
+        Cache::forget("dashboard_data_{$companyId}");
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$updatedCount} invoices updated successfully.",
+            'count' => $updatedCount,
+        ]);
+    }
+
+    /**
+     * Bulk send invoices via email.
+     */
+    public function bulkSend(Request $request)
+    {
+        $companyId = CurrentCompanyService::requireId();
+
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:invoices,id',
+        ]);
+
+        $ids = $validated['ids'];
+        $sentCount = 0;
+
+        $invoices = Invoice::where('company_id', $companyId)
+            ->whereIn('id', $ids)
+            ->with('client')
+            ->get();
+
+        foreach ($invoices as $invoice) {
+            if ($invoice->client && $invoice->client->email) {
+                // Determine if we can send (e.g., skip paid/cancelled if desired, or allow re-sending)
+                // For now, allow sending unless cancelled
+                if ($invoice->status !== 'cancelled') {
+                    // Queue email job
+                    \App\Jobs\SendInvoiceEmailJob::dispatch($invoice);
+
+                    // Mark as sent if currently draft
+                    if ($invoice->status === 'draft') {
+                        $statusService = new \App\Http\Services\InvoiceStatusService;
+                        $statusService->markAsSent($invoice);
+                    }
+
+                    $sentCount++;
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$sentCount} invoices queued for sending.",
+            'count' => $sentCount,
         ]);
     }
 
@@ -781,7 +897,7 @@ class InvoiceController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'An error occurred while generating preview: '.$e->getMessage(),
+                'error' => 'An error occurred while generating preview: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -928,9 +1044,9 @@ class InvoiceController extends Controller
                 'template' => $template,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            abort(422, 'Invalid preview data: '.implode(', ', array_flatten($e->errors())));
+            abort(422, 'Invalid preview data: ' . implode(', ', \Illuminate\Support\Arr::flatten($e->errors())));
         } catch (\Exception $e) {
-            abort(500, 'Error generating preview: '.$e->getMessage());
+            abort(500, 'Error generating preview: ' . $e->getMessage());
         }
     }
 
@@ -1046,8 +1162,15 @@ class InvoiceController extends Controller
 
                 // Update invoice (excluding prefix fields which are immutable)
                 $updateData = array_intersect_key($validated, array_flip([
-                    'client_id', 'issue_date', 'due_date', 'notes', 'terms_and_conditions',
-                    'po_number', 'vat_registered', 'discount', 'discount_type',
+                    'client_id',
+                    'issue_date',
+                    'due_date',
+                    'notes',
+                    'terms_and_conditions',
+                    'po_number',
+                    'vat_registered',
+                    'discount',
+                    'discount_type',
                 ]));
                 $invoice->update($updateData);
 
@@ -1152,12 +1275,12 @@ class InvoiceController extends Controller
 
             return response()->json([
                 'success' => false,
-                'error' => 'An error occurred while saving the draft: '.$e->getMessage(),
+                'error' => 'An error occurred while saving the draft: ' . $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'An error occurred while saving the draft: '.$e->getMessage(),
+                'error' => 'An error occurred while saving the draft: ' . $e->getMessage(),
             ], 500);
         }
     }

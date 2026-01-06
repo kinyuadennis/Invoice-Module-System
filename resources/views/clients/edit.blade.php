@@ -6,7 +6,7 @@
 <div class="max-w-2xl">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Edit Client</h1>
-        <p class="mt-1 text-sm text-gray-600">Update client information</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update client information</p>
     </div>
 
     <x-card>
@@ -39,7 +39,7 @@
             />
 
             <div>
-                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Address</label>
                 <textarea 
                     name="address" 
                     id="address"

@@ -8,7 +8,7 @@
         <div>
             <h1 class="text-9xl font-bold text-gray-200">500</h1>
             <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Server Error</h2>
-            <p class="mt-2 text-sm text-gray-600">
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                 Something went wrong on our end. We're working to fix it.
             </p>
         </div>

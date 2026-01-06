@@ -12,10 +12,10 @@
 <x-landing.invoicing-workflow />
 
 
-{{-- Pricing section will go here --}}
+<x-landing.pricing-section :plans="$plans ?? []" :user-country="auth()->user()->country ?? null" />
 
 
-<x-landing.faq-section />
+<x-landing.faq-section :faqs="$enhancedFaqs ?? []" />
 
 <x-landing.footer />
 

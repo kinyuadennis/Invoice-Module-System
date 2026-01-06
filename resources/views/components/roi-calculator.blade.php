@@ -12,7 +12,7 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Calculate Your ROI</h2>
-            <p class="mt-4 text-lg text-gray-600">See how much time and money you'll save with InvoiceHub</p>
+            <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">See how much time and money you'll save with InvoiceHub</p>
         </div>
 
         <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12" x-data="roiCalculator({{ json_encode($defaultValues) }})" x-effect="calculate()">
@@ -92,7 +92,7 @@
                             max="90"
                             class="w-24 px-4 py-2 border border-gray-300 rounded-lg text-center font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         >
-                        <span class="text-sm text-gray-600">days</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-300">days</span>
                     </div>
                 </div>
             </div>
@@ -103,25 +103,25 @@
                     <!-- Time Saved -->
                     <div class="text-center">
                         <div class="text-3xl font-black text-emerald-600 mb-2" x-text="formatNumber(results.timeSaved)"></div>
-                        <div class="text-sm font-semibold text-gray-700">hours saved per month</div>
+                        <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">hours saved per month</div>
                     </div>
 
                     <!-- Money Saved -->
                     <div class="text-center">
                         <div class="text-3xl font-black text-emerald-600 mb-2" x-text="'KES ' + formatNumber(results.moneySaved)"></div>
-                        <div class="text-sm font-semibold text-gray-700">faster payments per month</div>
+                        <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">faster payments per month</div>
                     </div>
 
                     <!-- Payback Period -->
                     <div class="text-center">
                         <div class="text-3xl font-black text-emerald-600 mb-2" x-text="results.paybackDays + ' days'"></div>
-                        <div class="text-sm font-semibold text-gray-700">payback period</div>
+                        <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">payback period</div>
                     </div>
 
                     <!-- Annual Savings -->
                     <div class="text-center">
                         <div class="text-3xl font-black text-emerald-600 mb-2" x-text="'KES ' + formatNumber(results.annualSavings)"></div>
-                        <div class="text-sm font-semibold text-gray-700">annual savings</div>
+                        <div class="text-sm font-semibold text-gray-700 dark:text-gray-200">annual savings</div>
                     </div>
                 </div>
             </div>
@@ -133,7 +133,7 @@
                 <div class="space-y-4">
                     <div>
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-gray-600">Current Payment Delay</span>
+                            <span class="text-gray-600 dark:text-gray-300">Current Payment Delay</span>
                             <span class="font-semibold" x-text="currentDelay + ' days'"></span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-4">
@@ -145,7 +145,7 @@
                     </div>
                     <div>
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-gray-600">With InvoiceHub</span>
+                            <span class="text-gray-600 dark:text-gray-300">With InvoiceHub</span>
                             <span class="font-semibold text-emerald-600">7 days</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-4">
@@ -168,7 +168,7 @@
                 >
                     Start Your Free Trial →
                 </a>
-                <p class="mt-4 text-sm text-gray-600">See these savings for yourself</p>
+                <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">See these savings for yourself</p>
             </div>
             @endif
         </div>

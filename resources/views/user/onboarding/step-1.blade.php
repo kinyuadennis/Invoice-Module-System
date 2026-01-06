@@ -13,7 +13,7 @@
         </div>
 
         <h1 class="text-3xl font-bold text-gray-900 mb-4">Welcome to InvoiceHub!</h1>
-        <p class="text-lg text-gray-600 mb-8">
+        <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
             We're excited to have you here. Let's get your account set up in just a few simple steps.
         </p>
 
@@ -24,7 +24,7 @@
                 </svg>
                 <div>
                     <h3 class="font-semibold text-gray-900">Set up your company profile</h3>
-                    <p class="text-sm text-gray-600">Add your business details, logo, and branding</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Add your business details, logo, and branding</p>
                 </div>
             </div>
             <div class="flex items-start">
@@ -33,7 +33,7 @@
                 </svg>
                 <div>
                     <h3 class="font-semibold text-gray-900">Configure invoice preferences</h3>
-                    <p class="text-sm text-gray-600">Choose templates, prefixes, and default settings</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Choose templates, prefixes, and default settings</p>
                 </div>
             </div>
             <div class="flex items-start">
@@ -42,7 +42,7 @@
                 </svg>
                 <div>
                     <h3 class="font-semibold text-gray-900">Ensure eTIMS compliance</h3>
-                    <p class="text-sm text-gray-600">Verify your KRA PIN for tax compliance</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Verify your KRA PIN for tax compliance</p>
                 </div>
             </div>
         </div>

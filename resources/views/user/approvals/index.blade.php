@@ -8,19 +8,19 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Pending Approvals</h1>
-            <p class="mt-1 text-sm text-gray-600">Review and approve invoices, estimates, and expenses</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Review and approve invoices, estimates, and expenses</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('user.approvals.index', ['type' => 'invoice']) }}" class="px-4 py-2 text-sm font-medium {{ $type === 'invoice' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }} rounded-lg hover:bg-gray-200">
+            <a href="{{ route('user.approvals.index', ['type' => 'invoice']) }}" class="px-4 py-2 text-sm font-medium {{ $type === 'invoice' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-200' }} rounded-lg hover:bg-gray-200">
                 Invoices
             </a>
-            <a href="{{ route('user.approvals.index', ['type' => 'estimate']) }}" class="px-4 py-2 text-sm font-medium {{ $type === 'estimate' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }} rounded-lg hover:bg-gray-200">
+            <a href="{{ route('user.approvals.index', ['type' => 'estimate']) }}" class="px-4 py-2 text-sm font-medium {{ $type === 'estimate' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-200' }} rounded-lg hover:bg-gray-200">
                 Estimates
             </a>
-            <a href="{{ route('user.approvals.index', ['type' => 'expense']) }}" class="px-4 py-2 text-sm font-medium {{ $type === 'expense' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }} rounded-lg hover:bg-gray-200">
+            <a href="{{ route('user.approvals.index', ['type' => 'expense']) }}" class="px-4 py-2 text-sm font-medium {{ $type === 'expense' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-200' }} rounded-lg hover:bg-gray-200">
                 Expenses
             </a>
-            <a href="{{ route('user.approvals.index') }}" class="px-4 py-2 text-sm font-medium {{ !$type ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }} rounded-lg hover:bg-gray-200">
+            <a href="{{ route('user.approvals.index') }}" class="px-4 py-2 text-sm font-medium {{ !$type ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-200' }} rounded-lg hover:bg-gray-200">
                 All
             </a>
         </div>
@@ -61,13 +61,13 @@
                             </div>
 
                             @if(isset($approval['approvable']['description']))
-                                <p class="text-sm text-gray-600 mb-2">{{ $approval['approvable']['description'] }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">{{ $approval['approvable']['description'] }}</p>
                             @endif
 
                             @if($approval['notes'])
                                 <div class="mt-2 p-3 bg-gray-50 rounded-lg">
                                     <p class="text-xs text-gray-500 mb-1">Notes:</p>
-                                    <p class="text-sm text-gray-700">{{ $approval['notes'] }}</p>
+                                    <p class="text-sm text-gray-700 dark:text-gray-200">{{ $approval['notes'] }}</p>
                                 </div>
                             @endif
                         </div>
@@ -124,7 +124,7 @@
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Reject Approval Request</h3>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Rejection Reason *</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Rejection Reason *</label>
                         <textarea 
                             name="rejection_reason"
                             rows="4"
@@ -134,7 +134,7 @@
                         ></textarea>
                     </div>
                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Additional Notes</label>
                         <textarea 
                             name="notes"
                             rows="2"
@@ -146,7 +146,7 @@
                     <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">
                         Reject
                     </button>
-                    <button type="button" onclick="closeRejectModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="closeRejectModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Cancel
                     </button>
                 </div>

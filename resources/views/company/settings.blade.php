@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Company Settings</h1>
-        <p class="mt-1 text-sm text-gray-600">Manage your company information and preferences</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage your company information and preferences</p>
     </div>
 
     @if(session('success'))
@@ -64,7 +64,7 @@
                         </div>
 
                         <div>
-                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                 Company Address
                             </label>
                             <textarea
@@ -136,7 +136,7 @@
                     @endif
 
                     <div>
-                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="logo" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                             Upload New Logo
                         </label>
                         <input

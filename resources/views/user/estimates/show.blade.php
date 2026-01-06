@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Estimate {{ $estimate['estimate_number'] ?? 'EST-' . str_pad($estimate['id'], 3, '0', STR_PAD_LEFT) }}</h1>
-            <p class="mt-1 text-sm text-gray-600">View and manage estimate details</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View and manage estimate details</p>
         </div>
         <div class="flex items-center space-x-3 flex-wrap gap-2">
             @if(!($estimate['is_converted'] ?? false))
@@ -97,13 +97,13 @@
                     <div class="text-gray-900">
                         <p class="font-semibold">{{ $estimate['client']['name'] ?? 'N/A' }}</p>
                         @if(isset($estimate['client']['email']))
-                            <p class="text-sm text-gray-600">{{ $estimate['client']['email'] }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $estimate['client']['email'] }}</p>
                         @endif
                         @if(isset($estimate['client']['phone']))
-                            <p class="text-sm text-gray-600">{{ $estimate['client']['phone'] }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $estimate['client']['phone'] }}</p>
                         @endif
                         @if(isset($estimate['client']['address']))
-                            <p class="text-sm text-gray-600 mt-1">{{ $estimate['client']['address'] }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ $estimate['client']['address'] }}</p>
                         @endif
                     </div>
                 </div>
@@ -112,10 +112,10 @@
                     <div class="text-gray-900">
                         <p class="font-semibold">{{ $estimate['company']['name'] ?? 'N/A' }}</p>
                         @if(isset($estimate['company']['email']))
-                            <p class="text-sm text-gray-600">{{ $estimate['company']['email'] }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $estimate['company']['email'] }}</p>
                         @endif
                         @if(isset($estimate['company']['phone']))
-                            <p class="text-sm text-gray-600">{{ $estimate['company']['phone'] }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $estimate['company']['phone'] }}</p>
                         @endif
                     </div>
                 </div>
@@ -163,8 +163,8 @@
                                 @foreach($estimate['items'] as $item)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ number_format($item['quantity'], 2) }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['unit_price'], 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">{{ number_format($item['quantity'], 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">KES {{ number_format($item['unit_price'], 2) }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">KES {{ number_format($item['total_price'], 2) }}</td>
                                     </tr>
                                 @endforeach
@@ -179,18 +179,18 @@
                 <div class="flex justify-end">
                     <div class="w-full md:w-1/3 space-y-2">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Subtotal:</span>
+                            <span class="text-gray-600 dark:text-gray-300">Subtotal:</span>
                             <span class="font-medium text-gray-900">KES {{ number_format($estimate['subtotal'] ?? 0, 2) }}</span>
                         </div>
                         @if(($estimate['vat_amount'] ?? 0) > 0)
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">VAT (16%):</span>
+                                <span class="text-gray-600 dark:text-gray-300">VAT (16%):</span>
                                 <span class="font-medium text-gray-900">KES {{ number_format($estimate['vat_amount'], 2) }}</span>
                             </div>
                         @endif
                         @if(($estimate['platform_fee'] ?? 0) > 0)
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Platform Fee:</span>
+                                <span class="text-gray-600 dark:text-gray-300">Platform Fee:</span>
                                 <span class="font-medium text-gray-900">KES {{ number_format($estimate['platform_fee'], 2) }}</span>
                             </div>
                         @endif

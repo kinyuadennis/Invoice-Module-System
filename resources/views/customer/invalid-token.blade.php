@@ -15,7 +15,7 @@
                 </svg>
             </div>
             <h1 class="text-2xl font-bold text-gray-900 mb-4">Invalid Invoice Link</h1>
-            <p class="text-gray-600 mb-6">{{ $message ?? 'This invoice link is invalid or has expired. Please contact the sender for a new link.' }}</p>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">{{ $message ?? 'This invoice link is invalid or has expired. Please contact the sender for a new link.' }}</p>
             <a href="/" class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Go to Home
             </a>

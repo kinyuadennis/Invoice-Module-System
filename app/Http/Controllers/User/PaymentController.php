@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 class PaymentController extends Controller
 {
     /**
+     * Show the form for creating a new payment.
+     */
+    public function create()
+    {
+        return view('user.payments.create');
+    }
+
+    /**
      * Display a listing of payments for the current user's active company.
      */
     public function index(Request $request)

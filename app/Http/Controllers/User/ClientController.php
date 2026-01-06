@@ -61,6 +61,14 @@ class ClientController extends Controller
     }
 
     /**
+     * Show the form for creating a new client.
+     */
+    public function create()
+    {
+        return view('user.clients.create');
+    }
+
+    /**
      * Search clients for autocomplete
      */
     public function search(Request $request)

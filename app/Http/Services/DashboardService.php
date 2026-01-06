@@ -60,6 +60,7 @@ class DashboardService
                     'fraudIndicators' => $this->getFraudIndicators($companyId),
                     'aiInsights' => $this->getAiInsights($companyId),
                     'multiCompanyOverview' => $this->getMultiCompanyOverview($companyId),
+                    'revenueChartData' => $this->getRevenueChartData($companyId),
                 ];
             } catch (\Exception $e) {
                 return $this->getEmptyData();
@@ -777,9 +778,9 @@ class DashboardService
 
         $matchedPayments = Schema::hasTable('payments') && Schema::hasTable('bank_transactions')
             ? Payment::where('company_id', $companyId)
-                ->where('status', 'completed')
-                ->whereHas('bankTransaction')
-                ->count()
+            ->where('status', 'completed')
+            ->whereHas('bankTransaction')
+            ->count()
             : 0;
 
         $reconciledPercentage = $totalPayments > 0
@@ -788,8 +789,8 @@ class DashboardService
 
         $pendingTransactions = Schema::hasTable('bank_transactions')
             ? \App\Models\BankTransaction::where('company_id', $companyId)
-                ->where('status', 'pending')
-                ->count()
+            ->where('status', 'pending')
+            ->count()
             : 0;
 
         return [
@@ -820,7 +821,7 @@ class DashboardService
                 return [
                     'type' => 'invoice',
                     'id' => $invoice->id,
-                    'title' => 'Invoice '.($invoice->full_number ?? $invoice->invoice_number ?? 'INV-'.$invoice->id),
+                    'title' => 'Invoice ' . ($invoice->full_number ?? $invoice->invoice_number ?? 'INV-' . $invoice->id),
                     'description' => $invoice->client?->name ?? 'Unknown Client',
                     'status' => $invoice->status,
                     'amount' => (float) $invoice->grand_total,
@@ -864,7 +865,7 @@ class DashboardService
                     return [
                         'type' => 'estimate',
                         'id' => $estimate->id,
-                        'title' => 'Estimate '.($estimate->full_number ?? $estimate->estimate_number ?? 'EST-'.$estimate->id),
+                        'title' => 'Estimate ' . ($estimate->full_number ?? $estimate->estimate_number ?? 'EST-' . $estimate->id),
                         'description' => $estimate->client?->name ?? 'Unknown Client',
                         'status' => $estimate->status,
                         'amount' => (float) $estimate->grand_total,
@@ -1074,7 +1075,7 @@ class DashboardService
                     $recommendations[] = [
                         'type' => 'info',
                         'title' => 'Low Estimate Conversion',
-                        'message' => 'Only '.round($conversionRate, 1).'% of estimates are converted. Review pricing or follow-up process.',
+                        'message' => 'Only ' . round($conversionRate, 1) . '% of estimates are converted. Review pricing or follow-up process.',
                         'action' => route('user.estimates.index'),
                         'actionText' => 'View Estimates',
                     ];
@@ -1126,6 +1127,34 @@ class DashboardService
             'total_reviewed' => $reviewedCount,
             'average_fraud_score' => round((float) $averageFraudScore, 1),
             'requires_review' => $requiresReview,
+        ];
+    }
+    /**
+     * Get revenue data for the last 6 months for charting
+     */
+    public function getRevenueChartData(int $companyId): array
+    {
+        $labels = [];
+        $data = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $month = \Carbon\Carbon::now()->subMonths($i);
+            $labels[] = $month->format('M Y');
+
+            $revenue = Invoice::where('company_id', $companyId)
+                ->where('status', 'paid')
+                ->whereBetween('created_at', [
+                    $month->copy()->startOfMonth(),
+                    $month->copy()->endOfMonth(),
+                ])
+                ->sum('grand_total');
+
+            $data[] = (float) $revenue;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data,
         ];
     }
 }

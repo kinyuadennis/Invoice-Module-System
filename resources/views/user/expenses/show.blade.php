@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Expense {{ $expense['expense_number'] ?? 'EXP-' . str_pad($expense['id'], 3, '0', STR_PAD_LEFT) }}</h1>
-            <p class="mt-1 text-sm text-gray-600">View expense details</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View expense details</p>
         </div>
         <div class="flex items-center space-x-3">
             <a href="{{ route('user.expenses.edit', $expense['id']) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
@@ -112,11 +112,11 @@
                     <div class="bg-blue-50 rounded-lg p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm text-gray-600">Tax Deductible Amount</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Tax Deductible Amount</p>
                                 <p class="text-lg font-semibold text-gray-900">KES {{ number_format($expense['amount'], 2) }}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm text-gray-600">Estimated VAT (16%)</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Estimated VAT (16%)</p>
                                 <p class="text-lg font-semibold text-gray-900">KES {{ number_format($expense['tax_amount'], 2) }}</p>
                             </div>
                         </div>

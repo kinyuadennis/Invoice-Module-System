@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Create Credit Note</h1>
-        <p class="mt-1 text-sm text-gray-600">Issue a credit note for invoice {{ $invoice->full_number ?? $invoice->invoice_reference }}</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Issue a credit note for invoice {{ $invoice->full_number ?? $invoice->invoice_reference }}</p>
     </div>
 
     <!-- Invoice Summary -->
@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Reason Details</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Reason Details</label>
                     <textarea 
                         name="reason_details" 
                         rows="3"
@@ -67,7 +67,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</label>
                     <textarea 
                         name="notes" 
                         rows="3"
@@ -81,7 +81,7 @@
         <!-- Items to Credit -->
         <x-card>
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Items to Credit</h2>
-            <p class="text-sm text-gray-600 mb-4">Select items from the original invoice to credit. Leave empty to credit all items.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Select items from the original invoice to credit. Leave empty to credit all items.</p>
             
             <div class="space-y-4">
                 @foreach($invoice->invoiceItems as $index => $invoiceItem)
@@ -121,7 +121,7 @@
                         <div class="ml-6 mt-3 space-y-2 item-details" id="item_details_{{ $index }}">
                             <input type="hidden" name="items[{{ $index }}][invoice_item_id]" value="{{ $invoiceItem->id }}">
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Quantity to Credit</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Quantity to Credit</label>
                                 <input 
                                     type="number" 
                                     name="items[{{ $index }}][quantity]" 
@@ -134,7 +134,7 @@
                                 >
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Credit Reason</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Credit Reason</label>
                                 <select 
                                     name="items[{{ $index }}][credit_reason]"
                                     class="w-full rounded-lg border-gray-300 text-sm"
@@ -147,7 +147,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-700 mb-1">Reason Details</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Reason Details</label>
                                 <textarea 
                                     name="items[{{ $index }}][credit_reason_details]"
                                     rows="2"
@@ -163,7 +163,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end space-x-3">
-            <a href="{{ route('user.credit-notes.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('user.credit-notes.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50">
                 Cancel
             </a>
             <x-button type="submit" variant="primary">Create Credit Note</x-button>

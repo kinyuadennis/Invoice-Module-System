@@ -15,7 +15,7 @@
             @endif
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">{{ $company->name }}</h1>
-                <p class="mt-1 text-sm text-gray-600">Company details and statistics</p>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Company details and statistics</p>
             </div>
         </div>
         <div class="flex items-center space-x-3">
@@ -52,12 +52,6 @@
             <div class="text-center">
                 <p class="text-sm font-medium text-gray-500">Total Payments</p>
                 <p class="mt-2 text-2xl font-bold text-gray-900">KES {{ number_format($stats['total_payments'] ?? 0, 2) }}</p>
-            </div>
-        </x-card>
-        <x-card padding="sm">
-            <div class="text-center">
-                <p class="text-sm font-medium text-gray-500">Platform Fees</p>
-                <p class="mt-2 text-2xl font-bold text-gray-900">KES {{ number_format($stats['platform_fees_collected'] ?? 0, 2) }}</p>
             </div>
         </x-card>
     </div>
@@ -142,7 +136,7 @@
     <!-- Recent Invoices -->
     @if($recentInvoices->count() > 0)
         <x-card padding="none">
-            <div class="px-6 py-4 border-b border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-[#333333]">
                 <h2 class="text-lg font-semibold text-gray-900">Recent Invoices</h2>
             </div>
             <x-table>
@@ -160,7 +154,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{ $invoice->invoice_reference ?? 'INV-' . str_pad($invoice->id, 3, '0', STR_PAD_LEFT) }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $invoice->client->name ?? 'Unknown' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">

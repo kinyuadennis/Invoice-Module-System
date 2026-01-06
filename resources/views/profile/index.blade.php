@@ -6,7 +6,7 @@
 <div class="max-w-2xl">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Your Profile</h1>
-        <p class="mt-1 text-sm text-gray-600">Manage your account information</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage your account information</p>
     </div>
 
     <x-card>
@@ -32,8 +32,8 @@
             />
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <p class="text-sm text-gray-600">{{ ucfirst($user->role ?? 'user') }}</p>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Role</label>
+                <p class="text-sm text-gray-600 dark:text-gray-300">{{ ucfirst($user->role ?? 'user') }}</p>
             </div>
 
             <div class="flex items-center justify-end">

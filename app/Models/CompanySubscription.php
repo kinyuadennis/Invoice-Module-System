@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CompanySubscription extends Model
 {
+    /**
+     * Use the subscriptions table (renamed from company_subscriptions).
+     * This model is kept for backward compatibility with legacy code.
+     */
+    protected $table = 'subscriptions';
+
     protected $fillable = [
         'company_id',
         'subscription_plan_id',

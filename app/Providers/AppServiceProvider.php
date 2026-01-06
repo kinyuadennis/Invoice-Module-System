@@ -23,6 +23,43 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Custom route model binding for payment status routes
+        // Accepts both Payment and PaymentAttempt (per blueprint)
+        \Illuminate\Support\Facades\Route::bind('paymentOrAttempt', function ($value) {
+            // Try Payment first
+            $payment = \App\Models\Payment::find($value);
+            if ($payment) {
+                return $payment;
+            }
+
+            // Try PaymentAttempt
+            $paymentAttempt = \App\Models\PaymentAttempt::find($value);
+            if ($paymentAttempt) {
+                return $paymentAttempt;
+            }
+
+            // If neither found, try by gateway_transaction_id
+            $payment = \App\Models\Payment::where('gateway_transaction_id', $value)->first();
+            if ($payment) {
+                return $payment;
+            }
+
+            $paymentAttempt = \App\Models\PaymentAttempt::where('gateway_transaction_id', $value)->first();
+            if ($paymentAttempt) {
+                return $paymentAttempt;
+            }
+
+            abort(404, 'Payment or payment attempt not found');
+        });
+        // Register PaymentConfirmed event listener for subscription invoice creation
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Payments\Events\PaymentConfirmed::class,
+            \App\Listeners\Payments\Listeners\CreateInvoiceOnPaymentConfirmed::class
+        );
+
+        // Register Subscription observer to sync payment records
+        \App\Models\Subscription::observe(\App\Observers\SubscriptionObserver::class);
+
         // Share active company with all views that use layouts.user
         // This eliminates DB queries from Blade templates
         // OPTIMIZED: Only run queries if user is authenticated and has active company

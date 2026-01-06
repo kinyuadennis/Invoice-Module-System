@@ -51,22 +51,22 @@
                     <!-- Line Items -->
                     <div class="space-y-3 mb-6">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-700">Car Repair Service</span>
+                            <span class="text-gray-700 dark:text-gray-200">Car Repair Service</span>
                             <span class="font-semibold text-gray-900">KSh 8,500</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-700">Parts & Materials</span>
+                            <span class="text-gray-700 dark:text-gray-200">Parts & Materials</span>
                             <span class="font-semibold text-gray-900">KSh 2,300</span>
                         </div>
                     </div>
 
                     <!-- Totals -->
                     <div class="space-y-2 pt-4 border-t border-gray-200">
-                        <div class="flex justify-between text-sm text-gray-600">
+                        <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300">
                             <span>Subtotal</span>
                             <span>KSh 10,800</span>
                         </div>
-                        <div class="flex justify-between text-sm text-gray-600">
+                        <div class="flex justify-between text-sm text-gray-600 dark:text-gray-300">
                             <span>Platform Fee (3%)</span>
                             <span>KSh 86</span>
                         </div>

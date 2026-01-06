@@ -1,0 +1,178 @@
+/* Premium Dashboard Components - 2026 SaaS Standards */
+
+/* ===== Card Elevation System ===== */
+.card-elevated {
+    @apply rounded-2xl border transition-all duration-300;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.3),
+        0 8px 24px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+.dark .card-elevated {
+    @apply bg-[#1F1F1F] border-[#2A2A2A];
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.4),
+        0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.card-elevated:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 16px 48px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== Metric Icon Backgrounds - Muted ===== */
+.icon-bg-teal {
+    @apply bg-teal-500/10 dark:bg-teal-400/15;
+    @apply ring-1 ring-teal-500/20 dark:ring-teal-400/20;
+}
+
+.icon-bg-emerald {
+    @apply bg-emerald-500/10 dark:bg-emerald-400/15;
+    @apply ring-1 ring-emerald-500/20 dark:ring-emerald-400/20;
+}
+
+.icon-bg-purple {
+    @apply bg-purple-500/10 dark:bg-purple-400/15;
+    @apply ring-1 ring-purple-500/20 dark:ring-purple-400/20;
+}
+
+.icon-bg-blue {
+    @apply bg-blue-500/10 dark:bg-blue-400/15;
+    @apply ring-1 ring-blue-500/20 dark:ring-blue-400/20;
+}
+
+.icon-bg-amber {
+    @apply bg-amber-500/10 dark:bg-amber-400/15;
+    @apply ring-1 ring-amber-500/20 dark:ring-amber-400/20;
+}
+
+.icon-bg-red {
+    @apply bg-red-500/10 dark:bg-red-400/15;
+    @apply ring-1 ring-red-500/20 dark:ring-red-400/20;
+}
+
+/* ===== Status Badges - Professional ===== */
+.badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply ring-1;
+}
+
+.badge-draft {
+    @apply bg-gray-500/10 text-gray-600 dark:text-gray-400;
+    @apply ring-gray-500/20 dark:ring-gray-500/30;
+}
+
+.badge-sent {
+    @apply bg-blue-500/10 text-blue-600 dark:text-blue-400;
+    @apply ring-blue-500/20 dark:ring-blue-500/30;
+}
+
+.badge-paid {
+    @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400;
+    @apply ring-emerald-500/20 dark:ring-emerald-500/30;
+}
+
+.badge-overdue {
+    @apply bg-red-500/10 text-red-600 dark:text-red-400;
+    @apply ring-red-500/20 dark:ring-red-500/30;
+}
+
+.badge-pending {
+    @apply bg-amber-500/10 text-amber-600 dark:text-amber-400;
+    @apply ring-amber-500/20 dark:ring-amber-500/30;
+}
+
+/* ===== Table Enhancements ===== */
+.table-modern {
+    @apply w-full;
+}
+
+.table-modern thead {
+    @apply border-b-2 border-gray-200 dark:border-[#2A2A2A];
+}
+
+.table-modern th {
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider;
+    @apply text-gray-600 dark:text-gray-400;
+}
+
+.table-modern tbody {
+    @apply divide-y divide-gray-100 dark:divide-[#222222];
+}
+
+.table-modern tr {
+    @apply hover:bg-gray-50 dark:hover:bg-[#1A1A1A];
+    @apply transition-colors duration-150 cursor-pointer;
+}
+
+.table-modern tr:nth-child(even) {
+    @apply bg-gray-50/50 dark:bg-[#151515];
+}
+
+.table-modern td {
+    @apply px-4 py-4 text-sm text-gray-900 dark:text-gray-200;
+}
+
+/* ===== Micro-Interactions ===== */
+.interactive-card {
+    @apply transition-all duration-300 ease-out;
+}
+
+.interactive-card:hover {
+    @apply -translate-y-1;
+}
+
+.btn-ripple {
+    @apply relative overflow-hidden;
+}
+
+.btn-ripple::before {
+    content: '';
+    @apply absolute top-1/2 left-1/2 w-0 h-0 rounded-full;
+    @apply bg-white/10;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-ripple:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.nav-item-slide {
+    @apply transition-all duration-200;
+}
+
+.nav-item-slide:hover {
+    @apply pl-5;
+    box-shadow: inset 3px 0 0 #4DABF7;
+}
+
+/* ===== Focus States - Accessibility ===== */
+*:focus-visible {
+    @apply outline-2 outline-blue-500 outline-offset-2 rounded;
+}
+
+button:focus-visible {
+    @apply ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* ===== Text Hierarchy ===== */
+.text-primary-dark {
+    @apply dark:text-[#F5F5F5];
+}
+
+.text-secondary-dark {
+    @apply dark:text-[#D4D4D4];
+}
+
+.text-tertiary-dark {
+    @apply dark:text-[#B8B8B8];
+}
+
+.text-quaternary-dark {
+    @apply dark:text-[#9A9A9A];
+}

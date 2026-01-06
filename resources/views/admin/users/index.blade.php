@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Users</h1>
-        <p class="mt-1 text-sm text-gray-600">Manage all system users</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage all system users</p>
     </div>
 
     <!-- Filters -->
@@ -35,8 +35,8 @@
                 @foreach($users as $user)
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $user['name'] ?? 'Unknown' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $user['email'] ?? 'N/A' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $user['email'] ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             @if($user['company'])
                                 <a href="{{ route('admin.companies.show', $user['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900">
                                     {{ $user['company']['name'] }}

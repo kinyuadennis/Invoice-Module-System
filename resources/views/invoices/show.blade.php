@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Invoice {{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}</h1>
-            <p class="mt-1 text-sm text-gray-600">View and manage invoice details</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View and manage invoice details</p>
         </div>
         <div class="flex items-center space-x-3">
             @if(($invoice['status'] ?? 'draft') === 'draft')
@@ -35,7 +35,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h2 class="text-xl font-semibold text-gray-900">Invoice Details</h2>
-                        <p class="text-sm text-gray-600">Invoice #{{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Invoice #{{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}</p>
                     </div>
                     @php
                         $statusVariant = match(strtolower($invoice['status'] ?? 'draft')) {
@@ -63,7 +63,7 @@
                 <!-- Client Info -->
                 <div class="border-t border-gray-200 pt-6">
                     <h3 class="text-sm font-medium text-gray-900 mb-4">Bill To</h3>
-                    <div class="text-sm text-gray-600">
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
                         <p class="font-medium text-gray-900">{{ $invoice['client']['name'] ?? 'Unknown Client' }}</p>
                         @if(isset($invoice['client']['email']))
                             <p>{{ $invoice['client']['email'] }}</p>
@@ -92,8 +92,8 @@
                     @foreach($invoice['items'] ?? [] as $item)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ $item['quantity'] ?? 0 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">${{ number_format($item['unit_price'] ?? 0, 2) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">{{ $item['quantity'] ?? 0 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">${{ number_format($item['unit_price'] ?? 0, 2) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                                 ${{ number_format($item['total_price'] ?? $item['total'] ?? 0, 2) }}
                             </td>
@@ -109,18 +109,18 @@
             <x-card>
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Summary</h2>
                 <div class="space-y-2 text-sm">
-                    <div class="flex justify-between text-gray-600">
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300">
                         <span>Subtotal</span>
                         <span class="font-medium text-gray-900">${{ number_format($invoice['subtotal'] ?? 0, 2) }}</span>
                     </div>
                     @if(($invoice['tax_rate'] ?? 0) > 0)
-                        <div class="flex justify-between text-gray-600">
+                        <div class="flex justify-between text-gray-600 dark:text-gray-300">
                             <span>Tax ({{ $invoice['tax_rate'] ?? 0 }}%)</span>
                             <span class="font-medium text-gray-900">${{ number_format($invoice['tax'] ?? 0, 2) }}</span>
                         </div>
                     @endif
                     @if(($invoice['platform_fee'] ?? 0) > 0)
-                        <div class="flex justify-between text-gray-600">
+                        <div class="flex justify-between text-gray-600 dark:text-gray-300">
                             <span>Platform Fee</span>
                             <span class="font-medium text-gray-900">${{ number_format($invoice['platform_fee'] ?? 0, 2) }}</span>
                         </div>
@@ -136,7 +136,7 @@
             @if(isset($invoice['notes']) && $invoice['notes'])
                 <x-card>
                     <h2 class="text-lg font-semibold text-gray-900 mb-2">Notes</h2>
-                    <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ $invoice['notes'] }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ $invoice['notes'] }}</p>
                 </x-card>
             @endif
 
@@ -149,7 +149,7 @@
                             <div class="flex items-center justify-between text-sm">
                                 <div>
                                     <p class="font-medium text-gray-900">${{ number_format($payment['amount'] ?? 0, 2) }}</p>
-                                    <p class="text-gray-600">{{ $payment['payment_date'] ? \Carbon\Carbon::parse($payment['payment_date'])->format('M d, Y') : 'N/A' }}</p>
+                                    <p class="text-gray-600 dark:text-gray-300">{{ $payment['payment_date'] ? \Carbon\Carbon::parse($payment['payment_date'])->format('M d, Y') : 'N/A' }}</p>
                                 </div>
                                 <x-badge variant="success">Paid</x-badge>
                             </div>

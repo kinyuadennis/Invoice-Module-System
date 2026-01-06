@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Config\PaymentConstants;
+use App\Config\SubscriptionConstants;
 use App\Http\Controllers\Controller;
+use App\Models\Subscription;
+use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
@@ -29,6 +33,20 @@ class AuthController extends Controller
             'company_name' => 'nullable|string|max:255',
         ]);
 
+        // Handle plan parameter (from query string: ?plan=slug or ?plan_id=id)
+        $planId = null;
+        $planSlug = $request->query('plan');
+        $planIdParam = $request->query('plan_id');
+
+        if ($planIdParam) {
+            $planId = $planIdParam;
+        } elseif ($planSlug) {
+            $plan = SubscriptionPlan::where('slug', $planSlug)->where('is_active', true)->first();
+            if ($plan) {
+                $planId = $plan->id;
+            }
+        }
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -38,6 +56,7 @@ class AuthController extends Controller
         ]);
 
         // Create company if company name provided during registration
+        $company = null;
         if (! empty($validated['company_name'])) {
             $company = \App\Models\Company::create([
                 'owner_user_id' => $user->id,
@@ -58,6 +77,73 @@ class AuthController extends Controller
             // Create default invoice prefix
             $prefixService = app(\App\Services\InvoicePrefixService::class);
             $prefixService->createDefaultPrefix($company, $user->id);
+
+            // Activate free plan for new users (if company was created)
+            // Per Subscription model invariant: A subscription cannot be ACTIVE without at least one successful Payment
+            $freePlan = SubscriptionPlan::where('slug', 'free')->where('is_active', true)->first();
+            if ($freePlan && $company) {
+                $subscriptionService = app(\App\Services\SubscriptionService::class);
+                $subscriptionRepository = app(\App\Subscriptions\Repositories\SubscriptionRepository::class);
+
+                \Illuminate\Support\Facades\DB::beginTransaction();
+
+                try {
+                    // Create subscription with PENDING status (will be activated after payment is created)
+                    $subscription = $subscriptionRepository->create([
+                        'user_id' => $user->id,
+                        'company_id' => $company->id,
+                        'subscription_plan_id' => $freePlan->id,
+                        'plan_code' => $freePlan->slug,
+                        'status' => SubscriptionConstants::SUBSCRIPTION_STATUS_FREE,
+                        'gateway' => PaymentConstants::GATEWAY_STRIPE, // Gateway field is immutable, set it now
+                        'starts_at' => now(),
+                        'ends_at' => null, // Free plan doesn't expire
+                        'auto_renew' => false,
+                    ]);
+
+                    // Create a successful payment record for the free subscription (amount = 0)
+                    // This satisfies the invariant: "A subscription cannot be ACTIVE without at least one successful Payment"
+                    $payment = \App\Models\Payment::create([
+                        'company_id' => $company->id,
+                        'payable_type' => \App\Models\Subscription::class,
+                        'payable_id' => $subscription->id,
+                        'amount' => 0, // Free plan has zero cost
+                        'gateway' => PaymentConstants::GATEWAY_STRIPE,
+                        'status' => PaymentConstants::PAYMENT_STATUS_SUCCESS,
+                        'payment_date' => now(),
+                        'paid_at' => now(),
+                        'gateway_transaction_id' => 'FREE-'.strtoupper(\Illuminate\Support\Str::uuid()),
+                        'gateway_metadata' => [
+                            'type' => 'free_plan_activation',
+                            'plan_code' => $freePlan->slug,
+                        ],
+                    ]);
+
+                    // Activate subscription using the proper state machine method
+                    // This enforces all invariants and creates invoice snapshot
+                    $subscriptionService->activateSubscription($payment);
+
+                    \Illuminate\Support\Facades\DB::commit();
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\DB::rollBack();
+                    \Illuminate\Support\Facades\Log::error('Failed to activate free subscription for new user', [
+                        'user_id' => $user->id,
+                        'company_id' => $company->id,
+                        'plan_id' => $freePlan->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Don't throw - allow registration to continue even if free subscription activation fails
+                }
+            }
+        }
+
+        // Store plan ID in session for redirect after verification (if plan was selected and not free)
+        if ($planId) {
+            $selectedPlan = SubscriptionPlan::find($planId);
+            // Only store if it's not the free plan (free plan is auto-activated above)
+            if ($selectedPlan && $selectedPlan->slug !== 'free') {
+                $request->session()->put('pending_subscription_plan', $planId);
+            }
         }
 
         // Send verification email using Laravel's standard method
@@ -397,16 +483,31 @@ class AuthController extends Controller
                 ->with('status', 'Email verified successfully!');
         }
 
-        // Redirect to onboarding if not completed, otherwise to company setup or dashboard
+        // Check if user registered with a plan selected (preserve through onboarding)
+        $pendingPlanId = $request->session()->get('pending_subscription_plan');
+
+        // Redirect to onboarding if not completed, but preserve plan selection
         if (! $user->onboarding_completed) {
+            // Keep pending_subscription_plan in session for after onboarding
             return redirect()->route('user.onboarding.index')
-                ->with('status', 'Email verified successfully! Let\'s get you set up.');
+                ->with('status', 'Email verified successfully! Let\'s get you set up.')
+                ->with('pending_subscription_plan', $pendingPlanId); // Preserve plan selection
         }
 
         // Redirect to company setup if user doesn't have a company
         if (! $user->company_id) {
+            // Keep pending_subscription_plan in session for after company setup
             return redirect()->route('company.setup')
-                ->with('status', 'Email verified successfully! Please complete your company setup.');
+                ->with('status', 'Email verified successfully! Please complete your company setup.')
+                ->with('pending_subscription_plan', $pendingPlanId); // Preserve plan selection
+        }
+
+        // Now redirect to checkout if plan was selected
+        if ($pendingPlanId) {
+            $request->session()->forget('pending_subscription_plan');
+
+            return redirect()->route('user.subscriptions.checkout', ['plan' => $pendingPlanId])
+                ->with('status', 'Email verified successfully! Complete your subscription setup.');
         }
 
         return redirect()->route('user.dashboard')

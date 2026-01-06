@@ -7,7 +7,7 @@
     <!-- Page Header -->
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Payments</h1>
-        <p class="mt-1 text-sm text-gray-600">Track all payment transactions</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Track all payment transactions</p>
     </div>
 
     <!-- Payments Table -->
@@ -34,13 +34,13 @@
                                 {{ $payment['invoice']['invoice_number'] ?? 'N/A' }}
                             </a>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $payment['invoice']['client']['name'] ?? 'Unknown' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                             ${{ number_format($payment['amount'] ?? 0, 2) }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ ucfirst($payment['payment_method'] ?? 'N/A') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">

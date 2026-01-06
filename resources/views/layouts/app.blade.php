@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="alternate icon" href="{{ route('favicon') }}" type="image/x-icon">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="bg-gray-50">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
@@ -19,7 +21,7 @@
                     <div class="flex items-center flex-shrink-0 px-4">
                         <h1 class="text-2xl font-bold text-indigo-600">InvoiceHub</h1>
                     </div>
-                    
+
                     <!-- Navigation -->
                     <nav class="mt-5 flex-1 px-2 space-y-1">
                         <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
@@ -28,14 +30,14 @@
                             </svg>
                             Dashboard
                         </x-nav-link>
-                        
+
                         <x-nav-link href="{{ route('invoices.index') }}" :active="request()->routeIs('invoices.*')">
                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Invoices
                         </x-nav-link>
-                        
+
                         @can('viewAny', App\Models\Client::class)
                         <x-nav-link href="{{ route('clients.index') }}" :active="request()->routeIs('clients.*')">
                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,14 +46,14 @@
                             Clients
                         </x-nav-link>
                         @endcan
-                        
+
                         <x-nav-link href="{{ route('payments.index') }}" :active="request()->routeIs('payments.*')">
                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                             </svg>
                             Payments
                         </x-nav-link>
-                        
+
                         <x-nav-link href="{{ route('settings.index') }}" :active="request()->routeIs('settings.*')">
                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -76,7 +78,21 @@
                         </svg>
                     </button>
 
-                    <div class="flex-1"></div>
+                    <div class="flex-1 px-4 flex justify-center lg:justify-end">
+                        <div class="max-w-lg w-full lg:max-w-xs">
+                            <label for="search" class="sr-only">Search</label>
+                            <div class="relative">
+                                <form action="{{ route('user.search.index') }}" method="GET">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <input id="search" name="q" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Search invoices, clients..." type="search" value="{{ request('q') }}">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- User menu -->
                     <div class="flex items-center space-x-4" x-data="{ open: false }">
@@ -85,17 +101,17 @@
                                 <div class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium">
                                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                                 </div>
-                                <span class="hidden md:block text-gray-700 font-medium">{{ auth()->user()->name ?? 'User' }}</span>
+                                <span class="hidden md:block text-gray-700 dark:text-gray-200 font-medium">{{ auth()->user()->name ?? 'User' }}</span>
                                 <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
 
                             <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                                <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+                                <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100">Your Profile</a>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100">Sign out</button>
                                 </form>
                             </div>
                         </div>
@@ -109,15 +125,15 @@
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <!-- Flash messages -->
                         @if(session('success'))
-                            <x-alert type="success" class="mb-6">{{ session('success') }}</x-alert>
+                        <x-alert type="success" class="mb-6">{{ session('success') }}</x-alert>
                         @endif
 
                         @if(session('error'))
-                            <x-alert type="error" class="mb-6">{{ session('error') }}</x-alert>
+                        <x-alert type="error" class="mb-6">{{ session('error') }}</x-alert>
                         @endif
 
                         @if(session('message'))
-                            <x-alert type="info" class="mb-6">{{ session('message') }}</x-alert>
+                        <x-alert type="info" class="mb-6">{{ session('message') }}</x-alert>
                         @endif
 
                         @yield('content')
@@ -155,5 +171,5 @@
         </div>
     </div>
 </body>
-</html>
 
+</html>

@@ -5,41 +5,41 @@
             <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
                 See your invoicing dashboard
             </p>
-            <p class="mt-4 text-lg text-gray-600">
+            <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">
                 No login required. Explore what you get instantly.
             </p>
         </div>
 
         <!-- Dashboard Preview Mockup -->
-        <div class="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
+        <div class="bg-white dark:bg-[#242424] rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-[#333333]">
             <!-- Dashboard Header -->
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <div class="h-8 w-8 rounded-full bg-white dark:bg-[#242424]/20 flex items-center justify-center">
                         <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
                     <h3 class="text-white font-bold text-lg">Invoices</h3>
                 </div>
-                <button class="px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-colors">
+                <button class="px-4 py-2 bg-white dark:bg-[#242424] text-blue-600 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-colors">
                     + New Invoice
                 </button>
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-gray-50">
-                <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-gray-50 dark:bg-[#1A1A1A]">
+                <div class="bg-white dark:bg-[#242424] rounded-lg p-4 shadow-sm border border-gray-200 dark:border-[#333333]">
                     <div class="text-sm text-gray-500 mb-1">Sent</div>
                     <div class="text-2xl font-bold text-gray-900">KES 39.5k</div>
                     <div class="text-xs text-gray-400 mt-1">12 invoices</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                <div class="bg-white dark:bg-[#242424] rounded-lg p-4 shadow-sm border border-gray-200 dark:border-[#333333]">
                     <div class="text-sm text-gray-500 mb-1">Total Outstanding</div>
                     <div class="text-2xl font-bold text-gray-900">KES 42.6k</div>
                     <div class="text-xs text-gray-400 mt-1">8 unpaid</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                <div class="bg-white dark:bg-[#242424] rounded-lg p-4 shadow-sm border border-gray-200 dark:border-[#333333]">
                     <div class="text-sm text-gray-500 mb-1">Overdue</div>
                     <div class="text-2xl font-bold text-red-600">KES 17.8k</div>
                     <div class="text-xs text-gray-400 mt-1">3 invoices</div>
@@ -48,10 +48,10 @@
 
             <!-- Invoice List -->
             <div class="p-6">
-                <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Recently Updated</h4>
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide mb-4">Recently Updated</h4>
                 <div class="space-y-3">
                     <!-- Invoice 1 - Paid -->
-                    <div class="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer">
+                    <div class="flex items-center justify-between p-4 bg-white dark:bg-[#242424] rounded-lg border border-gray-200 dark:border-[#333333] hover:border-blue-300 transition-colors cursor-pointer">
                         <div class="flex items-center gap-4">
                             <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
                                 <svg class="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -72,7 +72,7 @@
                     </div>
 
                     <!-- Invoice 2 - Viewed -->
-                    <div class="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer">
+                    <div class="flex items-center justify-between p-4 bg-white dark:bg-[#242424] rounded-lg border border-gray-200 dark:border-[#333333] hover:border-blue-300 transition-colors cursor-pointer">
                         <div class="flex items-center gap-4">
                             <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                                 <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +94,7 @@
                     </div>
 
                     <!-- Invoice 3 - Overdue -->
-                    <div class="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-red-300 transition-colors cursor-pointer">
+                    <div class="flex items-center justify-between p-4 bg-white dark:bg-[#242424] rounded-lg border border-gray-200 dark:border-[#333333] hover:border-red-300 transition-colors cursor-pointer">
                         <div class="flex items-center gap-4">
                             <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
                                 <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,10 +115,10 @@
                     </div>
 
                     <!-- Invoice 4 - Draft -->
-                    <div class="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors cursor-pointer">
+                    <div class="flex items-center justify-between p-4 bg-white dark:bg-[#242424] rounded-lg border border-gray-200 dark:border-[#333333] hover:border-gray-300 dark:border-[#404040] transition-colors cursor-pointer">
                         <div class="flex items-center gap-4">
-                            <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="h-10 w-10 rounded-full bg-gray-100 dark:bg-[#2A2A2A] flex items-center justify-center">
+                                <svg class="h-5 w-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </div>
@@ -131,7 +131,7 @@
                             <div class="text-right">
                                 <div class="font-semibold text-gray-900">KES 180</div>
                             </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Draft</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-[#2A2A2A] text-gray-800">Draft</span>
                         </div>
                     </div>
                 </div>
@@ -140,7 +140,7 @@
             <!-- CTA Footer -->
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-center">
                 <p class="text-white text-sm mb-3">Ready to manage your invoices like this?</p>
-                <a href="{{ route('register') }}" class="inline-block px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg">
+                <a href="{{ route('register') }}" class="inline-block px-6 py-3 bg-white dark:bg-[#242424] text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg">
                     Start Free Trial
                 </a>
             </div>
