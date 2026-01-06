@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Expense Breakdown</h1>
-            <p class="mt-1 text-sm text-gray-600">Detailed expense analysis and categorization</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Detailed expense analysis and categorization</p>
         </div>
     </div>
 
@@ -16,7 +16,7 @@
     <x-card>
         <form method="GET" action="{{ route('user.reports.expenses') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Start Date</label>
                 <input 
                     type="date" 
                     name="start_date" 
@@ -25,7 +25,7 @@
                 />
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">End Date</label>
                 <input 
                     type="date" 
                     name="end_date" 
@@ -53,7 +53,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Total Expenses</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Total Expenses</p>
                         <p class="text-2xl font-bold text-gray-900">KES {{ number_format($report['summary']['total_expenses'], 2) }}</p>
                     </div>
                     <div class="p-3 bg-red-100 rounded-lg">
@@ -66,7 +66,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Tax Deductible</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Tax Deductible</p>
                         <p class="text-2xl font-bold text-green-600">KES {{ number_format($report['summary']['tax_deductible'], 2) }}</p>
                     </div>
                     <div class="p-3 bg-green-100 rounded-lg">
@@ -79,7 +79,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Expense Count</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Expense Count</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $report['summary']['expense_count'] }}</p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-lg">
@@ -92,7 +92,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Average Expense</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Average Expense</p>
                         <p class="text-2xl font-bold text-gray-900">KES {{ number_format($report['summary']['average_expense'], 2) }}</p>
                     </div>
                     <div class="p-3 bg-purple-100 rounded-lg">
@@ -132,10 +132,10 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-green-600">
                                     KES {{ number_format($category['tax_deductible'], 2) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                                     {{ $category['count'] }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                                     @if(($report['summary']['total_expenses'] ?? 0) > 0)
                                         {{ number_format(($category['amount'] / $report['summary']['total_expenses']) * 100, 1) }}%
                                     @else
@@ -157,7 +157,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 @foreach($report['by_payment_method'] as $method)
                     <div class="border border-gray-200 rounded-lg p-4">
-                        <p class="text-sm text-gray-600 mb-1">{{ ucfirst($method['method']) }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">{{ ucfirst($method['method']) }}</p>
                         <p class="text-2xl font-bold text-gray-900">KES {{ number_format($method['amount'], 2) }}</p>
                         <p class="text-xs text-gray-500 mt-1">{{ $method['count'] }} expense(s)</p>
                     </div>
@@ -189,10 +189,10 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                                     KES {{ number_format($month['amount'], 2) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                                     {{ $month['count'] }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                                     KES {{ number_format($month['count'] > 0 ? $month['amount'] / $month['count'] : 0, 2) }}
                                 </td>
                             </tr>
@@ -230,13 +230,13 @@
                                 <td class="px-6 py-4 text-sm text-gray-900">
                                     {{ $expense['description'] }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                     {{ $expense['category'] }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                                     KES {{ number_format($expense['amount'], 2) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                     {{ \Carbon\Carbon::parse($expense['date'])->format('M d, Y') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

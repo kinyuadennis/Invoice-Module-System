@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Edit Role</h1>
-        <p class="mt-1 text-sm text-gray-600">Update role details and permissions</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update role details and permissions</p>
     </div>
 
     <form method="POST" action="{{ route('user.roles.update', $role['id']) }}" class="space-y-6">
@@ -28,7 +28,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
                     <textarea 
                         name="description" 
                         rows="3"
@@ -45,7 +45,7 @@
                         {{ ($role['is_active'] ?? true) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     >
-                    <label for="is_active" class="ml-2 text-sm font-medium text-gray-700">Active</label>
+                    <label for="is_active" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">Active</label>
                 </div>
             </div>
         </x-card>
@@ -53,7 +53,7 @@
         <!-- Permissions -->
         <x-card>
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Permissions</h2>
-            <p class="text-sm text-gray-600 mb-4">Select the permissions this role should have</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Select the permissions this role should have</p>
             
             <div class="space-y-6">
                 @foreach($permissions as $category => $categoryPermissions)
@@ -80,7 +80,7 @@
                                         @endphp
                                         {{ in_array($permission->id, old('permissions', $rolePermissions)) ? 'checked' : '' }}
                                     >
-                                    <label for="permission_{{ $permission->id }}" class="ml-2 text-sm text-gray-700">
+                                    <label for="permission_{{ $permission->id }}" class="ml-2 text-sm text-gray-700 dark:text-gray-200">
                                         <span class="font-medium">{{ $permission->display_name }}</span>
                                         @if($permission->description)
                                             <p class="text-xs text-gray-500 mt-0.5">{{ $permission->description }}</p>
@@ -96,7 +96,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end space-x-3">
-            <a href="{{ route('user.roles.show', $role['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('user.roles.show', $role['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50">
                 Cancel
             </a>
             <x-button type="submit" variant="primary">Update Role</x-button>

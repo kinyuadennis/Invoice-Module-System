@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Aging Report</h1>
-            <p class="mt-1 text-sm text-gray-600">Outstanding invoices grouped by age</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Outstanding invoices grouped by age</p>
         </div>
     </div>
 
@@ -16,7 +16,7 @@
     <x-card>
         <form method="GET" action="{{ route('user.reports.aging') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">As of Date</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">As of Date</label>
                 <input 
                     type="date" 
                     name="as_of_date" 
@@ -36,7 +36,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Total Outstanding</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Total Outstanding</p>
                         <p class="text-2xl font-bold text-gray-900">KES {{ number_format($report['summary']['total_outstanding'], 2) }}</p>
                     </div>
                     <div class="p-3 bg-red-100 rounded-lg">
@@ -49,7 +49,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Total Invoices</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Total Invoices</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $report['summary']['total_invoices'] }}</p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-lg">
@@ -69,7 +69,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 @foreach($report['aging_buckets'] as $bucket)
                     <div class="border border-gray-200 rounded-lg p-4 {{ $bucket['min'] > 90 ? 'bg-red-50 border-red-200' : ($bucket['min'] > 60 ? 'bg-orange-50 border-orange-200' : ($bucket['min'] > 30 ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200')) }}">
-                        <p class="text-sm font-medium text-gray-700 mb-1">{{ $bucket['label'] }}</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ $bucket['label'] }}</p>
                         <p class="text-2xl font-bold text-gray-900">KES {{ number_format($bucket['amount'], 2) }}</p>
                         <p class="text-xs text-gray-500 mt-1">{{ $bucket['count'] }} invoice(s)</p>
                     </div>
@@ -107,16 +107,16 @@
                         <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
                             {{ $detail['client_name'] }}
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ \Carbon\Carbon::parse($detail['invoice_date'])->format('M d, Y') }}
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ \Carbon\Carbon::parse($detail['due_date'])->format('M d, Y') }}
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                             KES {{ number_format($detail['invoice_total'], 2) }}
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                             KES {{ number_format($detail['amount_paid'], 2) }}
                         </td>
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900">

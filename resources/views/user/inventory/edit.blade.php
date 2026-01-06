@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Edit Inventory Item</h1>
-        <p class="mt-1 text-sm text-gray-600">Update inventory item details</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update inventory item details</p>
     </div>
 
     <form method="POST" action="{{ route('user.inventory.update', $inventoryItem['id']) }}" class="space-y-6">
@@ -91,7 +91,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
                     <textarea 
                         name="description" 
                         rows="3"
@@ -154,7 +154,7 @@
                         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         onchange="toggleStockFields()"
                     >
-                    <label for="track_stock" class="ml-2 text-sm font-medium text-gray-700">Track Stock</label>
+                    <label for="track_stock" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">Track Stock</label>
                 </div>
 
                 <div class="flex items-center">
@@ -166,7 +166,7 @@
                         {{ ($inventoryItem['auto_deduct_on_invoice'] ?? false) ? 'checked' : '' }}
                         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     >
-                    <label for="auto_deduct_on_invoice" class="ml-2 text-sm font-medium text-gray-700">Auto-deduct on Invoice</label>
+                    <label for="auto_deduct_on_invoice" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">Auto-deduct on Invoice</label>
                 </div>
 
                 <div id="stock_fields">
@@ -204,7 +204,7 @@
                 </div>
 
                 <div id="stock_fields" class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock Adjustment Reason (if changing stock)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Stock Adjustment Reason (if changing stock)</label>
                     <textarea 
                         name="stock_adjustment_reason" 
                         rows="2"
@@ -227,13 +227,13 @@
                     {{ ($inventoryItem['is_active'] ?? true) ? 'checked' : '' }}
                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 >
-                <label for="is_active" class="ml-2 text-sm font-medium text-gray-700">Active</label>
+                <label for="is_active" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">Active</label>
             </div>
         </x-card>
 
         <!-- Actions -->
         <div class="flex items-center justify-end space-x-3">
-            <a href="{{ route('user.inventory.show', $inventoryItem['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('user.inventory.show', $inventoryItem['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50">
                 Cancel
             </a>
             <x-button type="submit" variant="primary">Update Item</x-button>

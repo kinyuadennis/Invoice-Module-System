@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Clients</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage your client database</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage your client database</p>
         </div>
         <a href="{{ route('clients.create') }}">
             <x-button variant="primary">
@@ -39,18 +39,18 @@
                             <div class="text-sm font-medium text-gray-900">{{ $client['name'] ?? 'Unknown' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-600">{{ $client['email'] ?? 'N/A' }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300">{{ $client['email'] ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-600">{{ $client['phone'] ?? 'N/A' }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300">{{ $client['phone'] ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-600">{{ $client['invoices_count'] ?? 0 }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-300">{{ $client['invoices_count'] ?? 0 }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
                                 <a href="{{ route('clients.show', $client['id']) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
-                                <a href="{{ route('clients.edit', $client['id']) }}" class="text-gray-600 hover:text-gray-900">Edit</a>
+                                <a href="{{ route('clients.edit', $client['id']) }}" class="text-gray-600 dark:text-gray-300 hover:text-gray-900">Edit</a>
                                 @if(($client['invoices_count'] ?? 0) === 0)
                                     <form method="POST" action="{{ route('clients.destroy', $client['id']) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this client?');">
                                         @csrf

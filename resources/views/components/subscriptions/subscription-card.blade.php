@@ -24,7 +24,7 @@ $isCancelled = $subscription->isCancelled();
             </div>
 
             @if($plan?->description)
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-4">
                     {{ $plan->description }}
                 </p>
             @endif

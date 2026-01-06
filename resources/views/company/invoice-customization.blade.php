@@ -9,7 +9,7 @@
     <!-- Header -->
     <div class="mb-8 border-b border-gray-200 pb-6">
         <h1 class="text-2xl font-bold text-gray-900">Invoice Customization</h1>
-        <p class="mt-2 text-gray-600">Design professional invoices that match your brand identity.</p>
+        <p class="mt-2 text-gray-600 dark:text-gray-300">Design professional invoices that match your brand identity.</p>
     </div>
 
     @if(session('success'))
@@ -47,7 +47,7 @@
 
                         <!-- Quick Palettes -->
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Quick Palettes</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Quick Palettes</label>
                             <div class="flex flex-wrap gap-2">
                                 <template x-for="preset in presets" :key="preset.name">
                                     <button
@@ -102,7 +102,7 @@
                         </div>
 
                         <div class="mb-6">
-                            <label for="font_family" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="font_family" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                 Typography
                             </label>
                             <div class="grid grid-cols-2 gap-3">
@@ -110,7 +110,7 @@
                                     <button
                                         type="button"
                                         @click="settings.branding.fontFamily = font; updatePreview()"
-                                        :class="settings.branding.fontFamily === font ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300 text-gray-700'"
+                                        :class="settings.branding.fontFamily === font ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300 text-gray-700 dark:text-gray-200'"
                                         class="px-4 py-2 border rounded-lg text-sm transition-colors text-left"
                                         :style="`font-family: ${font}, sans-serif`">
                                         <span x-text="font"></span>
@@ -205,7 +205,7 @@
                         </div>
 
                         <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4">
-                            <span class="text-sm text-gray-600">Next Invoice:</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-300">Next Invoice:</span>
                             <span class="font-mono font-bold text-gray-900" x-text="numberingPreview"></span>
                         </div>
 
@@ -258,7 +258,7 @@
                         @csrf
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Table Borders</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Table Borders</label>
                                 <select x-model="settings.advancedStyling.tableBorders" @change="updatePreview()" class="w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="none">None</option>
                                     <option value="thin">Thin</option>
@@ -267,7 +267,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Custom CSS</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Custom CSS</label>
                                 <textarea x-model="settings.advancedStyling.customCss" @input="updatePreview()" rows="4" class="w-full rounded-md border-gray-300 text-xs font-mono focus:border-blue-500 focus:ring-blue-500" placeholder="/* Custom CSS */"></textarea>
                             </div>
                             <div class="flex justify-end">
@@ -286,13 +286,13 @@
                 <div class="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
                     <!-- Preview Toolbar -->
                     <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                        <span class="text-sm font-medium text-gray-600">Live Preview</span>
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Live Preview</span>
                         <div class="flex items-center gap-2">
                             <div class="flex bg-white rounded-lg border border-gray-200 p-0.5">
                                 <button @click="previewZoom = Math.max(50, previewZoom - 10)" class="p-1 hover:bg-gray-100 rounded text-gray-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                                     </svg></button>
-                                <span class="px-2 text-xs font-mono flex items-center text-gray-600" x-text="previewZoom + '%'"></span>
+                                <span class="px-2 text-xs font-mono flex items-center text-gray-600 dark:text-gray-300" x-text="previewZoom + '%'"></span>
                                 <button @click="previewZoom = Math.min(150, previewZoom + 10)" class="p-1 hover:bg-gray-100 rounded text-gray-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                     </svg></button>
@@ -310,7 +310,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span class="text-sm font-medium text-gray-600">Generating Preview...</span>
+                                <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Generating Preview...</span>
                             </div>
                         </div>
 

@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">{{ $client['name'] ?? 'Client' }}</h1>
-            <p class="mt-1 text-sm text-gray-600">Client information and invoices</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Client information and invoices</p>
         </div>
         <div class="flex items-center space-x-3">
             <a href="{{ route('admin.clients.edit', $client['id']) }}">
@@ -63,7 +63,7 @@
     <!-- Invoices -->
     @if(isset($client['invoices']) && count($client['invoices']) > 0)
         <x-card padding="none">
-            <div class="px-6 py-4 border-b border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-[#333333]">
                 <h2 class="text-lg font-semibold text-gray-900">Invoices</h2>
             </div>
             <x-table>
@@ -95,7 +95,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                             KES {{ number_format($invoice->grand_total ?? $invoice->total ?? 0, 2) }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') : 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

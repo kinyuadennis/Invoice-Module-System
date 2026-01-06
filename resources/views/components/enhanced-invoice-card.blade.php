@@ -13,8 +13,8 @@
         'paid' => 'bg-emerald-100 text-emerald-700',
         'overdue' => 'bg-rose-100 text-rose-700',
         'sent' => 'bg-indigo-100 text-indigo-700',
-        'draft' => 'bg-gray-100 text-gray-700',
-        default => 'bg-gray-100 text-gray-700',
+        'draft' => 'bg-gray-100 text-gray-700 dark:text-gray-200',
+        default => 'bg-gray-100 text-gray-700 dark:text-gray-200',
     };
 
     // Determine payment method (mock for now - would come from database)
@@ -31,7 +31,7 @@
     <div class="flex items-start justify-between mb-4">
         <div class="flex-1">
             <h3 class="text-lg font-bold text-gray-900">{{ $invoice['invoice_number'] }}</h3>
-            <p class="text-sm text-gray-600 mt-1">{{ $invoice['client_name'] }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ $invoice['client_name'] }}</p>
         </div>
         <div class="flex flex-col items-end gap-2">
             <span class="px-3 py-1 {{ $statusColor }} rounded-full text-xs font-semibold uppercase">
@@ -68,7 +68,7 @@
         x-transition:enter-end="opacity-100 transform translate-y-0"
         class="flex gap-2 mb-4"
     >
-        <button class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-semibold transition-colors">
+        <button class="flex-1 px-3 py-2 bg-gray-100 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 text-xs font-semibold transition-colors">
             Send Reminder
         </button>
         <button class="flex-1 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 text-xs font-semibold transition-colors">

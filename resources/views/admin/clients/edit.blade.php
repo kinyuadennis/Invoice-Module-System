@@ -20,8 +20,8 @@
             <x-input type="text" name="kra_pin" label="KRA PIN" value="{{ old('kra_pin', $client['kra_pin'] ?? '') }}" />
 
             <div>
-                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <textarea name="address" id="address" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">{{ old('address', $client['address'] ?? '') }}</textarea>
+                <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Address</label>
+                <textarea name="address" id="address" rows="3" class="block w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">{{ old('address', $client['address'] ?? '') }}</textarea>
             </div>
 
             <div class="flex items-center justify-end space-x-3">

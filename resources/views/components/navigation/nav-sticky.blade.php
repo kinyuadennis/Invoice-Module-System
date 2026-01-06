@@ -136,7 +136,7 @@
             <!-- Mobile Menu Button -->
             <div class="md:hidden flex items-center space-x-2">
                 @guest
-                <a href="{{ route('login') }}" class="text-slate-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">
+                <a href="{{ route('login') }}" class="text-slate-700 hover:text-blue-600 px-4 py-3 text-base font-medium min-h-[44px]">
                     Login
                 </a>
                 @endguest

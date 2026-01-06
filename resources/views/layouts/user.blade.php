@@ -15,7 +15,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-50 dark:bg-[#0F172A] dark:text-gray-100 transition-colors duration-200">
+<body class="bg-gray-50 dark:bg-[#0A0A0A] dark:text-[#D4D4D4] selection:bg-blue-500/30 selection:text-white transition-colors duration-200">
     <!-- Skip to content link for accessibility -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#2B6EF6] focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B6EF6] focus:ring-offset-2">
         Skip to main content
@@ -24,7 +24,7 @@
         <!-- Sidebar -->
         <aside class="hidden lg:flex lg:flex-shrink-0">
             <div class="flex flex-col w-64">
-                <div class="flex flex-col flex-grow bg-[#0F172A] text-white pt-5 pb-4 overflow-y-auto">
+                <div class="flex flex-col flex-grow bg-[#111111] text-white pt-6 pb-4 overflow-y-auto border-r border-gray-100 dark:border-[#1F1F1F]">
                     <!-- Logo -->
                     <div class="flex items-center flex-shrink-0 px-4">
                         <a href="{{ route('user.dashboard') }}" class="flex items-center space-x-2">
@@ -39,91 +39,91 @@
 
                     <!-- Navigation -->
                     <nav class="mt-5 flex-1 px-3 space-y-1">
-                        <a href="{{ route('home', ['view' => 'landing']) }}" class="{{ request()->routeIs('home') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('home', ['view' => 'landing']) }}" class="{{ request()->routeIs('home') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('home') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
                             Home
                         </a>
 
-                        <a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.dashboard') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                             </svg>
                             Dashboard
                         </a>
 
-                        <a href="{{ route('user.invoices.index') }}" class="{{ request()->routeIs('user.invoices.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.invoices.index') }}" class="{{ request()->routeIs('user.invoices.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.invoices.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Invoices
                         </a>
 
-                        <a href="{{ route('user.estimates.index') }}" class="{{ request()->routeIs('user.estimates.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.estimates.index') }}" class="{{ request()->routeIs('user.estimates.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.estimates.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Estimates
                         </a>
 
-                        <a href="{{ route('user.expenses.index') }}" class="{{ request()->routeIs('user.expenses.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.expenses.index') }}" class="{{ request()->routeIs('user.expenses.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.expenses.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                             Expenses
                         </a>
 
-                        <a href="{{ route('user.credit-notes.index') }}" class="{{ request()->routeIs('user.credit-notes.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.credit-notes.index') }}" class="{{ request()->routeIs('user.credit-notes.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.credit-notes.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Credit Notes
                         </a>
 
-                        <a href="{{ route('user.inventory.index') }}" class="{{ request()->routeIs('user.inventory.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.inventory.index') }}" class="{{ request()->routeIs('user.inventory.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.inventory.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
                             Inventory
                         </a>
 
-                        <a href="{{ route('user.payments.index') }}" class="{{ request()->routeIs('user.payments.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.payments.index') }}" class="{{ request()->routeIs('user.payments.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.payments.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                             </svg>
                             Payments
                         </a>
 
-                        <a href="{{ route('user.subscriptions.index') }}" class="{{ request()->routeIs('user.subscriptions.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.subscriptions.index') }}" class="{{ request()->routeIs('user.subscriptions.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.subscriptions.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                             Subscriptions
                         </a>
 
-                        <a href="{{ route('user.recurring-invoices.index') }}" class="{{ request()->routeIs('user.recurring-invoices.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.recurring-invoices.index') }}" class="{{ request()->routeIs('user.recurring-invoices.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.recurring-invoices.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                             Recurring Invoices
                         </a>
 
-                        <a href="{{ route('user.reports.index') }}" class="{{ request()->routeIs('user.reports.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.reports.index') }}" class="{{ request()->routeIs('user.reports.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.reports.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                             Reports
                         </a>
 
-                        <a href="{{ route('user.approvals.index') }}" class="{{ request()->routeIs('user.approvals.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.approvals.index') }}" class="{{ request()->routeIs('user.approvals.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.approvals.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             Approvals
                         </a>
 
-                        <a href="{{ route('user.profile') }}" class="{{ request()->routeIs('user.profile') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.profile') }}" class="{{ request()->routeIs('user.profile') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.profile') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -131,7 +131,7 @@
                         </a>
 
                         @if(isset($activeCompany) && $activeCompany?->owner_user_id === auth()->id())
-                        <a href="{{ route('user.company.settings') }}" class="{{ request()->routeIs('user.company.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.company.settings') }}" class="{{ request()->routeIs('user.company.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.company.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -139,7 +139,7 @@
                             Company Settings
                         </a>
 
-                        <a href="{{ route('user.roles.index') }}" class="{{ request()->routeIs('user.roles.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.roles.index') }}" class="{{ request()->routeIs('user.roles.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.roles.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-3-3h-2a3 3 0 00-3 3v2zM13 10a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
@@ -154,8 +154,8 @@
         <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Top navbar -->
-            <header class="bg-white shadow-sm border-b border-gray-200">
-                <div class="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
+            <header class="bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl sticky top-0 z-40 border-b border-gray-100 dark:border-[#1F1F1F]">
+                <div class="flex items-center justify-between px-6 sm:px-8 h-16">
                     <!-- Mobile menu button -->
                     <button type="button" class="lg:hidden -ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" x-data @click="$dispatch('toggle-sidebar')">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,7 +184,7 @@
                         <div class="relative">
                             <button
                                 @click="open = !open"
-                                class="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:border-[#2B6EF6] hover:bg-blue-50 focus:outline-none focus-visible:outline-2 focus-visible:outline-[#2B6EF6] focus-visible:outline-offset-2 transition-all duration-150 shadow-sm hover:shadow-md"
+                                class="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border-2 border-gray-200 rounded-lg hover:border-[#2B6EF6] hover:bg-blue-50 focus:outline-none focus-visible:outline-2 focus-visible:outline-[#2B6EF6] focus-visible:outline-offset-2 transition-all duration-150 shadow-sm hover:shadow-md"
                                 title="Switch Company (⌘K / Ctrl+K)">
                                 @if($activeCompany?->logo)
                                 <img src="{{ Storage::url($activeCompany->logo) }}" alt="{{ $activeCompany->name }}" class="h-7 w-7 rounded object-contain ring-2 ring-gray-100">
@@ -226,7 +226,7 @@
                                 <form method="POST" action="{{ route('user.company.switch') }}" class="company-switch-form">
                                     @csrf
                                     <input type="hidden" name="company_id" value="{{ $company->id }}">
-                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-3 {{ $company->id === $activeCompany?->id ? 'bg-blue-50 text-[#2B6EF6] border-l-2 border-[#2B6EF6]' : '' }}">
+                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 flex items-center space-x-3 {{ $company->id === $activeCompany?->id ? 'bg-blue-50 text-[#2B6EF6] border-l-2 border-[#2B6EF6]' : '' }}">
                                         @if($company->logo)
                                         <img src="{{ Storage::url($company->logo) }}" alt="{{ $company->name }}" class="h-6 w-6 rounded object-contain">
                                         @else
@@ -252,7 +252,7 @@
                                     <a href="{{ route('user.companies.create') }}" class="block px-2 py-1.5 text-xs font-semibold text-[#2B6EF6] hover:text-[#2563EB] hover:bg-blue-50 rounded">
                                         + Add New Company
                                     </a>
-                                    <a href="{{ route('user.companies.index') }}" class="block px-2 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded">
+                                    <a href="{{ route('user.companies.index') }}" class="block px-2 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded">
                                         Manage Companies
                                     </a>
                                 </div>
@@ -268,20 +268,20 @@
                                 <div class="h-8 w-8 rounded-full bg-[#374151] flex items-center justify-center text-white font-medium">
                                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                                 </div>
-                                <span class="hidden md:block text-gray-700 font-medium">{{ auth()->user()->name ?? 'User' }}</span>
+                                <span class="hidden md:block text-gray-700 dark:text-gray-200 font-medium">{{ auth()->user()->name ?? 'User' }}</span>
                                 <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
 
                             <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200">
-                                <a href="{{ route('user.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">Your Profile</a>
+                                <a href="{{ route('user.profile') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors duration-150">Your Profile</a>
                                 @if($companies->count() > 0)
-                                <a href="{{ route('user.companies.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">Manage Companies</a>
+                                <a href="{{ route('user.companies.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors duration-150">Manage Companies</a>
                                 @endif
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150">Sign out</button>
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 transition-colors duration-150">Sign out</button>
                                 </form>
                             </div>
                         </div>
@@ -290,9 +290,9 @@
             </header>
 
             <!-- Page content -->
-            <main id="main-content" class="flex-1 overflow-y-auto bg-gray-50">
-                <div class="py-6">
-                    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+            <main id="main-content" class="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#0A0A0A]">
+                <div class="py-8">
+                    <div class="max-w-[1280px] mx-auto px-6 sm:px-8 lg:px-10">
                         <!-- Flash messages -->
                         @if(session('success'))
                         <x-alert type="success" class="mb-6">{{ session('success') }}</x-alert>

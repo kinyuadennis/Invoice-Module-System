@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Edit Expense</h1>
-        <p class="mt-1 text-sm text-gray-600">Update expense details</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update expense details</p>
     </div>
 
     <form method="POST" action="{{ route('user.expenses.update', $expense['id']) }}" enctype="multipart/form-data" class="space-y-6">
@@ -129,14 +129,14 @@
                             {{ old('tax_deductible', $expense['tax_deductible'] ?? true) ? 'checked' : '' }}
                             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         >
-                        <label for="tax_deductible" class="ml-2 text-sm text-gray-700">
+                        <label for="tax_deductible" class="ml-2 text-sm text-gray-700 dark:text-gray-200">
                             Tax Deductible
                         </label>
                     </div>
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Receipt (Optional)
                     </label>
                     @if(isset($expense['receipt_path']) && $expense['receipt_path'])
@@ -156,7 +156,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</label>
                     <textarea 
                         name="notes" 
                         rows="3"
@@ -169,7 +169,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end space-x-3">
-            <a href="{{ route('user.expenses.show', $expense['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('user.expenses.show', $expense['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50">
                 Cancel
             </a>
             <x-button type="submit" variant="primary">Update Expense</x-button>

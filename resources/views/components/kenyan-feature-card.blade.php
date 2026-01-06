@@ -5,7 +5,7 @@
         'M-Pesa Verified' => 'bg-green-100 text-green-700 border-green-200',
         'KRA Ready' => 'bg-blue-100 text-blue-700 border-blue-200',
         'New' => 'bg-purple-100 text-purple-700 border-purple-200',
-        default => 'bg-gray-100 text-gray-700 border-gray-200',
+        default => 'bg-gray-100 text-gray-700 dark:text-gray-200 border-gray-200',
     };
 @endphp
 
@@ -31,7 +31,7 @@
     <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $feature['name'] }}</h3>
     
     <!-- Description -->
-    <p class="text-sm text-gray-600 mb-4">{{ $feature['description'] }}</p>
+    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">{{ $feature['description'] }}</p>
 
     <!-- Benefit/Metric -->
     @if(isset($feature['benefit']))
@@ -44,7 +44,7 @@
     @endif
 
     @if(isset($feature['metric']))
-        <div class="text-sm font-semibold text-gray-700 mb-4">
+        <div class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">
             {{ $feature['metric'] }}
         </div>
     @endif
@@ -58,7 +58,7 @@
             x-transition:enter-end="opacity-100"
             class="mt-4"
         >
-            <button class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-semibold transition-colors">
+            <button class="w-full px-4 py-2 bg-gray-100 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 text-sm font-semibold transition-colors">
                 View Demo
             </button>
         </div>

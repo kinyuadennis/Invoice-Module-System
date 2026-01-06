@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Subscriptions</h1>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage your subscription plans and billing</p>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">Manage your subscription plans and billing</p>
     </div>
 
     @if(session('success'))
@@ -27,7 +27,7 @@
 
     @if($subscriptions->isEmpty() && $availablePlans->isEmpty())
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-            <p class="text-gray-600 dark:text-gray-400 mb-4">No subscription plans available at this time.</p>
+            <p class="text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-4">No subscription plans available at this time.</p>
         </div>
     @elseif($subscriptions->isEmpty())
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 mb-6">
@@ -38,11 +38,11 @@
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $plan->name }}</h3>
                         <p class="text-2xl font-bold text-gray-900 dark:text-white mt-2">
                             {{ $plan->currency ?? 'KES' }} {{ number_format($plan->price, 2) }}
-                            <span class="text-sm font-normal text-gray-600 dark:text-gray-400">
+                            <span class="text-sm font-normal text-gray-600 dark:text-gray-300 dark:text-gray-400">
                                 / {{ $plan->billing_period ?? 'month' }}
                             </span>
                         </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ $plan->description }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mt-2">{{ $plan->description }}</p>
                         <form action="{{ route('user.subscriptions.store') }}" method="POST" class="mt-4">
                             @csrf
                             <input type="hidden" name="subscription_plan_id" value="{{ $plan->id }}">

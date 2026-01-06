@@ -8,7 +8,7 @@
         <div>
             <h1 class="text-9xl font-bold text-gray-200">404</h1>
             <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Page Not Found</h2>
-            <p class="mt-2 text-sm text-gray-600">
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                 Sorry, we couldn't find the page you're looking for.
             </p>
         </div>

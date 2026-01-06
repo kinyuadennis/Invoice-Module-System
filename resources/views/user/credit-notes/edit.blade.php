@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Edit Credit Note</h1>
-        <p class="mt-1 text-sm text-gray-600">Update credit note details</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Update credit note details</p>
     </div>
 
     <form method="POST" action="{{ route('user.credit-notes.update', $creditNote['id']) }}" class="space-y-6">
@@ -34,7 +34,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Reason Details</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Reason Details</label>
                     <textarea 
                         name="reason_details" 
                         rows="3"
@@ -44,7 +44,7 @@
                 </div>
 
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</label>
                     <textarea 
                         name="notes" 
                         rows="3"
@@ -80,7 +80,7 @@
 
         <!-- Actions -->
         <div class="flex items-center justify-end space-x-3">
-            <a href="{{ route('user.credit-notes.show', $creditNote['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('user.credit-notes.show', $creditNote['id']) }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50">
                 Cancel
             </a>
             <x-button type="submit" variant="primary">Update Credit Note</x-button>

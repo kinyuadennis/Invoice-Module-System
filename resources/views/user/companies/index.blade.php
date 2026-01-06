@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Manage Companies</h1>
-            <p class="mt-1 text-sm text-gray-600">Create and manage your companies</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Create and manage your companies</p>
         </div>
         <a href="{{ route('user.companies.create') }}">
             <x-button variant="primary">
@@ -51,7 +51,7 @@
                         </div>
                     </div>
 
-                    <div class="space-y-2 text-sm text-gray-600 mb-4">
+                    <div class="space-y-2 text-sm text-gray-600 dark:text-gray-300 mb-4">
                         @if($company->email)
                             <div class="flex items-center">
                                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

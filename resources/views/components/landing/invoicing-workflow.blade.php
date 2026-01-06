@@ -1,11 +1,11 @@
-<div class="py-12 bg-gray-50" id="invoicing-workflow">
+<div class="py-12 bg-gray-50 dark:bg-[#1A1A1A]" id="invoicing-workflow">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-base text-blue-600 font-semibold tracking-wide uppercase">How It Works</h2>
             <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
                 From setup to payment in 4 simple steps
             </p>
-            <p class="mt-4 text-lg text-gray-600">
+            <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">
                 See exactly how InvoiceHub makes your invoicing effortless.
             </p>
         </div>
@@ -23,10 +23,10 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">Setup & Branding</h3>
-                        <p class="text-gray-600 mb-3">
+                        <p class="text-gray-600 dark:text-gray-300 mb-3">
                             Add your company details, KRA PIN, and logo. We'll configure everything to meet KRA requirements automatically.
                         </p>
-                        <ul class="space-y-1 text-sm text-gray-600">
+                        <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -52,10 +52,10 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">Create Your Invoice</h3>
-                        <p class="text-gray-600 mb-3">
+                        <p class="text-gray-600 dark:text-gray-300 mb-3">
                             Select a client, add line items, and watch VAT calculate automatically. Your invoice is eTIMS-ready in seconds.
                         </p>
-                        <ul class="space-y-1 text-sm text-gray-600">
+                        <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -81,10 +81,10 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">Send via WhatsApp or Email</h3>
-                        <p class="text-gray-600 mb-3">
+                        <p class="text-gray-600 dark:text-gray-300 mb-3">
                             Choose how to send: WhatsApp for instant delivery or Email with PDF attachment. Your client gets it immediately.
                         </p>
-                        <ul class="space-y-1 text-sm text-gray-600">
+                        <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -110,10 +110,10 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2">Track & Get Paid</h3>
-                        <p class="text-gray-600 mb-3">
+                        <p class="text-gray-600 dark:text-gray-300 mb-3">
                             Monitor payment status in real-time. Get instant notifications when clients pay via M-PESA. Never chase payments again.
                         </p>
-                        <ul class="space-y-1 text-sm text-gray-600">
+                        <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -169,7 +169,7 @@
                             }
                         }
                     }"
-                    class="relative bg-gradient-to-br from-gray-100 to-gray-50 rounded-xl shadow-2xl p-6 border border-gray-200">
+                    class="relative bg-gradient-to-br from-gray-100 to-gray-50 rounded-xl shadow-2xl p-6 border border-gray-200 dark:border-[#333333]">
                     <div class="mb-4 flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <div class="h-3 w-3 rounded-full bg-red-500"></div>
@@ -179,7 +179,7 @@
                         <div class="text-xs text-gray-500 font-medium">Workflow Demo</div>
                     </div>
 
-                    <div class="relative rounded-lg overflow-hidden shadow-xl bg-white" style="aspect-ratio: 16/10;">
+                    <div class="relative rounded-lg overflow-hidden shadow-xl bg-white dark:bg-[#242424]" style="aspect-ratio: 16/10;">
                         <template x-for="(slide, index) in slides" :key="index">
                             <div
                                 x-show="currentSlide === index"
@@ -202,7 +202,7 @@
                                 class="flex flex-col items-center">
                                 <div
                                     class="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300"
-                                    :class="currentSlide === index ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'"
+                                    :class="currentSlide === index ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600 dark:text-gray-300'"
                                     x-text="index + 1"></div>
                             </div>
                         </template>

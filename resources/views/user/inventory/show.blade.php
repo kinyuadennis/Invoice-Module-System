@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">{{ $inventoryItem['name'] }}</h1>
-            <p class="mt-1 text-sm text-gray-600">View inventory item details</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View inventory item details</p>
         </div>
         <div class="flex items-center space-x-3">
             <a href="{{ route('user.inventory.edit', $inventoryItem['id']) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
@@ -122,19 +122,19 @@
                             <form method="POST" action="{{ route('user.inventory.purchase', $inventoryItem['id']) }}" class="space-y-3">
                                 @csrf
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Quantity</label>
                                     <input type="number" name="quantity" step="0.01" min="0.01" required class="w-full rounded-lg border-gray-300 text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Unit Cost (Optional)</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Unit Cost (Optional)</label>
                                     <input type="number" name="unit_cost" step="0.01" min="0" class="w-full rounded-lg border-gray-300 text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Reference Number (Optional)</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Reference Number (Optional)</label>
                                     <input type="text" name="reference_number" class="w-full rounded-lg border-gray-300 text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Notes (Optional)</label>
                                     <textarea name="notes" rows="2" class="w-full rounded-lg border-gray-300 text-sm"></textarea>
                                 </div>
                                 <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
@@ -149,12 +149,12 @@
                             <form method="POST" action="{{ route('user.inventory.adjustment', $inventoryItem['id']) }}" class="space-y-3">
                                 @csrf
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Quantity Change</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Quantity Change</label>
                                     <input type="number" name="quantity" step="0.01" required class="w-full rounded-lg border-gray-300 text-sm" placeholder="Positive to add, negative to subtract">
                                     <p class="text-xs text-gray-500 mt-1">Use positive numbers to add stock, negative to subtract</p>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Reason *</label>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-200 mb-1">Reason *</label>
                                     <textarea name="notes" rows="3" required class="w-full rounded-lg border-gray-300 text-sm" placeholder="Explain the reason for this adjustment..."></textarea>
                                 </div>
                                 <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
@@ -184,7 +184,7 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach($inventoryItem['recent_movements'] as $movement)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                             {{ \Carbon\Carbon::parse($movement['movement_date'])->format('M d, Y') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -200,10 +200,10 @@
                                             {{ $movement['quantity'] > 0 ? 'text-green-600' : 'text-red-600' }}">
                                             {{ $movement['quantity'] > 0 ? '+' : '' }}{{ number_format($movement['quantity'], 2) }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                                             {{ number_format($movement['stock_after'], 2) }}
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                             {{ $movement['notes'] ?? '-' }}
                                         </td>
                                     </tr>

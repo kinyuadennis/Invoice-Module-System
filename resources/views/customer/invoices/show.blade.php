@@ -15,10 +15,10 @@
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">Invoice #{{ $invoice->invoice_number ?? 'INV-'.str_pad($invoice->id, 3, '0', STR_PAD_LEFT) }}</h1>
-                        <p class="text-gray-600 mt-1">From: {{ $invoice->company->name }}</p>
+                        <p class="text-gray-600 dark:text-gray-300 mt-1">From: {{ $invoice->company->name }}</p>
                     </div>
                     <div class="flex items-center gap-3">
-                        <a href="{{ route('customer.invoices.pdf', $accessToken->token) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <a href="{{ route('customer.invoices.pdf', $accessToken->token) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
@@ -62,7 +62,7 @@
                     <!-- Bill To -->
                     <div class="bg-white rounded-lg shadow-sm p-6">
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Bill To</h2>
-                        <div class="text-sm text-gray-600">
+                        <div class="text-sm text-gray-600 dark:text-gray-300">
                             <p class="font-medium text-gray-900">{{ $invoice->client->name ?? 'Unknown Client' }}</p>
                             @if($invoice->client->email)
                                 <p>{{ $invoice->client->email }}</p>
@@ -92,8 +92,8 @@
                                     @foreach($invoice->items ?? [] as $item)
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ $item['quantity'] ?? 0 }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['unit_price'] ?? 0, 2) }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">{{ $item['quantity'] ?? 0 }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">KES {{ number_format($item['unit_price'] ?? 0, 2) }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                                                 KES {{ number_format($item['total_price'] ?? $item['total'] ?? 0, 2) }}
                                             </td>
@@ -111,12 +111,12 @@
                     <div class="bg-white rounded-lg shadow-sm p-6">
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Summary</h2>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between text-gray-600">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-300">
                                 <span>Subtotal</span>
                                 <span class="font-medium text-gray-900">KES {{ number_format($invoice->subtotal ?? 0, 2) }}</span>
                             </div>
                             @if(($invoice->tax ?? $invoice->vat_amount ?? 0) > 0)
-                                <div class="flex justify-between text-gray-600">
+                                <div class="flex justify-between text-gray-600 dark:text-gray-300">
                                     <span>Tax</span>
                                     <span class="font-medium text-gray-900">KES {{ number_format($invoice->tax ?? $invoice->vat_amount ?? 0, 2) }}</span>
                                 </div>
@@ -140,7 +140,7 @@
                         <div class="space-y-4">
                             <div>
                                 <div class="flex items-center justify-between text-sm mb-2">
-                                    <span class="text-gray-600">Total Paid</span>
+                                    <span class="text-gray-600 dark:text-gray-300">Total Paid</span>
                                     <span class="font-semibold text-gray-900">KES {{ number_format($totalPaid, 2) }} / KES {{ number_format($invoiceTotal, 2) }}</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -195,7 +195,7 @@
                     @if($invoice->notes)
                         <div class="bg-white rounded-lg shadow-sm p-6">
                             <h2 class="text-lg font-semibold text-gray-900 mb-2">Notes</h2>
-                            <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ $invoice->notes }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ $invoice->notes }}</p>
                         </div>
                     @endif
                 </div>
@@ -243,7 +243,7 @@
                     <div id="stripe-card-errors" class="text-red-600 text-sm mb-4"></div>
                     <div class="flex gap-2">
                         <button id="stripe-submit" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Pay Now</button>
-                        <button onclick="this.closest('.fixed').remove(); button.disabled = false; button.innerHTML = '<svg class=\\'w-5 h-5\\' fill=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path d=\\'M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l-2.788 6.916c-.767 1.456-1.915 2.178-3.424 2.178-.76 0-1.427-.18-1.988-.535l.576-4.415c.255-.921.394-1.31 1.424-1.661zm-2.543-4.94c-1.98-.81-3.356-1.9-3.356-3.282 0-1.044.911-1.528 2.125-1.528 1.667 0 3.376.858 4.536 1.631l-2.788 6.916c-.73 1.456-1.96 2.178-3.41 2.178-.76 0-1.427-.18-1.988-.535L5.149 4.21z\\'/></svg> Pay with Card (Stripe)';" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button onclick="this.closest('.fixed').remove(); button.disabled = false; button.innerHTML = '<svg class=\\'w-5 h-5\\' fill=\\'currentColor\\' viewBox=\\'0 0 24 24\\'><path d=\\'M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l-2.788 6.916c-.767 1.456-1.915 2.178-3.424 2.178-.76 0-1.427-.18-1.988-.535l.576-4.415c.255-.921.394-1.31 1.424-1.661zm-2.543-4.94c-1.98-.81-3.356-1.9-3.356-3.282 0-1.044.911-1.528 2.125-1.528 1.667 0 3.376.858 4.536 1.631l-2.788 6.916c-.73 1.456-1.96 2.178-3.41 2.178-.76 0-1.427-.18-1.988-.535L5.149 4.21z\\'/></svg> Pay with Card (Stripe)';" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
                     </div>
                 </div>
             `;

@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold text-gray-900">Search Results</h1>
         @if($query)
-        <p class="text-gray-600">Showing results for <span class="font-semibold">"{{ $query }}"</span></p>
+        <p class="text-gray-600 dark:text-gray-300">Showing results for <span class="font-semibold">"{{ $query }}"</span></p>
         @endif
     </div>
 

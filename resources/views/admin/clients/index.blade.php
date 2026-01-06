@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">All Clients</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage all clients in the system</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage all clients in the system</p>
         </div>
         <a href="{{ route('admin.clients.create') }}">
             <x-button variant="primary">Add Client</x-button>
@@ -40,9 +40,9 @@
                 @foreach($clients as $client)
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $client['name'] ?? 'Unknown' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $client['email'] ?? 'N/A' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $client['phone'] ?? 'N/A' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $client['email'] ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $client['phone'] ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             @if($client['company'])
                                 <a href="{{ route('admin.companies.show', $client['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900">
                                     {{ $client['company']['name'] }}
@@ -51,7 +51,7 @@
                                 <span class="text-gray-400">No Company</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $client['invoices_count'] ?? 0 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $client['invoices_count'] ?? 0 }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <a href="{{ route('admin.clients.edit', $client['id']) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                         </td>

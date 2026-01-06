@@ -22,7 +22,7 @@
         <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Payment Successful! 🎉
         </h1>
-        <p class="text-xl text-gray-600 dark:text-gray-400 mb-8">
+        <p class="text-xl text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-8">
             Your subscription has been activated successfully
         </p>
 
@@ -32,11 +32,11 @@
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Details</h2>
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="text-left">
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Plan</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-1">Plan</p>
                         <p class="text-lg font-bold text-gray-900 dark:text-white">{{ $plan->name }}</p>
                     </div>
                     <div class="text-left">
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Status</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-1">Status</p>
                         <x-subscriptions.subscription-status-indicator 
                             :status="strtolower($subscription->status)" 
                             size="md"
@@ -44,7 +44,7 @@
                     </div>
                     @if($payment)
                         <div class="text-left">
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Amount Paid</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-1">Amount Paid</p>
                             <p class="text-lg font-bold text-gray-900 dark:text-white">
                                 <x-payments.payment-amount-display 
                                     :amount="$payment->amount" 
@@ -54,7 +54,7 @@
                             </p>
                         </div>
                         <div class="text-left">
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Payment Method</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-1">Payment Method</p>
                             <div class="flex items-center gap-2">
                                 <x-payments.payment-method-icon 
                                     gateway="{{ $payment->gateway ?? 'stripe' }}" 
@@ -66,7 +66,7 @@
                     @endif
                     @if($subscription->next_billing_at)
                         <div class="text-left md:col-span-2">
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Next Billing Date</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-1">Next Billing Date</p>
                             <p class="text-lg font-semibold text-gray-900 dark:text-white">
                                 {{ $subscription->next_billing_at->format('F d, Y') }}
                             </p>
@@ -86,7 +86,7 @@
                     </svg>
                     <div>
                         <p class="font-medium text-gray-900 dark:text-white">Access Premium Features</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">You now have access to all premium features including unlimited invoices, M-Pesa integration, and more.</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">You now have access to all premium features including unlimited invoices, M-Pesa integration, and more.</p>
                     </div>
                 </li>
                 <li class="flex items-start gap-3">
@@ -95,7 +95,7 @@
                     </svg>
                     <div>
                         <p class="font-medium text-gray-900 dark:text-white">Create Your First Invoice</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Start invoicing your clients right away with our professional invoice templates.</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">Start invoicing your clients right away with our professional invoice templates.</p>
                     </div>
                 </li>
                 <li class="flex items-start gap-3">
@@ -104,7 +104,7 @@
                     </svg>
                     <div>
                         <p class="font-medium text-gray-900 dark:text-white">Set Up M-Pesa Payments</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Configure M-Pesa integration to accept payments directly from your invoices.</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">Configure M-Pesa integration to accept payments directly from your invoices.</p>
                     </div>
                 </li>
             </ul>
@@ -138,7 +138,7 @@
         <!-- Receipt Download & Social Sharing -->
         @if($payment)
             <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-4">
                     Need a receipt? Download your payment confirmation.
                 </p>
                 <div class="flex flex-wrap gap-3 justify-center">
@@ -158,7 +158,7 @@
 
         <!-- Social Sharing -->
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 text-center">
+            <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-3 text-center">
                 Share your success with others!
             </p>
             <div class="flex justify-center gap-3">

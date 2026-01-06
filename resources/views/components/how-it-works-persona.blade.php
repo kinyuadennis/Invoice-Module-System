@@ -12,7 +12,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">How It Works</h2>
-            <p class="mt-4 text-lg text-gray-600">See how {{ $persona['name'] }} from {{ $persona['location'] }} gets paid faster</p>
+            <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">See how {{ $persona['name'] }} from {{ $persona['location'] }} gets paid faster</p>
         </div>
 
         <!-- Persona Introduction -->
@@ -20,7 +20,7 @@
             <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
                 <span class="text-2xl font-bold text-emerald-600">{{ substr($persona['name'], 0, 1) }}</span>
             </div>
-            <p class="text-lg text-gray-700">
+            <p class="text-lg text-gray-700 dark:text-gray-200">
                 <span class="font-semibold">{{ $persona['name'] }}</span> runs a {{ strtolower($persona['business']) }} in {{ $persona['location'] }}. 
                 She used to wait 30+ days for payments. Now she gets paid in 7 days average.
             </p>
@@ -73,7 +73,7 @@
                             @endif
 
                             <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $step['title'] }}</h3>
-                            <p class="text-gray-600 mb-3">{{ $step['description'] }}</p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-3">{{ $step['description'] }}</p>
                             
                             @if(isset($step['outcome']))
                                 <p class="text-sm font-semibold text-emerald-600">{{ $step['outcome'] }}</p>

@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Profit & Loss Statement</h1>
-            <p class="mt-1 text-sm text-gray-600">Revenue, expenses, and profit analysis</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Revenue, expenses, and profit analysis</p>
         </div>
     </div>
 
@@ -16,7 +16,7 @@
     <x-card>
         <form method="GET" action="{{ route('user.reports.profit-loss') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Start Date</label>
                 <input 
                     type="date" 
                     name="start_date" 
@@ -25,7 +25,7 @@
                 />
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">End Date</label>
                 <input 
                     type="date" 
                     name="end_date" 
@@ -44,7 +44,7 @@
         <x-card padding="sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600">Total Revenue</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Total Revenue</p>
                     <p class="text-2xl font-bold text-green-600">KES {{ number_format($report['revenue']['total_revenue'] ?? 0, 2) }}</p>
                 </div>
                 <div class="p-3 bg-green-100 rounded-lg">
@@ -57,7 +57,7 @@
         <x-card padding="sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600">Total Expenses</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Total Expenses</p>
                     <p class="text-2xl font-bold text-red-600">KES {{ number_format($report['expenses']['total_expenses'] ?? 0, 2) }}</p>
                 </div>
                 <div class="p-3 bg-red-100 rounded-lg">
@@ -70,7 +70,7 @@
         <x-card padding="sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600">Gross Profit</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Gross Profit</p>
                     <p class="text-2xl font-bold {{ ($report['profit_loss']['gross_profit'] ?? 0) >= 0 ? 'text-green-600' : 'text-red-600' }}">
                         KES {{ number_format($report['profit_loss']['gross_profit'] ?? 0, 2) }}
                     </p>
@@ -85,7 +85,7 @@
         <x-card padding="sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600">Profit Margin</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Profit Margin</p>
                     <p class="text-2xl font-bold {{ ($report['profit_loss']['profit_margin'] ?? 0) >= 0 ? 'text-green-600' : 'text-red-600' }}">
                         {{ number_format($report['profit_loss']['profit_margin'] ?? 0, 2) }}%
                     </p>
@@ -104,19 +104,19 @@
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Revenue Breakdown</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="border border-gray-200 rounded-lg p-4">
-                <p class="text-sm text-gray-600">Total Revenue</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Total Revenue</p>
                 <p class="text-2xl font-bold text-gray-900">KES {{ number_format($report['revenue']['total_revenue'] ?? 0, 2) }}</p>
             </div>
             <div class="border border-gray-200 rounded-lg p-4">
-                <p class="text-sm text-gray-600">VAT Collected</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">VAT Collected</p>
                 <p class="text-2xl font-bold text-gray-900">KES {{ number_format($report['revenue']['vat_collected'] ?? 0, 2) }}</p>
             </div>
             <div class="border border-gray-200 rounded-lg p-4">
-                <p class="text-sm text-gray-600">Platform Fees</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Platform Fees</p>
                 <p class="text-2xl font-bold text-gray-900">KES {{ number_format($report['revenue']['platform_fees'] ?? 0, 2) }}</p>
             </div>
             <div class="border border-gray-200 rounded-lg p-4 bg-blue-50">
-                <p class="text-sm text-gray-600">Net Revenue</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Net Revenue</p>
                 <p class="text-2xl font-bold text-blue-900">KES {{ number_format($report['revenue']['net_revenue'] ?? 0, 2) }}</p>
             </div>
         </div>
@@ -127,15 +127,15 @@
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Expenses Breakdown</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="border border-gray-200 rounded-lg p-4">
-                <p class="text-sm text-gray-600">Total Expenses</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Total Expenses</p>
                 <p class="text-2xl font-bold text-gray-900">KES {{ number_format($report['expenses']['total_expenses'] ?? 0, 2) }}</p>
             </div>
             <div class="border border-gray-200 rounded-lg p-4">
-                <p class="text-sm text-gray-600">Tax Deductible</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Tax Deductible</p>
                 <p class="text-2xl font-bold text-green-600">KES {{ number_format($report['expenses']['tax_deductible'] ?? 0, 2) }}</p>
             </div>
             <div class="border border-gray-200 rounded-lg p-4">
-                <p class="text-sm text-gray-600">Non-Tax Deductible</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Non-Tax Deductible</p>
                 <p class="text-2xl font-bold text-gray-900">KES {{ number_format($report['expenses']['non_tax_deductible'] ?? 0, 2) }}</p>
             </div>
         </div>
@@ -162,7 +162,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
                                         KES {{ number_format($category['amount'], 2) }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">
                                         @if(($report['expenses']['total_expenses'] ?? 0) > 0)
                                             {{ number_format(($category['amount'] / $report['expenses']['total_expenses']) * 100, 1) }}%
                                         @else

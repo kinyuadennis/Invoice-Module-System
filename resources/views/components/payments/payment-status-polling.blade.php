@@ -19,14 +19,14 @@
         />
         
         <!-- Polling Indicator -->
-        <div x-show="polling && !isTerminal" x-cloak class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+        <div x-show="polling && !isTerminal" x-cloak class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">
             <x-shared.loading-spinner size="sm" />
             <span>Checking...</span>
         </div>
     </div>
 
     <!-- Status Message -->
-    <p x-show="statusMessage" x-cloak class="mt-2 text-sm text-gray-600 dark:text-gray-400" x-text="statusMessage"></p>
+    <p x-show="statusMessage" x-cloak class="mt-2 text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400" x-text="statusMessage"></p>
 </div>
 
 @push('scripts')

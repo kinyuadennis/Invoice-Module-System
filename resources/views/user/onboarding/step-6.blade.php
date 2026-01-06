@@ -11,7 +11,7 @@
             </svg>
         </div>
         <h1 class="text-3xl font-bold text-gray-900 mb-2">You're All Set!</h1>
-        <p class="text-gray-600">Your account is ready to use. Let's verify your eTIMS compliance status.</p>
+        <p class="text-gray-600 dark:text-gray-300">Your account is ready to use. Let's verify your eTIMS compliance status.</p>
     </div>
 
     @if(isset($company) && $company->kra_pin)
@@ -56,7 +56,7 @@
                 </svg>
                 <div>
                     <p class="text-sm font-medium text-gray-900">Create your first invoice</p>
-                    <p class="text-xs text-gray-600">Start invoicing your clients right away</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-300">Start invoicing your clients right away</p>
                 </div>
             </div>
             <div class="flex items-start">
@@ -65,7 +65,7 @@
                 </svg>
                 <div>
                     <p class="text-sm font-medium text-gray-900">Add your clients</p>
-                    <p class="text-xs text-gray-600">Manage your client database</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-300">Manage your client database</p>
                 </div>
             </div>
             <div class="flex items-start">
@@ -75,7 +75,7 @@
                 </svg>
                 <div>
                     <p class="text-sm font-medium text-gray-900">Customize your settings</p>
-                    <p class="text-xs text-gray-600">Fine-tune your company preferences</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-300">Fine-tune your company preferences</p>
                 </div>
             </div>
         </div>

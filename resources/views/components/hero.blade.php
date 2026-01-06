@@ -25,7 +25,7 @@
                 </h1>
 
                 <!-- Subtitle -->
-                <p class="text-lg sm:text-xl text-gray-600 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                <p class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
                     {{ $subtitle }}
                 </p>
 
@@ -42,14 +42,14 @@
                     </a>
                     <a 
                         href="#features" 
-                        class="inline-flex items-center justify-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        class="inline-flex items-center justify-center px-8 py-4 border-2 border-gray-300 text-gray-700 dark:text-gray-200 font-semibold rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     >
                         {{ $ctaSecondary }}
                     </a>
                 </div>
 
                 <!-- Trust Signals -->
-                <div class="flex flex-wrap items-center gap-6 justify-center lg:justify-start text-sm text-gray-600">
+                <div class="flex flex-wrap items-center gap-6 justify-center lg:justify-start text-sm text-gray-600 dark:text-gray-300">
                     <div class="flex items-center">
                         <svg class="w-5 h-5 text-emerald-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>

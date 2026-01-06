@@ -6,7 +6,7 @@
 <div class="max-w-2xl">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Add Client</h1>
-        <p class="mt-1 text-sm text-gray-600">Create a new client in your database</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Create a new client in your database</p>
     </div>
 
     <x-card>
@@ -38,7 +38,7 @@
             />
 
             <div>
-                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Address</label>
                 <textarea 
                     name="address" 
                     id="address"

@@ -27,7 +27,7 @@
 
                 <!-- Status Title -->
                 <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-3" x-text="statusTitle"></h1>
-                <p class="text-xl text-gray-600 dark:text-gray-400 mb-8" x-text="statusMessage"></p>
+                <p class="text-xl text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-8" x-text="statusMessage"></p>
 
                 <!-- Payment Details -->
                 <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-8 mb-8 border border-gray-200 dark:border-gray-700">
@@ -207,8 +207,8 @@
         <!-- Polling Indicator -->
         <div x-show="polling && (status === 'pending' || status === 'initiated')" x-cloak class="text-center mt-6">
             <div class="inline-flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <x-shared.loading-spinner size="sm" color="text-gray-600 dark:text-gray-400" />
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <x-shared.loading-spinner size="sm" color="text-gray-600 dark:text-gray-300 dark:text-gray-400" />
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-200 dark:text-gray-300">
                     Checking payment status...
                 </p>
                 <span class="text-xs text-gray-500 dark:text-gray-400" x-text="`(${pollCount}/${maxPolls})`"></span>

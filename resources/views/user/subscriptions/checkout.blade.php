@@ -72,14 +72,14 @@
                                     :currency="$plan->currency ?? 'KES'"
                                     size="lg"
                                 />
-                                <span class="text-sm font-normal text-gray-600 dark:text-gray-400">
+                                <span class="text-sm font-normal text-gray-600 dark:text-gray-300 dark:text-gray-400">
                                     / {{ $plan->billing_period ?? 'month' }}
                                 </span>
                             </p>
                             @if($plan->description)
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ $plan->description }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 mb-4">{{ $plan->description }}</p>
                             @endif
-                            <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                            <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-200 dark:text-gray-300">
                                 @php
                                     $features = is_array($plan->features) ? $plan->features : (is_string($plan->features) ? json_decode($plan->features, true) ?? explode(',', $plan->features) : []);
                                 @endphp
@@ -105,11 +105,11 @@
                     <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Selected Plan</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">Selected Plan</p>
                                 <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ $selectedPlan->name }}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Total</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">Total</p>
                                 <p class="text-xl font-bold text-gray-900 dark:text-white">
                                     <x-payments.payment-amount-display 
                                         :amount="$selectedPlan->price" 
@@ -142,7 +142,7 @@
 
                 <!-- Gateway Selection -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 dark:text-gray-300 mb-3">
                         Payment Method
                     </label>
                     
@@ -163,7 +163,7 @@
                                 <x-payments.payment-method-icon gateway="mpesa" size="md" />
                                 <div class="flex-1">
                                     <h3 class="font-semibold text-gray-900 dark:text-white">M-Pesa</h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Pay via M-Pesa STK Push</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">Pay via M-Pesa STK Push</p>
                                 </div>
                                 <input 
                                     type="radio" 
@@ -185,7 +185,7 @@
                                 <x-payments.payment-method-icon gateway="stripe" size="md" />
                                 <div class="flex-1">
                                     <h3 class="font-semibold text-gray-900 dark:text-white">Stripe</h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Card, Bank, Apple Pay, Google Pay</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">Card, Bank, Apple Pay, Google Pay</p>
                                 </div>
                                 <input 
                                     type="radio" 
@@ -201,7 +201,7 @@
 
                 <!-- M-Pesa Phone Input -->
                 <div x-show="selectedGateway === 'mpesa'" x-cloak class="mb-6">
-                    <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-200 dark:text-gray-300 mb-2">
                         M-Pesa Phone Number <span class="text-red-500">*</span>
                     </label>
                     <input 
@@ -233,7 +233,7 @@
                             x-model="termsAccepted"
                             class="mt-1 w-4 h-4 text-[#2B6EF6] border-gray-300 rounded focus:ring-[#2B6EF6]"
                         >
-                        <span class="text-sm text-gray-700 dark:text-gray-300">
+                        <span class="text-sm text-gray-700 dark:text-gray-200 dark:text-gray-300">
                             I agree to the 
                             <a href="#" class="text-[#2B6EF6] hover:underline">Terms of Service</a> 
                             and 
@@ -274,15 +274,15 @@
                     
                     <div class="space-y-3">
                         <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">Plan</span>
+                            <span class="text-gray-600 dark:text-gray-300 dark:text-gray-400">Plan</span>
                             <span class="font-medium text-gray-900 dark:text-white" x-text="selectedPlanName"></span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">Payment Method</span>
+                            <span class="text-gray-600 dark:text-gray-300 dark:text-gray-400">Payment Method</span>
                             <span class="font-medium text-gray-900 dark:text-white uppercase" x-text="selectedGateway"></span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-400">Amount</span>
+                            <span class="text-gray-600 dark:text-gray-300 dark:text-gray-400">Amount</span>
                             <span class="font-medium text-gray-900 dark:text-white" x-text="formatAmount(selectedAmount)"></span>
                         </div>
                         <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">

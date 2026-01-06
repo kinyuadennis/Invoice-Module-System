@@ -46,7 +46,7 @@ $defaultFaqs = [
 $faqsToShow = !empty($faqs) ? $faqs : $defaultFaqs;
 @endphp
 
-<div id="faq" class="bg-gray-50 dark:bg-gray-900 py-16 lg:py-24">
+<div id="faq" class="bg-gray-50 dark:bg-[#1A1A1A] dark:bg-gray-900 dark:bg-[#0D0D0D] py-16 lg:py-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="max-w-3xl mx-auto text-center">
             <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">

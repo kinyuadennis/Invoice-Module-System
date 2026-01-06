@@ -8,7 +8,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Recent Invoices</h2>
-            <p class="mt-4 text-lg text-gray-600">See how Kenyan businesses are getting paid faster</p>
+            <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">See how Kenyan businesses are getting paid faster</p>
         </div>
 
         @if($showFilters)
@@ -20,7 +20,7 @@
                     <select 
                         x-model="filters.status" 
                         @change="applyFilters()"
-                        class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-200 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                         <option value="">All Status</option>
                         <option value="paid">Paid</option>
@@ -38,7 +38,7 @@
                     <select 
                         x-model="filters.paymentMethod" 
                         @change="applyFilters()"
-                        class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-200 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                         <option value="">All Payment Methods</option>
                         <option value="mpesa">M-Pesa</option>
@@ -57,7 +57,7 @@
                         x-model="filters.search" 
                         @input.debounce.300ms="applyFilters()"
                         placeholder="Search invoices..."
-                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     >
                     <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>

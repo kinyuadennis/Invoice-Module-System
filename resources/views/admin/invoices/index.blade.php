@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">All Invoices</h1>
-        <p class="mt-1 text-sm text-gray-600">View and manage invoices from all users</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View and manage invoices from all users</p>
     </div>
 
     <!-- Filters -->
@@ -49,7 +49,7 @@
                             </a>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $invoice['client']['name'] ?? 'Unknown' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             @if($invoice['company'])
                                 <a href="{{ route('admin.companies.show', $invoice['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900">
                                     {{ $invoice['company']['name'] }}
@@ -58,7 +58,7 @@
                                 <span class="text-gray-400">No Company</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $invoice['user']['name'] ?? 'Unknown' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $invoice['user']['name'] ?? 'Unknown' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 $statusVariant = match(strtolower($invoice['status'] ?? 'draft')) {

@@ -53,7 +53,7 @@
                         @endif
                     </div>
                     @if($template->description)
-                        <p class="text-xs text-gray-600 mb-2 line-clamp-2">
+                        <p class="text-xs text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">
                             {{ Str::limit($template->description, 60) }}
                         </p>
                     @endif
@@ -61,7 +61,7 @@
                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
                         </svg>
-                        <span>Prefix: <strong class="text-gray-700">{{ $template->prefix }}</strong></span>
+                        <span>Prefix: <strong class="text-gray-700 dark:text-gray-200">{{ $template->prefix }}</strong></span>
                     </div>
                 </div>
             </div>

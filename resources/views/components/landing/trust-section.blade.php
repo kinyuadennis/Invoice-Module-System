@@ -1,4 +1,4 @@
-<div class="bg-gray-50 border-y border-gray-200 py-12 lg:py-16">
+<div class="bg-gray-50 dark:bg-[#1A1A1A] border-y border-gray-200 dark:border-[#333333] py-12 lg:py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center">
             <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Testimonials -->
-        <div class="mt-16 pt-10 border-t border-gray-200">
+        <div class="mt-16 pt-10 border-t border-gray-200 dark:border-[#333333]">
             <div class="max-w-3xl mx-auto text-center">
                 <blockquote class="text-xl font-medium text-gray-900">
                     <svg class="h-8 w-8 text-gray-400 mx-auto mb-4" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">

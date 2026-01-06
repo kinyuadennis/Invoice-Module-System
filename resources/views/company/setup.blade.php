@@ -9,7 +9,7 @@
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
                 Set Up Your Company
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
                 Create your company workspace to get started
             </p>
         </div>
@@ -65,7 +65,7 @@
                     </div>
 
                     <div>
-                        <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Company Address
                         </label>
                         <textarea
@@ -111,7 +111,7 @@
                     </div>
 
                     <div>
-                        <label for="logo" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="logo" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Company Logo (Optional)
                         </label>
                         <input

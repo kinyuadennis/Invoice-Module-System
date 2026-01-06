@@ -7,17 +7,17 @@
     <div class="max-w-md w-full space-y-8">
         <!-- Header -->
         <div class="text-center">
-            <h2 class="text-3xl font-bold text-slate-900">Sign in to your account</h2>
-            <p class="mt-2 text-sm text-slate-600">
+            <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Sign in to your account</h2>
+            <p class="mt-2 text-sm text-slate-600 dark:text-gray-300">
                 Or
-                <a href="{{ route('register') }}" class="font-medium text-blue-600 hover:text-blue-500">
+                <a href="{{ route('register') }}" class="font-medium text-[#00C4B4] dark:text-[#00C4B4] hover:text-[#00A896]">
                     create a new account
                 </a>
             </p>
         </div>
 
         <!-- Form Card -->
-        <div class="bg-white rounded-xl shadow-lg p-8 border border-slate-200">
+        <div class="bg-white dark:bg-[#242424] rounded-xl shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-8 border border-slate-200 dark:border-[#333333]">
             <form method="POST" action="{{ route('login') }}" class="space-y-6">
                 @csrf
 
@@ -40,11 +40,11 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <input id="remember" name="remember" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded">
-                        <label for="remember" class="ml-2 block text-sm text-slate-700">Remember me</label>
+                        <label for="remember" class="ml-2 block text-sm text-slate-700 dark:text-gray-200">Remember me</label>
                     </div>
 
                     <div class="text-sm">
-                        <a href="{{ route('password.request') }}" class="font-medium text-blue-600 hover:text-blue-500">Forgot your password?</a>
+                        <a href="{{ route('password.request') }}" class="font-medium text-[#00C4B4] dark:text-[#00C4B4] hover:text-[#00A896]">Forgot your password?</a>
                     </div>
                 </div>
 
@@ -55,8 +55,8 @@
                 </div>
 
                 <div class="text-center text-sm">
-                    <span class="text-slate-600">Don't have an account?</span>
-                    <a href="{{ route('register') }}" class="font-medium text-blue-600 hover:text-blue-500 ml-1">Sign up</a>
+                    <span class="text-slate-600 dark:text-gray-300">Don't have an account?</span>
+                    <a href="{{ route('register') }}" class="font-medium text-[#00C4B4] dark:text-[#00C4B4] hover:text-[#00A896] ml-1">Sign up</a>
                 </div>
             </form>
         </div>

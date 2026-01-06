@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Subscription Plans</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage subscription plans and pricing</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage subscription plans and pricing</p>
         </div>
     </div>
 
@@ -17,29 +17,29 @@
                 <x-card>
                     <div class="text-center">
                         <h3 class="text-xl font-bold text-gray-900">{{ $plan->name }}</h3>
-                        <p class="mt-2 text-sm text-gray-600">{{ $plan->description }}</p>
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">{{ $plan->description }}</p>
                         <div class="mt-4">
                             <span class="text-4xl font-bold text-gray-900">{{ $plan->currency }} {{ number_format($plan->price, 2) }}</span>
-                            <span class="text-gray-600">/{{ $plan->billing_period }}</span>
+                            <span class="text-gray-600 dark:text-gray-300">/{{ $plan->billing_period }}</span>
                         </div>
                         <ul class="mt-6 space-y-2 text-left">
                             @if($plan->max_companies)
-                                <li class="text-sm text-gray-600">✓ Up to {{ $plan->max_companies }} companies</li>
+                                <li class="text-sm text-gray-600 dark:text-gray-300">✓ Up to {{ $plan->max_companies }} companies</li>
                             @else
-                                <li class="text-sm text-gray-600">✓ Unlimited companies</li>
+                                <li class="text-sm text-gray-600 dark:text-gray-300">✓ Unlimited companies</li>
                             @endif
                             @if($plan->max_users_per_company)
-                                <li class="text-sm text-gray-600">✓ {{ $plan->max_users_per_company }} users per company</li>
+                                <li class="text-sm text-gray-600 dark:text-gray-300">✓ {{ $plan->max_users_per_company }} users per company</li>
                             @endif
                             @if($plan->max_invoices_per_month)
-                                <li class="text-sm text-gray-600">✓ {{ $plan->max_invoices_per_month }} invoices/month</li>
+                                <li class="text-sm text-gray-600 dark:text-gray-300">✓ {{ $plan->max_invoices_per_month }} invoices/month</li>
                             @endif
                             @if($plan->max_clients)
-                                <li class="text-sm text-gray-600">✓ Up to {{ $plan->max_clients }} clients</li>
+                                <li class="text-sm text-gray-600 dark:text-gray-300">✓ Up to {{ $plan->max_clients }} clients</li>
                             @endif
                             @if($plan->features)
                                 @foreach($plan->features as $feature)
-                                    <li class="text-sm text-gray-600">✓ {{ $feature }}</li>
+                                    <li class="text-sm text-gray-600 dark:text-gray-300">✓ {{ $feature }}</li>
                                 @endforeach
                             @endif
                         </ul>

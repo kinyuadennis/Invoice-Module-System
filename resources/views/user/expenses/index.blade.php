@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Expenses</h1>
-            <p class="mt-1 text-sm text-gray-600">Track and manage all your business expenses</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Track and manage all your business expenses</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('user.expenses.create') }}">
@@ -28,7 +28,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Total Expenses</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Total Expenses</p>
                         <p class="text-2xl font-bold text-gray-900">KES {{ number_format($stats['total_amount'] ?? 0, 2) }}</p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-lg">
@@ -41,7 +41,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Total Count</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Total Count</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $stats['total'] ?? 0 }}</p>
                     </div>
                     <div class="p-3 bg-green-100 rounded-lg">
@@ -54,7 +54,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Pending</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Pending</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $stats['pending'] ?? 0 }}</p>
                     </div>
                     <div class="p-3 bg-yellow-100 rounded-lg">
@@ -67,7 +67,7 @@
             <x-card padding="sm">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600">Tax Deductible</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Tax Deductible</p>
                         <p class="text-2xl font-bold text-gray-900">KES {{ number_format($stats['tax_deductible_total'] ?? 0, 2) }}</p>
                     </div>
                     <div class="p-3 bg-purple-100 rounded-lg">
@@ -156,7 +156,7 @@
                 </x-slot>
                 @foreach($expenses as $expense)
                     <tr class="hover:bg-gray-50 transition-colors duration-150">
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ \Carbon\Carbon::parse($expense['expense_date'])->format('M d, Y') }}
                         </td>
                         <td class="px-5 py-3 text-sm text-gray-900">
@@ -178,7 +178,7 @@
                                 <span class="text-sm text-gray-500">Uncategorized</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $expense['client']['name'] ?? '-' }}
                         </td>
                         <td class="px-5 py-3 whitespace-nowrap">
@@ -197,7 +197,7 @@
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
                                 <a href="{{ route('user.expenses.show', $expense['id']) }}" class="text-indigo-600 hover:text-indigo-900" title="View">View</a>
-                                <a href="{{ route('user.expenses.edit', $expense['id']) }}" class="text-gray-600 hover:text-gray-900" title="Edit">Edit</a>
+                                <a href="{{ route('user.expenses.edit', $expense['id']) }}" class="text-gray-600 dark:text-gray-300 hover:text-gray-900" title="Edit">Edit</a>
                                 <form method="POST" action="{{ route('user.expenses.destroy', $expense['id']) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this expense?');">
                                     @csrf
                                     @method('DELETE')

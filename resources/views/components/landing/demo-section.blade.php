@@ -1,4 +1,4 @@
-<div class="bg-white py-16 lg:py-24">
+<div class="bg-white dark:bg-[#242424] py-16 lg:py-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative bg-blue-900 rounded-2xl shadow-xl overflow-hidden lg:grid lg:grid-cols-2 lg:gap-4">
             <div class="pt-10 pb-12 px-6 sm:pt-16 sm:px-16 lg:py-16 lg:pr-0 xl:py-20 xl:px-20">
@@ -10,7 +10,7 @@
                     <p class="mt-4 text-lg leading-6 text-blue-100">
                         Watch how easy it is to create a compliant invoice and send it to your client via WhatsApp. No training required.
                     </p>
-                    <button onclick="window.dispatchEvent(new CustomEvent('start-demo'))" class="mt-8 bg-white border border-transparent rounded-md shadow px-5 py-3 inline-flex items-center text-base font-medium text-blue-600 hover:bg-blue-50">
+                    <button onclick="window.dispatchEvent(new CustomEvent('start-demo'))" class="mt-8 bg-white dark:bg-[#242424] border border-transparent rounded-md shadow px-5 py-3 inline-flex items-center text-base font-medium text-blue-600 hover:bg-blue-50">
                         Create e-Invoice Now
                     </button>
                     <p class="mt-4 text-sm text-blue-300">

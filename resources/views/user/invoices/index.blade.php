@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Invoices</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage and track all your invoices</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage and track all your invoices</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('user.company.invoice-customization') }}">
@@ -118,10 +118,10 @@
                             @endphp
                             <x-badge :variant="$statusVariant">{{ ucfirst($invoice['status'] ?? 'draft') }}</x-badge>
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $invoice['issue_date'] ? \Carbon\Carbon::parse($invoice['issue_date'])->format('M d, Y') : 'N/A' }}
                         </td>
-                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $invoice['due_date'] ? \Carbon\Carbon::parse($invoice['due_date'])->format('M d, Y') : 'N/A' }}
                         </td>
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900">
@@ -131,7 +131,7 @@
                             <div class="flex items-center justify-end space-x-2">
                                 <a href="{{ route('user.invoices.show', $invoice['id']) }}" class="text-indigo-600 hover:text-indigo-900" title="View">View</a>
                                 @if(($invoice['status'] ?? 'draft') === 'draft')
-                                    <a href="{{ route('user.invoices.edit', $invoice['id']) }}" class="text-gray-600 hover:text-gray-900" title="Edit">Edit</a>
+                                    <a href="{{ route('user.invoices.edit', $invoice['id']) }}" class="text-gray-600 dark:text-gray-300 hover:text-gray-900" title="Edit">Edit</a>
                                 @endif
                                 <form method="POST" action="{{ route('user.invoices.duplicate', $invoice['id']) }}" class="inline">
                                     @csrf

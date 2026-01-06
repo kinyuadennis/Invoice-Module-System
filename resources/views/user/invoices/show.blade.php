@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Invoice {{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}</h1>
-            <p class="mt-1 text-sm text-gray-600">View and manage invoice details</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">View and manage invoice details</p>
         </div>
         <div class="flex items-center space-x-3 flex-wrap gap-2">
             <!-- Primary Actions -->
@@ -336,7 +336,7 @@
                     <div id="stripe-card-errors" class="text-red-600 text-sm mb-4"></div>
                     <div class="flex gap-2">
                         <button id="stripe-submit" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Pay Now</button>
-                        <button onclick="document.getElementById('stripe-payment-modal').remove(); ${button ? `button.disabled = false; button.innerHTML = originalHTML;` : ''}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button onclick="document.getElementById('stripe-payment-modal').remove(); ${button ? `button.disabled = false; button.innerHTML = originalHTML;` : ''}" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
                     </div>
                 </div>
             `;
@@ -450,7 +450,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h2 class="text-xl font-semibold text-gray-900">Invoice Details</h2>
-                        <p class="text-sm text-gray-600">Invoice #{{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Invoice #{{ $invoice['invoice_number'] ?? 'INV-' . str_pad($invoice['id'], 3, '0', STR_PAD_LEFT) }}</p>
                     </div>
                     @php
                     $statusService = new \App\Http\Services\InvoiceStatusService();
@@ -503,7 +503,7 @@
                 <!-- Client Info -->
                 <div class="border-t border-gray-200 pt-6">
                     <h3 class="text-sm font-medium text-gray-900 mb-4">Bill To</h3>
-                    <div class="text-sm text-gray-600">
+                    <div class="text-sm text-gray-600 dark:text-gray-300">
                         <p class="font-medium text-gray-900">{{ $invoice['client']['name'] ?? 'Unknown Client' }}</p>
                         @if(isset($invoice['client']['email']))
                         <p>{{ $invoice['client']['email'] }}</p>
@@ -532,8 +532,8 @@
                     @foreach($invoice['items'] ?? [] as $item)
                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                         <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
-                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600">{{ $item['quantity'] ?? 0 }}</td>
-                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600">KES {{ number_format($item['unit_price'] ?? 0, 2) }}</td>
+                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">{{ $item['quantity'] ?? 0 }}</td>
+                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600 dark:text-gray-300">KES {{ number_format($item['unit_price'] ?? 0, 2) }}</td>
                         <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                             KES {{ number_format($item['total_price'] ?? $item['total'] ?? 0, 2) }}
                         </td>
@@ -549,18 +549,18 @@
             <x-card>
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Summary</h2>
                 <div class="space-y-2 text-sm">
-                    <div class="flex justify-between text-gray-600">
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300">
                         <span>Subtotal</span>
                         <span class="font-medium text-gray-900">KES {{ number_format($invoice['subtotal'] ?? 0, 2) }}</span>
                     </div>
                     @if(($invoice['tax_rate'] ?? 0) > 0)
-                    <div class="flex justify-between text-gray-600">
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300">
                         <span>Tax ({{ $invoice['tax_rate'] ?? 0 }}%)</span>
                         <span class="font-medium text-gray-900">KES {{ number_format($invoice['tax'] ?? 0, 2) }}</span>
                     </div>
                     @endif
                     @if(($invoice['platform_fee'] ?? 0) > 0)
-                    <div class="flex justify-between text-gray-600">
+                    <div class="flex justify-between text-gray-600 dark:text-gray-300">
                         <span>Platform Fee</span>
                         <span class="font-medium text-gray-900">KES {{ number_format($invoice['platform_fee'] ?? 0, 2) }}</span>
                     </div>
@@ -576,7 +576,7 @@
             @if(isset($invoice['notes']) && $invoice['notes'])
             <x-card>
                 <h2 class="text-lg font-semibold text-gray-900 mb-2">Notes</h2>
-                <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ $invoice['notes'] }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ $invoice['notes'] }}</p>
             </x-card>
             @endif
 
@@ -648,7 +648,7 @@
                     <!-- Payment Progress -->
                     <div>
                         <div class="flex items-center justify-between text-sm mb-2">
-                            <span class="text-gray-600">Total Paid</span>
+                            <span class="text-gray-600 dark:text-gray-300">Total Paid</span>
                             <span class="font-semibold text-gray-900">KES {{ number_format($totalPaid, 2) }} / KES {{ number_format($invoiceTotal, 2) }}</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -866,7 +866,7 @@
                             <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
                                 <div class="flex items-center justify-between mb-4">
                                     <h3 class="text-lg font-semibold text-gray-900">Record Payment</h3>
-                                    <button type="button" onclick="closeRecordPaymentModal()" class="text-gray-400 hover:text-gray-600">
+                                    <button type="button" onclick="closeRecordPaymentModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-300">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
@@ -875,7 +875,7 @@
 
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Amount *</label>
                                         <input
                                             type="number"
                                             name="amount"
@@ -889,7 +889,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Payment Date *</label>
                                         <input
                                             type="date"
                                             name="payment_date"
@@ -899,7 +899,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Payment Method</label>
                                         <select
                                             name="payment_method"
                                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -914,7 +914,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Reference Number</label>
                                         <input
                                             type="text"
                                             name="mpesa_reference"
@@ -933,7 +933,7 @@
                                 <button
                                     type="button"
                                     onclick="closeRecordPaymentModal()"
-                                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                     Cancel
                                 </button>
                             </div>
@@ -1017,7 +1017,7 @@
                             <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
                                 <div class="flex items-center justify-between mb-4">
                                     <h3 class="text-lg font-semibold text-gray-900">Create Refund</h3>
-                                    <button type="button" onclick="closeCreateRefundModal()" class="text-gray-400 hover:text-gray-600">
+                                    <button type="button" onclick="closeCreateRefundModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-300">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
@@ -1026,7 +1026,7 @@
 
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Refund Amount *</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Refund Amount *</label>
                                         <input
                                             type="number"
                                             name="amount"
@@ -1039,7 +1039,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Refund Date *</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Refund Date *</label>
                                         <input
                                             type="date"
                                             name="refund_date"
@@ -1049,7 +1049,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment (Optional)</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Payment (Optional)</label>
                                         <select
                                             id="refund-payment-id"
                                             name="payment_id"
@@ -1060,7 +1060,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Refund Method</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Refund Method</label>
                                         <select
                                             name="refund_method"
                                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
@@ -1075,7 +1075,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Reason</label>
                                         <select
                                             name="reason"
                                             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
@@ -1090,7 +1090,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</label>
                                         <textarea
                                             name="notes"
                                             rows="3"
@@ -1105,7 +1105,7 @@
                                             name="process_immediately"
                                             value="1"
                                             class="rounded border-gray-300 text-red-600 focus:ring-red-500">
-                                        <label for="process-immediately" class="ml-2 text-sm text-gray-700">
+                                        <label for="process-immediately" class="ml-2 text-sm text-gray-700 dark:text-gray-200">
                                             Process refund immediately
                                         </label>
                                     </div>
@@ -1121,7 +1121,7 @@
                                 <button
                                     type="button"
                                     onclick="closeCreateRefundModal()"
-                                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                     Cancel
                                 </button>
                             </div>

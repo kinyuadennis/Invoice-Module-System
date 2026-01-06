@@ -37,7 +37,7 @@
             <div class="flex items-center gap-2 border-l border-gray-200 pl-4">
                 <button
                     @click="openTemplateLibrary()"
-                    class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                     title="Load Template">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -46,13 +46,13 @@
                 </button>
                 <button
                     @click="saveDraft()"
-                    class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                     title="Save Draft (Ctrl+S / Cmd+S)">
                     Save Draft
                 </button>
                 <button
                     @click="showPreview = !showPreview; if (showPreview) updatePreview()"
-                    class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    class="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                     title="Toggle Preview (Ctrl+P / Cmd+P)">
                     <span x-show="!showPreview">Preview</span>
                     <span x-show="showPreview">Hide Preview</span>
@@ -71,7 +71,7 @@
         
         <!-- Progress Indicator -->
         <div class="mt-4">
-            <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+            <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
                 <span class="font-medium">Form Completion</span>
                 <span class="font-semibold text-blue-600" x-text="Math.round(calculateProgress()) + '%'"></span>
             </div>
@@ -136,7 +136,7 @@
 
                         <!-- Client Search/Select -->
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                                 Select or add a customer
                                 <span class="text-xs text-gray-500 font-normal">(Optional for drafts, required when sending)</span>
                             </label>
@@ -201,23 +201,23 @@
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                                 <div>
-                                    <span class="font-medium text-gray-700 block mb-1">Name:</span>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200 block mb-1">Name:</span>
                                     <span class="text-gray-900" x-text="formData.client ? formData.client.name : 'N/A'"></span>
                                 </div>
                                 <div>
-                                    <span class="font-medium text-gray-700 block mb-1">Email:</span>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200 block mb-1">Email:</span>
                                     <span class="text-gray-900" x-text="formData.client ? (formData.client.email || 'N/A') : 'N/A'"></span>
                                 </div>
                                 <div>
-                                    <span class="font-medium text-gray-700 block mb-1">Phone:</span>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200 block mb-1">Phone:</span>
                                     <span class="text-gray-900" x-text="formData.client ? (formData.client.phone || 'N/A') : 'N/A'"></span>
                                 </div>
                                 <div class="col-span-2 md:col-span-3">
-                                    <span class="font-medium text-gray-700 block mb-1">Address:</span>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200 block mb-1">Address:</span>
                                     <span class="text-gray-900" x-text="formData.client ? (formData.client.address || 'N/A') : 'N/A'"></span>
                                 </div>
                                 <div x-show="formData.client && formData.client.kra_pin">
-                                    <span class="font-medium text-gray-700 block mb-1">KRA PIN:</span>
+                                    <span class="font-medium text-gray-700 dark:text-gray-200 block mb-1">KRA PIN:</span>
                                     <span class="text-gray-900 font-mono bg-white px-2 py-1 rounded border border-gray-200 inline-block" x-text="formData.client ? (formData.client.kra_pin || '') : ''"></span>
                                     <span class="ml-2 text-xs text-green-600 font-medium">✓ Verified</span>
                                 </div>
@@ -230,7 +230,7 @@
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Invoice Details</h2>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Date *</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Invoice Date *</label>
                                 <input
                                     type="date"
                                     x-model="formData.issue_date"
@@ -240,7 +240,7 @@
                                     required>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Due Date *</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Due Date *</label>
                                 <input
                                     type="date"
                                     x-model="formData.due_date"
@@ -251,7 +251,7 @@
                             </div>
                             <div>
                                 <div class="flex items-center justify-between mb-1">
-                                    <label class="block text-sm font-medium text-gray-700">Invoice# *</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Invoice# *</label>
                                     <button
                                         type="button"
                                         @click="$dispatch('open-invoice-config')"
@@ -276,7 +276,7 @@
                                     <button
                                         type="button"
                                         @click="$dispatch('open-invoice-config')"
-                                        class="px-3 py-2 text-gray-600 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        class="px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:text-gray-200 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                                         title="Configure Invoice Number">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -305,11 +305,11 @@
                                         x-model="formData.vat_registered"
                                         @change="updateItemTaxRates(); calculateTotals(); if (showPreview) updatePreview()"
                                         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                    <span class="text-sm font-medium text-gray-700">VAT Registered Business</span>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">VAT Registered Business</span>
                                 </label>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                     Currency *
                                 </label>
                                 <select
@@ -336,7 +336,7 @@
                                 <button
                                     type="button"
                                     @click="showPoNumber = !showPoNumber"
-                                    class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium mb-2">
+                                    class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 font-medium mb-2">
                                     <svg class="w-4 h-4 transition-transform" :class="{'rotate-90': showPoNumber}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                     </svg>
@@ -382,7 +382,7 @@
                                         <button
                                             @click="validateEtims()"
                                             :disabled="etimsValidating || !formData.buyer_kra_pin || !company.kra_pin"
-                                            class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap">
+                                            class="px-4 py-2 text-sm min-h-[36px] font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 whitespace-nowrap">
                                             <svg x-show="!etimsValidating" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
@@ -403,7 +403,7 @@
                                 
                                 <!-- Buyer KRA PIN (2026 Requirement) -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                                         Buyer KRA PIN <span class="text-red-600">*</span>
                                         <span class="text-xs text-gray-500 font-normal">(Required for eTIMS transmission)</span>
                                     </label>
@@ -505,7 +505,7 @@
                                                                 @click.stop="selectItem(index, suggestion)"
                                                                 class="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors">
                                                                 <div class="font-semibold text-gray-900" x-text="suggestion.name"></div>
-                                                                <div class="text-sm text-gray-600 mt-0.5">
+                                                                <div class="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
                                                                     Price: <span class="font-medium text-blue-600" x-text="formatCurrency(suggestion.unit_price)"></span>
                                                                 </div>
                                                             </div>
@@ -635,7 +635,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">No items added yet</h3>
-                            <p class="text-sm text-gray-600 mb-4">Add at least one item to continue. You can search from your item library or create a new item.</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Add at least one item to continue. You can search from your item library or create a new item.</p>
                             <button
                                 @click="addLineItem()"
                                 class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 inline-flex items-center gap-2">
@@ -652,15 +652,15 @@
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Summary</h2>
                         <div class="space-y-2">
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Subtotal</span>
+                                <span class="text-gray-600 dark:text-gray-300">Subtotal</span>
                                 <span class="font-medium" x-text="formatCurrency(totals.subtotal)"></span>
                             </div>
                             <div x-show="totals.discount > 0" class="flex justify-between text-sm" x-cloak>
-                                <span class="text-gray-600">Discount</span>
+                                <span class="text-gray-600 dark:text-gray-300">Discount</span>
                                 <span class="font-medium text-red-600" x-text="'-' + formatCurrency(totals.discount)"></span>
                             </div>
                             <div x-show="formData.vat_registered" class="flex justify-between text-sm" x-cloak>
-                                <span class="text-gray-600">VAT (16%)</span>
+                                <span class="text-gray-600 dark:text-gray-300">VAT (16%)</span>
                                 <span class="font-medium" x-text="formatCurrency(totals.vat_amount)"></span>
                             </div>
                             <div class="pt-2 border-t border-gray-200 flex justify-between text-lg font-bold">
@@ -675,7 +675,7 @@
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Additional Information</h2>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Notes to Client</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes to Client</label>
                                 <textarea
                                     x-model="formData.notes"
                                     @change="if (showPreview) updatePreview()"
@@ -684,7 +684,7 @@
                                     class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Terms & Conditions</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Terms & Conditions</label>
                                 <textarea
                                     x-model="formData.terms_and_conditions"
                                     @change="if (showPreview) updatePreview()"
@@ -712,7 +712,7 @@
                         <button
                             @click="saveDraft()"
                             :disabled="processing"
-                            class="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-50">
+                            class="px-4 py-2 border border-gray-300 bg-white text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-50">
                             Save as Draft
                         </button>
                         <div class="relative">
@@ -725,7 +725,7 @@
                         </div>
                         <a
                             href="{{ route('user.invoices.index') }}"
-                            class="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium">
+                            class="px-4 py-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 font-medium">
                             Cancel
                         </a>
                     </div>
@@ -797,7 +797,7 @@
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-semibold text-gray-900">Invoice Templates</h3>
-                                <button @click="showTemplateLibrary = false" class="text-gray-400 hover:text-gray-600">
+                                <button @click="showTemplateLibrary = false" class="text-gray-400 hover:text-gray-600 dark:text-gray-300">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>

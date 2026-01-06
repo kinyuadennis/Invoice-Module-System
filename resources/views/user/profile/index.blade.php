@@ -6,7 +6,7 @@
 <div class="max-w-4xl" x-data="{ activeTab: 'profile' }">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Your Profile</h1>
-        <p class="mt-1 text-sm text-gray-600">Manage your account settings and preferences</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage your account settings and preferences</p>
     </div>
 
     <!-- Success Message -->
@@ -21,14 +21,14 @@
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
             <button
                 @click="activeTab = 'profile'"
-                :class="activeTab === 'profile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                :class="activeTab === 'profile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-200 hover:border-gray-300'"
                 class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
             >
                 Profile
             </button>
             <button
                 @click="activeTab = 'settings'"
-                :class="activeTab === 'settings' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                :class="activeTab === 'settings' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-200 hover:border-gray-300'"
                 class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
             >
                 Settings
@@ -36,7 +36,7 @@
             @if($company && (auth()->user()->role === 'company_owner' || auth()->user()->role === 'admin'))
                 <button
                     @click="activeTab = 'company'"
-                    :class="activeTab === 'company' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                    :class="activeTab === 'company' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-200 hover:border-gray-300'"
                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
                 >
                     Company Details
@@ -70,7 +70,7 @@
                         @endif
                     </div>
                     <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Profile Photo</label>
                         <input
                             type="file"
                             name="profile_photo"
@@ -105,8 +105,8 @@
                 />
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                    <p class="text-sm text-gray-600">{{ ucfirst(str_replace('_', ' ', $user->role ?? 'user')) }}</p>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Role</label>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">{{ ucfirst(str_replace('_', ' ', $user->role ?? 'user')) }}</p>
                 </div>
 
                 <div class="flex items-center justify-end pt-4">
@@ -216,27 +216,27 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Company Name</label>
                         <p class="text-sm text-gray-900">{{ $company->name }}</p>
                     </div>
 
                     @if($company->kra_pin)
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">KRA PIN</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">KRA PIN</label>
                             <p class="text-sm text-gray-900">{{ $company->kra_pin }}</p>
                         </div>
                     @endif
 
                     @if($company->address)
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Address</label>
                             <p class="text-sm text-gray-900">{{ $company->address }}</p>
                         </div>
                     @endif
 
                     @if($company->phone)
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Phone</label>
                             <p class="text-sm text-gray-900">{{ $company->phone }}</p>
                         </div>
                     @endif

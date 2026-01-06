@@ -9,7 +9,7 @@
     </div>
 
     <!-- Quote -->
-    <p class="text-gray-700 mb-6 italic">"{{ $testimonial['quote'] }}"</p>
+    <p class="text-gray-700 dark:text-gray-200 mb-6 italic">"{{ $testimonial['quote'] }}"</p>
 
     <!-- Metric -->
     @if(isset($testimonial['metric']))
@@ -39,7 +39,7 @@
                     </svg>
                 @endif
             </div>
-            <p class="text-sm text-gray-600 truncate">{{ $testimonial['business'] }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 truncate">{{ $testimonial['business'] }}</p>
             @if(isset($testimonial['location']))
                 <p class="text-xs text-gray-500">{{ $testimonial['location'] }}</p>
             @endif

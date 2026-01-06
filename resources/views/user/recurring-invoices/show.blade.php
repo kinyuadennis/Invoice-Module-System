@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">{{ $recurringInvoice->name }}</h1>
-            <p class="mt-1 text-sm text-gray-600">{{ $recurringInvoice->description }}</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ $recurringInvoice->description }}</p>
         </div>
         <div class="flex gap-2">
             @if($recurringInvoice->status === 'active')
@@ -28,7 +28,7 @@
                 </form>
             @endif
             <a href="{{ route('user.recurring-invoices.edit', $recurringInvoice) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Edit</a>
-            <a href="{{ route('user.recurring-invoices.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Back</a>
+            <a href="{{ route('user.recurring-invoices.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300">Back</a>
         </div>
     </div>
 
@@ -106,7 +106,7 @@
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Invoice Template</h2>
                 @if(isset($recurringInvoice->invoice_data['line_items']))
                     <div class="space-y-2 mb-4">
-                        <h3 class="text-sm font-medium text-gray-700">Line Items</h3>
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200">Line Items</h3>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -121,9 +121,9 @@
                                     @foreach($recurringInvoice->invoice_data['line_items'] as $item)
                                         <tr>
                                             <td class="px-4 py-2 text-sm text-gray-900">{{ $item['description'] ?? '' }}</td>
-                                            <td class="px-4 py-2 text-sm text-gray-600">{{ $item['quantity'] ?? 1 }}</td>
-                                            <td class="px-4 py-2 text-sm text-gray-600">{{ number_format($item['unit_price'] ?? 0, 2) }}</td>
-                                            <td class="px-4 py-2 text-sm text-gray-600">{{ $item['tax_rate'] ?? 0 }}%</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">{{ $item['quantity'] ?? 1 }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">{{ number_format($item['unit_price'] ?? 0, 2) }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">{{ $item['tax_rate'] ?? 0 }}%</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -134,15 +134,15 @@
 
                 @if(isset($recurringInvoice->invoice_data['notes']))
                     <div class="mb-4">
-                        <h3 class="text-sm font-medium text-gray-700 mb-1">Notes</h3>
-                        <p class="text-sm text-gray-600">{{ $recurringInvoice->invoice_data['notes'] }}</p>
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">{{ $recurringInvoice->invoice_data['notes'] }}</p>
                     </div>
                 @endif
 
                 @if(isset($recurringInvoice->invoice_data['terms_and_conditions']))
                     <div>
-                        <h3 class="text-sm font-medium text-gray-700 mb-1">Terms & Conditions</h3>
-                        <p class="text-sm text-gray-600">{{ $recurringInvoice->invoice_data['terms_and_conditions'] }}</p>
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Terms & Conditions</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">{{ $recurringInvoice->invoice_data['terms_and_conditions'] }}</p>
                     </div>
                 @endif
             </x-card>
@@ -184,13 +184,13 @@
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Settings</h2>
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Auto-send</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-300">Auto-send</span>
                         <x-badge :variant="$recurringInvoice->auto_send ? 'success' : 'default'">
                             {{ $recurringInvoice->auto_send ? 'Enabled' : 'Disabled' }}
                         </x-badge>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Send Reminders</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-300">Send Reminders</span>
                         <x-badge :variant="$recurringInvoice->send_reminders ? 'success' : 'default'">
                             {{ $recurringInvoice->send_reminders ? 'Enabled' : 'Disabled' }}
                         </x-badge>

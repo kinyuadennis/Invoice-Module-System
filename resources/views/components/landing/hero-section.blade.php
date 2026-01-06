@@ -1,6 +1,6 @@
-<div class="relative bg-white overflow-hidden">
+<div class="relative bg-white dark:bg-[#242424] overflow-hidden">
     <div class="max-w-7xl mx-auto">
-        <div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
+        <div class="relative z-10 pb-8 bg-white dark:bg-[#242424] sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
             <svg class="hidden lg:block absolute right-0 inset-y-0 h-full w-48 text-white transform translate-x-1/2" fill="currentColor" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                 <polygon points="50,0 100,0 50,100 0,100" />
             </svg>
@@ -39,7 +39,7 @@
                             Integrates with
                         </p>
                         <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                            <div class="h-10 px-3 bg-gray-100 rounded flex items-center text-xs font-bold text-gray-600">
+                            <div class="h-10 px-3 bg-gray-100 dark:bg-[#2A2A2A] rounded flex items-center text-xs font-bold text-gray-600 dark:text-gray-300">
                                 KRA eTIMS
                             </div>
                             <div class="h-10 px-3 bg-green-50 rounded flex items-center text-xs font-bold text-green-600">
@@ -74,10 +74,10 @@
 
             <!-- Video Placeholder / Demo Trigger -->
             <div class="relative rounded-xl overflow-hidden shadow-2xl border border-blue-700 group cursor-pointer" onclick="window.dispatchEvent(new CustomEvent('start-demo'))">
-                <div class="aspect-w-16 aspect-h-9 bg-gray-900 flex items-center justify-center relative">
+                <div class="aspect-w-16 aspect-h-9 bg-gray-900 dark:bg-[#0D0D0D] flex items-center justify-center relative">
                     <!-- Play Button Overlay -->
                     <div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/30 transition-colors">
-                        <div class="h-16 w-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <div class="h-16 w-16 rounded-full bg-white dark:bg-[#242424]/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <svg class="h-8 w-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z" />
                             </svg>
@@ -92,7 +92,7 @@
             </div>
 
             <div class="mt-8 text-center lg:text-left">
-                <button onclick="window.dispatchEvent(new CustomEvent('start-demo'))" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 transition-colors shadow-sm">
+                <button onclick="window.dispatchEvent(new CustomEvent('start-demo'))" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white dark:bg-[#242424] hover:bg-blue-50 transition-colors shadow-sm">
                     Create e-Invoice Now
                 </button>
             </div>

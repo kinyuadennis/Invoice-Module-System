@@ -1,4 +1,4 @@
-<footer class="bg-white border-t border-gray-200" aria-labelledby="footer-heading">
+<footer class="bg-white dark:bg-[#242424] border-t border-gray-200 dark:border-[#333333]" aria-labelledby="footer-heading">
     <h2 id="footer-heading" class="sr-only">Footer</h2>
     <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
         <div class="xl:grid xl:grid-cols-3 xl:gap-8">
@@ -61,7 +61,7 @@
                         <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">Trust & Security</h3>
                         <div class="mt-4 space-y-4">
                             <div class="flex items-center gap-2">
-                                <div class="h-8 px-2 bg-gray-100 rounded flex items-center text-xs font-bold text-gray-600">KRA eTIMS</div>
+                                <div class="h-8 px-2 bg-gray-100 dark:bg-[#2A2A2A] rounded flex items-center text-xs font-bold text-gray-600 dark:text-gray-300">KRA eTIMS</div>
                                 <div class="h-8 px-2 bg-green-50 rounded flex items-center text-xs font-bold text-green-600">M-PESA</div>
                             </div>
                             <p class="text-sm text-gray-500">
@@ -69,10 +69,10 @@
                             </p>
                             <div class="flex gap-2 mt-4">
                                 <!-- App Store Badges (Placeholders) -->
-                                <div class="h-10 w-32 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs">
+                                <div class="h-10 w-32 bg-gray-900 dark:bg-[#0D0D0D] rounded-lg flex items-center justify-center text-white text-xs">
                                     App Store
                                 </div>
-                                <div class="h-10 w-32 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs">
+                                <div class="h-10 w-32 bg-gray-900 dark:bg-[#0D0D0D] rounded-lg flex items-center justify-center text-white text-xs">
                                     Google Play
                                 </div>
                             </div>
@@ -81,7 +81,7 @@
                 </div>
             </div>
         </div>
-        <div class="mt-12 border-t border-gray-200 pt-8">
+        <div class="mt-12 border-t border-gray-200 dark:border-[#333333] pt-8">
             <p class="text-base text-gray-400 xl:text-center">
                 &copy; {{ date('Y') }} InvoiceHub Kenya. All rights reserved.
             </p>

@@ -20,7 +20,7 @@
     @stack('scripts')
 </head>
 
-<body class="bg-slate-50">
+<body class="bg-slate-50 dark:bg-[#0D0D0D]">
     <!-- Sticky Navigation -->
     <x-navigation.nav-sticky
         :links="[

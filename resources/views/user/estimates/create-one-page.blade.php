@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between bg-white rounded-lg shadow-sm p-4 border border-gray-200">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Create New Estimate</h1>
-            <p class="text-sm text-gray-600 mt-1">Fill in the details below to create your estimate</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Fill in the details below to create your estimate</p>
         </div>
     </div>
 

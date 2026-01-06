@@ -8,7 +8,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Trusted by Kenyan Businesses</h2>
-            <p class="mt-4 text-lg text-gray-600">See how businesses across Kenya are getting paid faster</p>
+            <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">See how businesses across Kenya are getting paid faster</p>
         </div>
 
         <!-- Industry Filter -->
@@ -16,7 +16,7 @@
         <div class="flex flex-wrap justify-center gap-3 mb-12" x-data="{ activeFilter: 'all' }">
             <button 
                 @click="activeFilter = 'all'"
-                :class="activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                :class="activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-200 hover:bg-gray-200'"
                 class="px-4 py-2 rounded-lg font-semibold text-sm transition-colors"
             >
                 All Industries
@@ -27,7 +27,7 @@
             @foreach($industries as $industry)
                 <button 
                     @click="activeFilter = '{{ $industry }}'"
-                    :class="activeFilter === '{{ $industry }}' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                    :class="activeFilter === '{{ $industry }}' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-200 hover:bg-gray-200'"
                     class="px-4 py-2 rounded-lg font-semibold text-sm transition-colors capitalize"
                 >
                     {{ ucfirst($industry) }}

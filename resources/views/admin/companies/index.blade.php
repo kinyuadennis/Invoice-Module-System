@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">All Companies</h1>
-        <p class="mt-1 text-sm text-gray-600">Manage all companies in the system</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage all companies in the system</p>
     </div>
 
     @if(isset($companies) && $companies->count() > 0)
@@ -44,7 +44,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             @if($company['owner'])
                                 <div>
                                     <div class="font-medium">{{ $company['owner']['name'] }}</div>
@@ -54,9 +54,9 @@
                                 <span class="text-gray-400">No Owner</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $company['users_count'] ?? 0 }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $company['clients_count'] ?? 0 }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $company['invoices_count'] ?? 0 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $company['users_count'] ?? 0 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $company['clients_count'] ?? 0 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">{{ $company['invoices_count'] ?? 0 }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                             KES {{ number_format($company['revenue'] ?? 0, 2) }}
                         </td>

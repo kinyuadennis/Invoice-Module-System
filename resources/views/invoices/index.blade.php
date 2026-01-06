@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Invoices</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage and track all your invoices</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage and track all your invoices</p>
         </div>
         <a href="{{ route('invoices.create') }}">
             <x-button variant="primary">
@@ -118,25 +118,25 @@
             x-transition:enter-start="opacity-0 translate-y-2"
             x-transition:enter-end="opacity-100 translate-y-0"
             class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-white border border-gray-200 shadow-lg rounded-lg px-6 py-3 flex items-center space-x-4">
-            <span class="text-sm font-medium text-gray-700" x-text="selected.length + ' selected'"></span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200" x-text="selected.length + ' selected'"></span>
             <div class="h-4 w-px bg-gray-300"></div>
-            <button @click="performAction('send')" class="text-sm font-medium text-gray-600 hover:text-indigo-600 flex items-center">
+            <button @click="performAction('send')" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 flex items-center">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                 </svg>
                 Send Email
             </button>
             <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" @click.away="open = false" class="text-sm font-medium text-gray-600 hover:text-indigo-600 flex items-center">
+                <button @click="open = !open" @click.away="open = false" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     Change Status
                 </button>
                 <div x-show="open" class="absolute bottom-full mb-2 left-0 w-48 bg-white rounded-md shadow-lg border border-gray-100 py-1">
-                    <button @click="performAction('status', { status: 'sent' })" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mark as Sent</button>
-                    <button @click="performAction('status', { status: 'paid' })" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mark as Paid</button>
-                    <button @click="performAction('status', { status: 'cancelled' })" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Mark as Cancelled</button>
+                    <button @click="performAction('status', { status: 'sent' })" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100">Mark as Sent</button>
+                    <button @click="performAction('status', { status: 'paid' })" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100">Mark as Paid</button>
+                    <button @click="performAction('status', { status: 'cancelled' })" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100">Mark as Cancelled</button>
                 </div>
             </div>
             <button @click="performAction('delete')" class="text-sm font-medium text-red-600 hover:text-red-700 flex items-center">
@@ -194,10 +194,10 @@
                         @endphp
                         <x-badge :variant="$statusVariant">{{ ucfirst($invoice['status'] ?? 'draft') }}</x-badge>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                         {{ $invoice['issue_date'] ? \Carbon\Carbon::parse($invoice['issue_date'])->format('M d, Y') : 'N/A' }}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                         {{ $invoice['due_date'] ? \Carbon\Carbon::parse($invoice['due_date'])->format('M d, Y') : 'N/A' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
@@ -206,7 +206,7 @@
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex items-center justify-end space-x-2">
                             <a href="{{ route('invoices.show', $invoice['id']) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
-                            <a href="{{ route('invoices.edit', $invoice['id']) }}" class="text-gray-600 hover:text-gray-900">Edit</a>
+                            <a href="{{ route('invoices.edit', $invoice['id']) }}" class="text-gray-600 dark:text-gray-300 hover:text-gray-900">Edit</a>
                             @if(($invoice['status'] ?? 'draft') === 'draft')
                             <form method="POST" action="{{ route('invoices.destroy', $invoice['id']) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this invoice?');">
                                 @csrf

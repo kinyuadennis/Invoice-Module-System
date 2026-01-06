@@ -6,7 +6,7 @@
 <div class="space-y-6 mb-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Create New Company</h1>
-        <p class="mt-1 text-sm text-gray-600">Add a new company to manage invoices</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Add a new company to manage invoices</p>
     </div>
 
     @if($errors->any())

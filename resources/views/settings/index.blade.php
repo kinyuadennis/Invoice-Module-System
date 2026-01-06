@@ -6,7 +6,7 @@
 <div class="max-w-4xl space-y-6">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
-        <p class="mt-1 text-sm text-gray-600">Manage your account and application settings</p>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage your account and application settings</p>
     </div>
 
     <!-- Profile Settings -->
@@ -42,25 +42,25 @@
     @can('viewAny', App\Models\PlatformFee::class)
     <x-card>
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Platform Fee Configuration</h2>
-        <p class="text-sm text-gray-600 mb-4">Configure how platform fees are calculated and applied to invoices.</p>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Configure how platform fees are calculated and applied to invoices.</p>
         
         @if(isset($platformFeeSettings))
             <div class="space-y-4">
                 <div class="flex items-center justify-between py-3 border-b border-gray-200">
                     <div>
                         <p class="text-sm font-medium text-gray-900">Fee Rate</p>
-                        <p class="text-sm text-gray-600">{{ $platformFeeSettings['rate'] ?? 0 }}%</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">{{ $platformFeeSettings['rate'] ?? 0 }}%</p>
                     </div>
                 </div>
                 <div class="flex items-center justify-between py-3 border-b border-gray-200">
                     <div>
                         <p class="text-sm font-medium text-gray-900">Total Fees Collected</p>
-                        <p class="text-sm text-gray-600">${{ number_format($platformFeeSettings['total_collected'] ?? 0, 2) }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">${{ number_format($platformFeeSettings['total_collected'] ?? 0, 2) }}</p>
                     </div>
                 </div>
             </div>
         @else
-            <p class="text-sm text-gray-600">No platform fee settings configured.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300">No platform fee settings configured.</p>
         @endif
     </x-card>
     @endcan
@@ -72,14 +72,14 @@
             <div class="flex items-center justify-between py-3 border-b border-gray-200">
                 <div>
                     <p class="text-sm font-medium text-gray-900">Change Password</p>
-                    <p class="text-sm text-gray-600">Update your account password</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Update your account password</p>
                 </div>
                 <x-button variant="outline" size="sm">Change</x-button>
             </div>
             <div class="flex items-center justify-between py-3">
                 <div>
                     <p class="text-sm font-medium text-red-900">Delete Account</p>
-                    <p class="text-sm text-gray-600">Permanently delete your account and all data</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Permanently delete your account and all data</p>
                 </div>
                 <x-button variant="danger" size="sm">Delete</x-button>
             </div>

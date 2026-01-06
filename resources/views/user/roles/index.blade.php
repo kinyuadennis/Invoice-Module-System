@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Roles & Permissions</h1>
-            <p class="mt-1 text-sm text-gray-600">Manage user roles and permissions for your company</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Manage user roles and permissions for your company</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('user.roles.create') }}">
@@ -50,13 +50,13 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-5 py-3 text-sm text-gray-600">
+                        <td class="px-5 py-3 text-sm text-gray-600 dark:text-gray-300">
                             {{ $role['description'] ?? '-' }}
                         </td>
-                        <td class="px-5 py-3 text-center text-sm text-gray-600">
+                        <td class="px-5 py-3 text-center text-sm text-gray-600 dark:text-gray-300">
                             {{ $role['permissions_count'] ?? 0 }}
                         </td>
-                        <td class="px-5 py-3 text-center text-sm text-gray-600">
+                        <td class="px-5 py-3 text-center text-sm text-gray-600 dark:text-gray-300">
                             {{ $role['users_count'] ?? 0 }}
                         </td>
                         <td class="px-5 py-3">
@@ -70,7 +70,7 @@
                             <div class="flex items-center justify-end space-x-2">
                                 <a href="{{ route('user.roles.show', $role['id']) }}" class="text-indigo-600 hover:text-indigo-900" title="View">View</a>
                                 @if(!($role['is_system'] ?? false))
-                                    <a href="{{ route('user.roles.edit', $role['id']) }}" class="text-gray-600 hover:text-gray-900" title="Edit">Edit</a>
+                                    <a href="{{ route('user.roles.edit', $role['id']) }}" class="text-gray-600 dark:text-gray-300 hover:text-gray-900" title="Edit">Edit</a>
                                 @endif
                             </div>
                         </td>

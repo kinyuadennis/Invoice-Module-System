@@ -8,9 +8,9 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Audit Log Details</h1>
-            <p class="mt-1 text-sm text-gray-600">Detailed information about this system action</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Detailed information about this system action</p>
         </div>
-        <a href="{{ route('admin.audit-logs.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+        <a href="{{ route('admin.audit-logs.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300">
             Back to Logs
         </a>
     </div>

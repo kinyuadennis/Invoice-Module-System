@@ -26,7 +26,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-600">Welcome back, {{ auth()->user()->name }}!</p>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Welcome back, {{ auth()->user()->name }}!</p>
         </div>
         <a href="{{ route('invoices.create') }}">
             <x-button variant="primary">
@@ -124,7 +124,7 @@
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <div>
                 <h2 class="text-lg font-semibold text-gray-900">Recent Invoices</h2>
-                <p class="text-sm text-gray-600">Latest activity across your invoices</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">Latest activity across your invoices</p>
             </div>
             <a href="{{ route('invoices.index') }}" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">View all</a>
         </div>
@@ -162,7 +162,7 @@
                             @endphp
                             <x-badge :variant="$statusVariant">{{ ucfirst($invoice['status'] ?? 'draft') }}</x-badge>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             {{ $invoice['due_date'] ? \Carbon\Carbon::parse($invoice['due_date'])->format('M d, Y') : 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
