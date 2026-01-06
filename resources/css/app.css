@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@variant dark (&:where(.dark, .dark *));
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -365,6 +366,11 @@
     }
 }
 
+/* Dark mode support */
+.dark {
+    --color-dark-base: #0A0A0A;
+}
+
 /* High contrast mode support for accessibility */
 @media (prefers-contrast: high) {
     .dark {
@@ -385,4 +391,6 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
-}@import './dashboard-components.css';
+}
+
+@import './dashboard-components.css';
