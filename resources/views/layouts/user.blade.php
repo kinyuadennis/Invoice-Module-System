@@ -8,10 +8,10 @@
     <title>@yield('title', config('app.name', 'Invoice Module'))</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="alternate icon" href="{{ route('favicon') }}" type="image/x-icon">
-    <!-- Inter Font - Modern, professional typography -->
+    <!-- Outfit Font - Modern, geometric typography for Nuvemite theme -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
@@ -47,56 +47,56 @@
 
                     <!-- Navigation -->
                     <nav class="mt-5 flex-1 px-3 space-y-1">
-                        <a href="{{ route('home', ['view' => 'landing']) }}" class="{{ request()->routeIs('home') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <a href="{{ route('home', ['view' => 'landing']) }}" class="{{ request()->routeIs('home') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('home') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
                             Home
                         </a>
 
-                        <a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.dashboard') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                             </svg>
                             Dashboard
                         </a>
 
-                        <a href="{{ route('user.invoices.index') }}" class="{{ request()->routeIs('user.invoices.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.invoices.index') }}" class="{{ request()->routeIs('user.invoices.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.invoices.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Invoices
                         </a>
 
-                        <a href="{{ route('user.estimates.index') }}" class="{{ request()->routeIs('user.estimates.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.estimates.index') }}" class="{{ request()->routeIs('user.estimates.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.estimates.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Estimates
                         </a>
 
-                        <a href="{{ route('user.expenses.index') }}" class="{{ request()->routeIs('user.expenses.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.expenses.index') }}" class="{{ request()->routeIs('user.expenses.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.expenses.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                             Expenses
                         </a>
 
-                        <a href="{{ route('user.credit-notes.index') }}" class="{{ request()->routeIs('user.credit-notes.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.credit-notes.index') }}" class="{{ request()->routeIs('user.credit-notes.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.credit-notes.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Credit Notes
                         </a>
 
-                        <a href="{{ route('user.inventory.index') }}" class="{{ request()->routeIs('user.inventory.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.inventory.index') }}" class="{{ request()->routeIs('user.inventory.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.inventory.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
                             Inventory
                         </a>
 
-                        <a href="{{ route('user.payments.index') }}" class="{{ request()->routeIs('user.payments.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <a href="{{ route('user.payments.index') }}" class="{{ request()->routeIs('user.payments.*') ? 'bg-[#2B6EF6] text-white shadow-md' : 'text-slate-400 hover:bg-[#2A2A2A] hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/10 hover:translate-x-1 transition-all duration-200 ease-in-out">
                             <svg class="mr-3 h-5 w-5 {{ request()->routeIs('user.payments.*') ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                             </svg>

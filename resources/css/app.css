@@ -7,8 +7,8 @@
 @source '../**/*.js';
 
 @theme {
-    /* Primary font - Inter for modern, professional look */
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    /* Primary font - Outfit for modern, geometric Nuvemite look */
+    --font-sans: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* Neutral Professional Theme - B2B Design System */

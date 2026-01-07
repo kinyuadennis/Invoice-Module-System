@@ -53,13 +53,13 @@
 
     <!-- Profile Tab -->
     <div x-show="activeTab === 'profile'" x-cloak class="space-y-8 transition-all duration-300">
-        <x-card class="interactive-card">
+        <div class="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] p-8 shadow-sm">
             <div class="flex items-center justify-between mb-10">
                 <div>
                     <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Account Identity</h2>
                     <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Personal information and public presence</p>
                 </div>
-                <div class="icon-bg-blue p-2 rounded-lg">
+                <div class="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg">
                     <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -113,19 +113,17 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <x-input
-                        type="text"
-                        name="name"
-                        label="Legal Name"
-                        value="{{ old('name', $user->name) }}"
-                        required />
+                    <div>
+                        <label for="name" class="block text-xs font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-2">Legal Name</label>
+                        <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required
+                            class="block w-full rounded-xl border-gray-200 dark:border-[#333333] dark:bg-black/50 dark:text-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3 transition-colors">
+                    </div>
 
-                    <x-input
-                        type="email"
-                        name="email"
-                        label="Email Address"
-                        value="{{ old('email', $user->email) }}"
-                        required />
+                    <div>
+                        <label for="email" class="block text-xs font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-2">Email Address</label>
+                        <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}" required
+                            class="block w-full rounded-xl border-gray-200 dark:border-[#333333] dark:bg-black/50 dark:text-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3 transition-colors">
+                    </div>
                 </div>
 
                 <div class="p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex items-center justify-between">
@@ -137,12 +135,12 @@
                 </div>
 
                 <div class="flex items-center justify-end pt-4">
-                    <x-button type="submit" variant="primary" class="w-full sm:w-auto px-10 py-3 rounded-xl shadow-lg shadow-blue-500/20 font-black uppercase tracking-widest text-xs">
+                    <button type="submit" class="w-full sm:w-auto px-10 py-3 rounded-xl shadow-lg shadow-blue-500/20 font-black uppercase tracking-widest text-xs text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                         Publish Changes
-                    </x-button>
+                    </button>
                 </div>
             </form>
-        </x-card>
+        </div>
 
         @if($user->profile_photo_path)
         <form id="delete-photo-form" method="POST" action="{{ route('user.profile.photo.delete') }}" class="hidden">
@@ -185,13 +183,13 @@
 
     <!-- Security & Access Tab -->
     <div x-show="activeTab === 'settings'" x-cloak class="space-y-8 transition-all duration-300">
-        <x-card class="interactive-card">
+        <div class="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] p-8 shadow-sm">
             <div class="flex items-center justify-between mb-10">
                 <div>
                     <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Access Control</h2>
                     <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Credential management and security protocols</p>
                 </div>
-                <div class="icon-bg-red p-2 rounded-lg">
+                <div class="p-2 bg-red-50 dark:bg-red-500/10 rounded-lg">
                     <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
@@ -203,45 +201,42 @@
                 @method('PUT')
 
                 <div class="grid grid-cols-1 gap-8">
-                    <x-input
-                        type="password"
-                        name="current_password"
-                        label="Current Authority Token"
-                        placeholder="••••••••"
-                        required />
+                    <div>
+                        <label for="current_password" class="block text-xs font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-2">Current Authority Token</label>
+                        <input type="password" name="current_password" id="current_password" placeholder="••••••••" required
+                            class="block w-full rounded-xl border-gray-200 dark:border-[#333333] dark:bg-black/50 dark:text-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3 transition-colors">
+                    </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <x-input
-                            type="password"
-                            name="password"
-                            label="New Authority Token"
-                            placeholder="••••••••"
-                            required />
+                        <div>
+                            <label for="password" class="block text-xs font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-2">New Authority Token</label>
+                            <input type="password" name="password" id="password" placeholder="••••••••" required
+                                class="block w-full rounded-xl border-gray-200 dark:border-[#333333] dark:bg-black/50 dark:text-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3 transition-colors">
+                        </div>
 
-                        <x-input
-                            type="password"
-                            name="password_confirmation"
-                            label="Confirm New Token"
-                            placeholder="••••••••"
-                            required />
+                        <div>
+                            <label for="password_confirmation" class="block text-xs font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-2">Confirm New Token</label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" placeholder="••••••••" required
+                                class="block w-full rounded-xl border-gray-200 dark:border-[#333333] dark:bg-black/50 dark:text-white focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3 transition-colors">
+                        </div>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-end pt-4">
-                    <x-button type="submit" variant="primary" class="w-full sm:w-auto px-10 py-3 rounded-xl shadow-lg shadow-blue-500/20 font-black uppercase tracking-widest text-xs">
+                    <button type="submit" class="w-full sm:w-auto px-10 py-3 rounded-xl shadow-lg shadow-blue-500/20 font-black uppercase tracking-widest text-xs text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                         Rotate Credentials
-                    </x-button>
+                    </button>
                 </div>
             </form>
-        </x-card>
+        </div>
 
-        <x-card class="interactive-card">
+        <div class="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] p-8 shadow-sm">
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h2 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Signal Configuration</h2>
                     <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Automated system alerting preferences</p>
                 </div>
-                <div class="icon-bg-amber p-2 rounded-lg">
+                <div class="p-2 bg-amber-50 dark:bg-amber-500/10 rounded-lg">
                     <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
@@ -285,19 +280,19 @@
                     </label>
                 </div>
             </div>
-        </x-card>
+        </div>
     </div>
 
     <!-- Company Details Tab -->
     @if($company && (auth()->user()->role === 'company_owner' || auth()->user()->role === 'admin'))
     <div x-show="activeTab === 'company'" x-cloak class="transition-all duration-300">
-        <x-card class="interactive-card">
+        <div class="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] p-8 shadow-sm">
             <div class="flex items-center justify-between mb-10">
                 <div>
                     <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Active Entity Details</h2>
                     <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Regulatory and logistical identification</p>
                 </div>
-                <div class="icon-bg-purple p-2 rounded-lg">
+                <div class="p-2 bg-purple-50 dark:bg-purple-500/10 rounded-lg">
                     <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
@@ -343,8 +338,10 @@
                     Access Entity Settings
                 </a>
             </div>
-        </x-card>
+        </div>
     </div>
     @endif
+</div>
+@endif
 </div>
 @endsection

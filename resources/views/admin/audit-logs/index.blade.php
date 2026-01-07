@@ -5,10 +5,11 @@
 @section('content')
 <div class="space-y-6">
     <!-- Page Header -->
+    <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Audit Logs</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">System activity and compliance tracking</p>
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Audit Logs</h1>
+            <p class="mt-1 text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">System activity and compliance tracking</p>
         </div>
     </div>
 
@@ -20,7 +21,7 @@
                 <select name="action" id="action" class="w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="">All Actions</option>
                     @foreach($actions as $action)
-                        <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ ucfirst($action) }}</option>
+                    <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ ucfirst($action) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -30,7 +31,7 @@
                 <select name="model_type" id="model_type" class="w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="">All Types</option>
                     @foreach($modelTypes as $type)
-                        <option value="{{ $type }}" {{ request('model_type') === $type ? 'selected' : '' }}>{{ class_basename($type) }}</option>
+                    <option value="{{ $type }}" {{ request('model_type') === $type ? 'selected' : '' }}>{{ class_basename($type) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -40,7 +41,7 @@
                 <select name="user_id" id="user_id" class="w-full rounded-md border-gray-300 dark:border-[#404040] shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="">All Users</option>
                     @foreach($users as $user)
-                        <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                    <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -67,68 +68,76 @@
     </x-card>
 
     <!-- Audit Logs Table -->
-    <x-card padding="none">
-        @if($auditLogs->count() > 0)
-            <x-table>
-                <x-slot name="header">
+    <div class="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            @if($auditLogs->count() > 0)
+            <table class="table-modern">
+                <thead>
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Timestamp</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">User</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Action</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Model</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Description</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">IP Address</th>
+                        <th class="px-6 py-4 text-right text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Actions</th>
                     </tr>
-                </x-slot>
-                @foreach($auditLogs as $log)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-[#2A2A2A]">
+                    @foreach($auditLogs as $log)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 font-medium">
                             {{ $log->created_at->format('M d, Y H:i:s') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
                             {{ $log->user ? $log->user->name : 'System' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <x-badge :variant="match($log->action) {
-                                'created' => 'success',
-                                'updated' => 'info',
-                                'deleted' => 'danger',
-                                default => 'default'
-                            }">{{ ucfirst($log->action) }}</x-badge>
+                            @php
+                            $actionColor = match($log->action) {
+                            'created' => 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20',
+                            'updated' => 'text-blue-600 bg-blue-500/10 border-blue-500/20',
+                            'deleted' => 'text-red-600 bg-red-500/10 border-red-500/20',
+                            default => 'text-gray-600 bg-gray-500/10 border-gray-500/20'
+                            };
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest border {{ $actionColor }}">
+                                {{ ucfirst($log->action) }}
+                            </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">
                             {{ class_basename($log->model_type) }}
                             @if($log->model_id)
-                                <span class="text-gray-400">#{{ $log->model_id }}</span>
+                            <span class="text-gray-400 dark:text-gray-500 text-xs">#{{ $log->model_id }}</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-900">
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-[#9A9A9A]">
                             {{ Str::limit($log->description ?? 'N/A', 50) }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono text-xs">
                             {{ $log->ip_address ?? 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{{ route('admin.audit-logs.show', $log->id) }}" class="text-indigo-600 hover:text-indigo-900">
+                            <a href="{{ route('admin.audit-logs.show', $log->id) }}" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs uppercase tracking-wider">
                                 View Details
                             </a>
                         </td>
                     </tr>
-                @endforeach
-            </x-table>
-
-            <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-[#333333]">
-                {{ $auditLogs->links() }}
-            </div>
-        @else
+                    @endforeach
+                </tbody>
+            </table>
+            @else
             <div class="px-6 py-12 text-center">
-                <p class="text-sm text-gray-500">No audit logs found</p>
+                <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">No audit logs found</p>
             </div>
+            @endif
+        </div>
+        @if($auditLogs->count() > 0)
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-[#333333]">
+            {{ $auditLogs->links() }}
+        </div>
         @endif
-    </x-card>
+    </div>
 </div>
 @endsection
-
-
