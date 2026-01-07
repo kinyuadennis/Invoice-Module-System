@@ -26,9 +26,10 @@ class ApprovalController extends Controller
         $companyId = CurrentCompanyService::requireId();
         $type = $request->get('type'); // invoice, estimate, expense
 
-        $pendingApprovals = $this->approvalService->getPendingApprovals($companyId, $type);
+        $pendingApprovals = collect($this->approvalService->getPendingApprovals($companyId, $type));
 
         return view('user.approvals.index', [
+            'approvals' => $pendingApprovals,
             'pendingApprovals' => $pendingApprovals,
             'type' => $type,
         ]);
@@ -63,7 +64,7 @@ class ApprovalController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to request approval: '.$e->getMessage(),
+                'message' => 'Failed to request approval: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -107,7 +108,7 @@ class ApprovalController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to approve: '.$e->getMessage(),
+                'message' => 'Failed to approve: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -151,7 +152,7 @@ class ApprovalController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to reject: '.$e->getMessage(),
+                'message' => 'Failed to reject: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -186,7 +187,7 @@ class ApprovalController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to cancel: '.$e->getMessage(),
+                'message' => 'Failed to cancel: ' . $e->getMessage(),
             ], 500);
         }
     }

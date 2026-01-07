@@ -29,21 +29,21 @@ class PaymentController extends Controller
                     'amount' => $payment->amount,
                     'payment_method' => $payment->payment_method,
                     'invoice_id' => $payment->invoice_id,
-                    'invoice' => [
-                        'id' => $payment->invoice->id ?? null,
+                    'invoice' => $payment->invoice ? [
+                        'id' => $payment->invoice->id,
                         'invoice_reference' => $payment->invoice->invoice_reference ?? null,
                         'invoice_number' => $payment->invoice->invoice_number ?? null,
-                        'client' => [
-                            'name' => $payment->invoice->client->name ?? 'Unknown',
-                        ],
-                        'user' => [
-                            'name' => $payment->invoice->user->name ?? 'Unknown',
-                        ],
+                        'client' => $payment->invoice->client ? [
+                            'name' => $payment->invoice->client->name,
+                        ] : ['name' => 'Unknown'],
+                        'user' => $payment->invoice->user ? [
+                            'name' => $payment->invoice->user->name,
+                        ] : ['name' => 'Unknown'],
                         'company' => $payment->invoice->company ? [
                             'id' => $payment->invoice->company->id,
                             'name' => $payment->invoice->company->name,
                         ] : null,
-                    ],
+                    ] : null,
                 ];
             });
 

@@ -22,7 +22,7 @@ class RoleController extends Controller
 
         $roles = Role::where('company_id', $companyId)
             ->withCount(['permissions', 'users' => function ($query) use ($companyId) {
-                $query->wherePivot('company_id', $companyId);
+                $query->where('user_company_roles.company_id', $companyId);
             }])
             ->latest()
             ->get()
@@ -73,7 +73,7 @@ class RoleController extends Controller
 
         $role = Role::where('company_id', $companyId)
             ->with(['permissions', 'users' => function ($query) use ($companyId) {
-                $query->wherePivot('company_id', $companyId);
+                $query->where('user_company_roles.company_id', $companyId);
             }])
             ->findOrFail($id);
 

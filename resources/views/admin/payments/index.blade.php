@@ -40,15 +40,19 @@
                             {{ $payment['payment_date'] ? \Carbon\Carbon::parse($payment['payment_date'])->format('M d, Y') : 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
+                            @if($payment['invoice'])
                             <a href="{{ route('admin.invoices.show', $payment['invoice_id'] ?? 0) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">
                                 {{ $payment['invoice']['invoice_reference'] ?? $payment['invoice']['invoice_number'] ?? 'N/A' }}
                             </a>
+                            @else
+                            <span class="text-sm font-medium text-gray-400">N/A</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-[#9A9A9A]">
                             {{ $payment['invoice']['client']['name'] ?? 'Unknown' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">
-                            @if($payment['invoice']['company'])
+                            @if(isset($payment['invoice']['company']) && $payment['invoice']['company'])
                             <a href="{{ route('admin.companies.show', $payment['invoice']['company']['id']) }}" class="text-indigo-600 hover:text-indigo-900 font-bold text-xs uppercase tracking-wider">
                                 {{ $payment['invoice']['company']['name'] }}
                             </a>

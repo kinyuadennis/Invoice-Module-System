@@ -73,8 +73,7 @@
 
     <!-- Estimates Table -->
     @if(isset($estimates) && $estimates->count() > 0)
-    <!-- Estimates Table -->
-    @if(isset($estimates) && $estimates->count() > 0)
+
     <div class="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="table-modern">

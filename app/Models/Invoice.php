@@ -235,4 +235,11 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceSnapshot::class);
     }
+    /**
+     * The audit logs for this invoice.
+     */
+    public function auditLogs(): MorphMany
+    {
+        return $this->morphMany(AuditLog::class, 'model');
+    }
 }
