@@ -252,8 +252,8 @@ class RoleService
             'description' => $role->description,
             'is_system' => $role->is_system,
             'is_active' => $role->is_active,
-            'permissions_count' => $role->permissions()->count(),
-            'users_count' => $role->users()->wherePivot('company_id', $role->company_id)->count(),
+            'permissions_count' => $role->permissions_count ?? $role->permissions()->count(),
+            'users_count' => $role->users_count ?? $role->users()->where('user_company_roles.company_id', $role->company_id)->count(),
         ];
     }
 
@@ -274,7 +274,7 @@ class RoleService
         });
 
         $data['users'] = $role->users()
-            ->wherePivot('company_id', $role->company_id)
+            ->where('user_company_roles.company_id', $role->company_id)
             ->get()
             ->map(function ($user) {
                 return [

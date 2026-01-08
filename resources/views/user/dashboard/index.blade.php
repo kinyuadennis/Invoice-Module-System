@@ -5,65 +5,21 @@
 @section('content')
 <div class="space-y-6">
     <!-- Page Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400">Welcome back, {{ auth()->user()->name }}!</p>
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
+            <p class="mt-1 text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Welcome back, {{ auth()->user()->name }}!</p>
         </div>
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <!-- Quick Actions -->
-            <div class="flex flex-wrap items-center gap-2" id="dashboard-quick-actions">
-                <a href="{{ route('user.invoices.create') }}" id="dashboard-new-invoice-btn" class="inline-flex items-center px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#4DABF7] to-[#2563EB] rounded-xl hover:from-[#3B82F6] hover:to-[#1D4ED8] hover:shadow-lg hover:shadow-blue-500/40 hover:scale-105 transition-all duration-200">
-                    <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
+        <div class="flex items-center gap-3">
+            <span class="flex items-center gap-2 px-3 py-1.5 bg-blue-500/5 border border-blue-500/10 rounded-full">
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                <span class="text-[10px] font-black text-blue-400 uppercase tracking-widest px-1">Authority Active</span>
+            </span>
+            <div class="hidden lg:flex items-center gap-2 ml-4">
+                <a href="{{ route('user.invoices.create') }}" class="inline-flex items-center px-4 py-2 text-xs font-black text-white bg-blue-500 rounded-xl hover:bg-blue-600 shadow-lg shadow-blue-500/20 transition-all uppercase tracking-widest">
                     New Invoice
                 </a>
-                @if(Schema::hasTable('estimates'))
-                <a href="{{ route('user.estimates.create') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span class="hidden md:inline">New Estimate</span>
-                </a>
-                @endif
-                @can('create', App\Models\Client::class)
-                <a href="{{ route('user.clients.create') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
-                    <span class="hidden md:inline">New Client</span>
-                </a>
-                @endcan
-                <a href="{{ route('user.payments.create') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span class="hidden md:inline">Record Payment</span>
-                </a>
-                @if(($stats['overdueCount'] ?? 0) > 0)
-                <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span class="hidden md:inline">Chase Overdue</span>
-                </a>
-                @endif
-                <a href="{{ route('user.reports.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    <span class="hidden md:inline">Reports</span>
-                </a>
             </div>
-            @if(isset($companies) && $companies->count() > 0)
-            <a href="{{ route('user.companies.create') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" title="Add another company">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                <span class="hidden md:inline">Add Company</span>
-            </a>
-            @endif
         </div>
     </div>
 
@@ -103,325 +59,182 @@
     </div>
     @endif
 
-    <!-- KPI Cards -->
+    <!-- Stats Cards -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'paid']) }}'">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 icon-bg-blue p-3 rounded-xl">
-                    <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <!-- Total Revenue -->
+        <x-card padding="sm" class="interactive-card bg-gradient-to-br from-blue-600 to-indigo-700 !border-none overflow-hidden relative group cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'paid']) }}'">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-white/20 transition-all"></div>
+            <div class="flex items-center relative z-10">
+                <div class="flex-shrink-0 bg-white/20 p-3 rounded-xl backdrop-blur-md">
+                    <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="ml-5 w-0 flex-1 text-white">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Total Revenue</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">KES {{ number_format($stats['totalRevenue'] ?? 0, 2) }}</dd>
+                        <dt class="text-[10px] font-black opacity-70 uppercase tracking-widest mb-1">Total Revenue</dt>
+                        <dd class="text-lg font-black tracking-tight leading-none whitespace-nowrap">KES {{ number_format($stats['totalRevenue'] ?? 0, 0) }}</dd>
                     </dl>
                 </div>
             </div>
         </x-card>
 
+        <!-- Outstanding -->
         <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'sent']) }}'">
             <div class="flex items-center">
                 <div class="flex-shrink-0 icon-bg-amber p-3 rounded-xl">
                     <svg class="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Outstanding</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">KES {{ number_format($stats['outstanding'] ?? 0, 2) }}</dd>
-                        <dd class="text-xs text-gray-500 dark:text-[#9A9A9A] mt-1">{{ $stats['outstandingCount'] ?? 0 }} invoice(s)</dd>
+                        <dt class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">Outstanding</dt>
+                        <dd class="text-2xl font-black text-gray-900 dark:text-[#F5F5F5] tracking-tight">KES {{ number_format($stats['outstanding'] ?? 0, 0) }}</dd>
                     </dl>
                 </div>
             </div>
         </x-card>
 
+        <!-- Overdue -->
         <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'overdue']) }}'">
             <div class="flex items-center">
                 <div class="flex-shrink-0 icon-bg-red p-3 rounded-xl">
                     <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Overdue</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">{{ $stats['overdueCount'] ?? 0 }}</dd>
-                        <dd class="text-xs text-red-600 dark:text-red-400 mt-1 font-medium">KES {{ number_format($stats['overdue'] ?? 0, 2) }}</dd>
+                        <dt class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">Overdue Count</dt>
+                        <dd class="text-2xl font-black text-red-600 dark:text-red-400 tracking-tight">{{ $stats['overdueCount'] ?? 0 }} <span class="text-xs font-bold text-gray-400">Items</span></dd>
                     </dl>
                 </div>
             </div>
         </x-card>
 
+        <!-- Paid Invoices -->
         <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.invoices.index', ['status' => 'paid']) }}'">
             <div class="flex items-center">
                 <div class="flex-shrink-0 icon-bg-emerald p-3 rounded-xl">
                     <svg class="h-6 w-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Paid Invoices</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">{{ $stats['paidCount'] ?? 0 }}</dd>
+                        <dt class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">Paid Invoices</dt>
+                        <dd class="text-2xl font-black text-gray-900 dark:text-[#F5F5F5] tracking-tight">{{ $stats['paidCount'] ?? 0 }} <span class="text-xs font-bold text-gray-400">Total</span></dd>
                     </dl>
                 </div>
             </div>
         </x-card>
+
+        <!-- Secondary Metrics Row -->
+        <div class="lg:col-span-4 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Expenses -->
+            <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index') }}'">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">Total Expenses</p>
+                        <p class="text-xl font-black text-gray-900 dark:text-[#F5F5F5]">KES {{ number_format($expenseStats['total_expenses'] ?? 0, 0) }}</p>
+                    </div>
+                </div>
+            </x-card>
+
+            <!-- Net Cash Flow -->
+            <x-card padding="sm" class="interactive-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">Net Cash Flow</p>
+                        <p class="text-xl font-black {{ ($cashFlow['net_cash_flow'] ?? 0) >= 0 ? 'text-emerald-500' : 'text-red-500' }}">KES {{ number_format($cashFlow['net_cash_flow'] ?? 0, 0) }}</p>
+                    </div>
+                    @if(isset($cashFlow['cash_flow_change']) && $cashFlow['cash_flow_change'] != 0)
+                    <div class="px-2 py-1 rounded-lg {{ $cashFlow['cash_flow_change'] >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500' }} text-[10px] font-black">
+                        {{ $cashFlow['cash_flow_change'] >= 0 ? '↑' : '↓' }} {{ abs(number_format($cashFlow['cash_flow_change'], 1)) }}%
+                    </div>
+                    @endif
+                </div>
+            </x-card>
+
+            <!-- Avg Invoice -->
+            <x-card padding="sm" class="interactive-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">Avg Invoice</p>
+                        <p class="text-xl font-black text-gray-900 dark:text-[#F5F5F5]">KES {{ number_format($stats['averageInvoiceValue'] ?? 0, 0) }}</p>
+                    </div>
+                    <div class="icon-bg-indigo p-2 rounded-lg">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+            </x-card>
+
+            <!-- Success Rate -->
+            <x-card padding="sm" class="interactive-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">Success Rate</p>
+                        <p class="text-xl font-black text-gray-900 dark:text-[#F5F5F5]">{{ number_format($additionalMetrics['paymentSuccessRate'] ?? 0, 1) }}%</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full border-2 border-emerald-500/20 flex items-center justify-center">
+                        <div class="w-1 h-1 rounded-full bg-emerald-500"></div>
+                    </div>
+                </div>
+            </x-card>
+        </div>
     </div>
 
-    <!-- Additional KPIs: Expenses & Cash Flow -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- Total Expenses -->
-        <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index') }}'">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 icon-bg-red p-3 rounded-xl">
-                    <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+    <!-- Analytical Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Revenue Analytics -->
+        @if(isset($insights['revenue_trends']) && count($insights['revenue_trends']) > 0)
+        <x-card>
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Revenue Analytics</h2>
+                    <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">12-month performance trend</p>
                 </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Total Expenses</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">KES {{ number_format($expenseStats['total_expenses'] ?? 0, 2) }}</dd>
-                        <dd class="text-xs text-gray-500 dark:text-[#9A9A9A] mt-1">{{ $expenseStats['expense_count'] ?? 0 }} expense(s)</dd>
-                    </dl>
-                </div>
-            </div>
-        </x-card>
-
-        <!-- This Month Expenses -->
-        <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index', ['date_range' => 'month']) }}'">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 icon-bg-amber p-3 rounded-xl">
-                    <svg class="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">This Month Expenses</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">KES {{ number_format($expenseStats['this_month_expenses'] ?? 0, 2) }}</dd>
-                        <dd class="text-xs text-gray-500 dark:text-[#9A9A9A] mt-1">{{ $expenseStats['this_month_count'] ?? 0 }} expense(s)</dd>
-                    </dl>
-                </div>
-            </div>
-        </x-card>
-
-        <!-- Net Cash Flow -->
-        <x-card padding="sm" class="interactive-card">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 {{ ($cashFlow['net_cash_flow'] ?? 0) >= 0 ? 'icon-bg-emerald' : 'icon-bg-red' }} p-3 rounded-xl">
-                    <svg class="h-6 w-6 {{ ($cashFlow['net_cash_flow'] ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="icon-bg-blue p-2 rounded-lg">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Net Cash Flow</dt>
-                        <dd class="text-lg font-semibold {{ ($cashFlow['net_cash_flow'] ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }}">
-                            KES {{ number_format($cashFlow['net_cash_flow'] ?? 0, 2) }}
-                        </dd>
-                        @if(isset($cashFlow['cash_flow_change']) && $cashFlow['cash_flow_change'] != 0)
-                        <dd class="text-xs {{ $cashFlow['cash_flow_change'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400' }} mt-1 font-medium">
-                            {{ $cashFlow['cash_flow_change'] >= 0 ? '+ ' : '' }}{{ number_format($cashFlow['cash_flow_change'], 1) }}% vs last month
-                        </dd>
-                        @endif
-                    </dl>
-                </div>
             </div>
-        </x-card>
-
-        <!-- Tax Deductible Expenses -->
-        <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.expenses.index', ['tax_deductible' => '1']) }}'">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 icon-bg-purple p-3 rounded-xl">
-                    <svg class="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Tax Deductible</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">KES {{ number_format($expenseStats['tax_deductible'] ?? 0, 2) }}</dd>
-                        <dd class="text-xs text-gray-500 dark:text-[#9A9A9A] mt-1">Eligible for tax deduction</dd>
-                    </dl>
-                </div>
-            </div>
-        </x-card>
-    </div>
-
-    <!-- Additional Metrics KPI Cards -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <!-- Average Invoice Value -->
-        <x-card padding="sm" class="interactive-card">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 icon-bg-indigo p-3 rounded-xl">
-                    <svg class="h-6 w-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Avg Invoice Value</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">KES {{ number_format($stats['averageInvoiceValue'] ?? 0, 2) }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </x-card>
-
-        <!-- Invoice Conversion Rate -->
-        @if(isset($additionalMetrics) && ($additionalMetrics['totalEstimates'] ?? 0) > 0)
-        <x-card padding="sm" class="interactive-card cursor-pointer" onclick="window.location.href='{{ route('user.estimates.index') }}'">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 icon-bg-teal p-3 rounded-xl">
-                    <svg class="h-6 w-6 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Estimate Conversion</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">{{ number_format($additionalMetrics['invoiceConversionRate'] ?? 0, 1) }}%</dd>
-                        <dd class="text-xs text-gray-500 dark:text-[#9A9A9A] mt-1">{{ $additionalMetrics['convertedEstimates'] ?? 0 }} / {{ $additionalMetrics['totalEstimates'] ?? 0 }} converted</dd>
-                        <dd class="mt-3">
-                            @php $conversionRate = min(100, $additionalMetrics['invoiceConversionRate'] ?? 0); @endphp
-                            <div class="w-full bg-gray-100 dark:bg-[#2A2A2A] rounded-full h-1.5 overflow-hidden">
-                                <div class="bg-teal-500 h-full rounded-full transition-all duration-1000" style="width: <?php echo $conversionRate; ?>%"></div>
-                            </div>
-                        </dd>
-                    </dl>
-                </div>
+            <div class="h-[300px] relative">
+                <canvas id="revenueChart"
+                    data-labels="{{ json_encode(array_column($insights['revenue_trends'], 'month')) }}"
+                    data-values="{{ json_encode(array_column($insights['revenue_trends'], 'revenue')) }}"></canvas>
             </div>
         </x-card>
         @endif
 
-        <!-- Payment Success Rate -->
-        <x-card padding="sm" class="interactive-card">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 {{ ($additionalMetrics['paymentSuccessRate'] ?? 0) >= 80 ? 'icon-bg-emerald' : (($additionalMetrics['paymentSuccessRate'] ?? 0) >= 60 ? 'icon-bg-amber' : 'icon-bg-red') }} rounded-xl p-3">
-                    <svg class="h-6 w-6 {{ ($additionalMetrics['paymentSuccessRate'] ?? 0) >= 80 ? 'text-emerald-600 dark:text-emerald-400' : (($additionalMetrics['paymentSuccessRate'] ?? 0) >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <!-- Status Distribution -->
+        @php
+        $hasStatusData = isset($statusDistribution) && count($statusDistribution) > 0 && collect($statusDistribution)->sum('count') > 0;
+        @endphp
+        @if($hasStatusData)
+        <x-card>
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Status Distribution</h2>
+                    <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Current invoicing health</p>
+                </div>
+                <div class="icon-bg-purple p-2 rounded-lg">
+                    <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
                     </svg>
                 </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A] truncate">Payment Success Rate</dt>
-                        <dd class="text-2xl font-bold text-gray-900 dark:text-[#F5F5F5] tracking-tight">{{ number_format($additionalMetrics['paymentSuccessRate'] ?? 0, 1) }}%</dd>
-                        <dd class="text-xs text-gray-500 dark:text-[#9A9A9A] mt-1">{{ $additionalMetrics['paidOnTimeCount'] ?? 0 }} paid on time</dd>
-                        <dd class="mt-3">
-                            @php $successRate = min(100, $additionalMetrics['paymentSuccessRate'] ?? 0); @endphp
-                            <div class="w-full bg-gray-100 dark:bg-[#2A2A2A] rounded-full h-1.5 overflow-hidden">
-                                <div class="{{ $successRate >= 80 ? 'bg-emerald-500' : ($successRate >= 60 ? 'bg-amber-500' : 'bg-red-500') }} h-full rounded-full transition-all duration-1000" style="width: <?php echo $successRate; ?>%"></div>
-                            </div>
-                        </dd>
-                    </dl>
-                </div>
+            </div>
+            <div class="h-[300px] relative">
+                <canvas id="statusChart"
+                    data-values="{{ json_encode(collect($statusDistribution)->map(fn($v) => ['name' => $v['name'], 'count' => $v['count'], 'color' => $v['color']])->values()) }}"></canvas>
             </div>
         </x-card>
-    </div>
-
-    <!-- Compliance Section -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- eTIMS Compliance Card -->
-        <x-card>
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5]">eTIMS Compliance</h3>
-                <span class="badge-{{ ($complianceData['etimsComplianceRate'] ?? 0) >= 95 ? 'emerald' : (($complianceData['etimsComplianceRate'] ?? 0) >= 80 ? 'amber' : 'red') }}">
-                    {{ number_format($complianceData['etimsComplianceRate'] ?? 0, 1) }}%
-                </span>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-gray-500 dark:text-[#9A9A9A]">Compliance Rate</span>
-                        <span class="font-semibold text-gray-900 dark:text-[#F5F5F5]">{{ number_format($complianceData['etimsComplianceRate'] ?? 0, 1) }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-100 dark:bg-[#2A2A2A] rounded-full h-2 overflow-hidden">
-                        <div class="{{ ($complianceData['etimsComplianceRate'] ?? 0) >= 95 ? 'bg-emerald-500' : (($complianceData['etimsComplianceRate'] ?? 0) >= 80 ? 'bg-amber-500' : 'bg-red-500') }} h-full rounded-full transition-all duration-1000" style="width: {{ min(100, $complianceData['etimsComplianceRate'] ?? 0) }}%"></div>
-                    </div>
-                </div>
-                <div class="flex justify-between text-sm text-gray-600 dark:text-[#D4D4D4] pt-4 border-t border-gray-100 dark:border-[#2A2A2A]">
-                    <div class="flex flex-col">
-                        <span class="text-xs text-gray-400 dark:text-[#9A9A9A]">Submitted</span>
-                        <span class="font-bold text-gray-900 dark:text-[#F5F5F5]">{{ $complianceData['etimsSubmittedCount'] ?? 0 }}</span>
-                    </div>
-                    <div class="flex flex-col text-right">
-                        <span class="text-xs text-gray-400 dark:text-[#9A9A9A]">Total Target</span>
-                        <span class="font-bold text-gray-900 dark:text-[#F5F5F5]">{{ $complianceData['totalInvoicesForCompliance'] ?? 0 }}</span>
-                    </div>
-                </div>
-                @if(($complianceData['recentEtimsSubmissions'] ?? 0) > 0)
-                <div class="flex items-center gap-2 px-3 py-2 bg-emerald-500/5 dark:bg-emerald-400/5 border border-emerald-500/10 dark:border-emerald-400/10 rounded-xl">
-                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                        {{ $complianceData['recentEtimsSubmissions'] }} submitted in last 7 days
-                    </span>
-                </div>
-                @endif
-            </div>
-        </x-card>
-
-        <!-- Fraud & Bank Reconciliation Card -->
-        <x-card>
-            <div class="space-y-6">
-                <!-- Fraud Indicators -->
-                <div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5] mb-4">Risk Assessment</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center p-4 bg-gray-50 dark:bg-[#111111] border border-gray-100 dark:border-[#2A2A2A] rounded-2xl">
-                            <div class="text-3xl font-bold {{ ($fraudIndicators['flagged_count'] ?? 0) > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-[#F5F5F5]' }}">
-                                {{ $fraudIndicators['flagged_count'] ?? 0 }}
-                            </div>
-                            <div class="text-xs font-semibold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-wider mt-1">Flagged</div>
-                        </div>
-                        <div class="text-center p-4 bg-gray-50 dark:bg-[#111111] border border-gray-100 dark:border-[#2A2A2A] rounded-2xl">
-                            <div class="text-3xl font-bold text-gray-900 dark:text-[#F5F5F5]">{{ number_format($fraudIndicators['average_fraud_score'] ?? 0, 1) }}</div>
-                            <div class="text-xs font-semibold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-wider mt-1">Avg Score</div>
-                        </div>
-                    </div>
-                    @if(($fraudIndicators['requires_review'] ?? 0) > 0)
-                    <div class="mt-4 flex items-center gap-3 p-3 bg-amber-500/5 dark:bg-amber-400/5 border border-amber-500/10 dark:border-amber-400/10 rounded-xl">
-                        <svg class="h-5 w-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        <span class="text-sm font-medium text-amber-700 dark:text-amber-400">
-                            {{ $fraudIndicators['requires_review'] }} payments require manual review
-                        </span>
-                    </div>
-                    @endif
-                </div>
-
-                <!-- Bank Reconciliation -->
-                @if(($bankReconciliationStatus['is_enabled'] ?? false))
-                <div class="pt-6 border-t border-gray-100 dark:border-[#2A2A2A]">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5]">Bank Reconciliation</h3>
-                        <span class="badge-blue">{{ number_format($bankReconciliationStatus['reconciled_percentage'] ?? 0, 1) }}% matched</span>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="w-full bg-gray-100 dark:bg-[#2A2A2A] rounded-full h-1.5 overflow-hidden">
-                            <div class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: {{ min(100, $bankReconciliationStatus['reconciled_percentage'] ?? 0) }}%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs font-medium text-gray-500 dark:text-[#9A9A9A]">
-                            <span>{{ $bankReconciliationStatus['matched_payments'] ?? 0 }} reconciled items</span>
-                            <span>{{ $bankReconciliationStatus['pending_transactions'] ?? 0 }} pending</span>
-                        </div>
-                        @if(($bankReconciliationStatus['pending_transactions'] ?? 0) > 0)
-                        <a href="{{ route('user.bank-reconciliations.index') }}" class="inline-flex items-center mt-2 text-sm font-bold text-[#2B6EF6] hover:text-[#2563EB] group transition-colors">
-                            Complete reconciliation
-                            <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                        </a>
-                        @endif
-                    </div>
-                </div>
-                @endif
-            </div>
-        </x-card>
+        @endif
     </div>
 
     <!-- Duplicate Detection Alert -->
@@ -431,180 +244,191 @@
             <div>
                 <strong>Duplicate Detection:</strong> {{ $complianceData['duplicateCount'] }} potential duplicate invoice(s) detected.
             </div>
-            <a href="{{ route('user.invoices.index') }}" class="ml-4 text-sm font-medium underline">Review Invoices</a>
+            <a href="{{ route('user.invoices.index') }}" class="ml-4 text-sm font-medium underline font-bold">Review Invoices</a>
         </div>
     </x-alert>
     @endif
 
-    <!-- Status Distribution & Quick Filters -->
-    @php
-    $hasStatusData = isset($statusDistribution) && count($statusDistribution) > 0 && collect($statusDistribution)->sum('count') > 0;
-    @endphp
-    @if($hasStatusData)
-    <x-card>
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
-            <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-[#F5F5F5]">Invoice Status Overview</h2>
-                <p class="text-sm text-gray-500 dark:text-[#9A9A9A] mt-1">Real-time distribution of your invoicing output</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('user.invoices.index', ['status' => 'draft']) }}" class="btn-ripple px-5 py-2.5 text-sm font-bold text-gray-700 dark:text-[#D4D4D4] bg-gray-50 dark:bg-[#111111] border border-gray-200 dark:border-[#2A2A2A] rounded-xl hover:bg-gray-100 dark:hover:bg-[#181818] transition-all">
-                    Draft
-                </a>
-                <a href="{{ route('user.invoices.index', ['status' => 'sent']) }}" class="btn-ripple px-5 py-2.5 text-sm font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-400/5 border border-blue-100 dark:border-blue-400/10 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-400/10 transition-all">
-                    Sent
-                </a>
-                <a href="{{ route('user.invoices.index', ['status' => 'paid']) }}" class="btn-ripple px-5 py-2.5 text-sm font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-400/5 border border-emerald-100 dark:border-emerald-400/10 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-400/10 transition-all">
-                    Paid
-                </a>
-                <a href="{{ route('user.invoices.index', ['status' => 'overdue']) }}" class="btn-ripple px-5 py-2.5 text-sm font-bold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-400/5 border border-red-100 dark:border-red-400/10 rounded-xl hover:bg-red-100 dark:hover:bg-red-400/10 transition-all">
-                    Overdue
-                </a>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Status Pie Chart - More Prominent -->
-            <div class="lg:col-span-2" style="position: relative; height: 300px; max-width: 100%;">
-                <canvas id="statusChart"></canvas>
-            </div>
-            <!-- Status Cards List -->
-            <div class="space-y-4">
-                @foreach($statusDistribution as $status)
-                @if($status['count'] > 0)
-                <a href="{{ route('user.invoices.index', ['status' => strtolower($status['name'])]) }}" class="interactive-card block p-5">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background-color: {{ str_replace(')', ', 0.1)', $status['bgColor'] ?? 'rgba(0,0,0)') }}">
-                                <div class="w-3 h-3 rounded-full" style="background-color: {{ $status['color'] }}"></div>
-                            </div>
-                            <div>
-                                <div class="text-sm font-bold text-gray-900 dark:text-white">{{ $status['name'] }}</div>
-                                <div class="text-xs font-medium text-gray-500 dark:text-[#9A9A9A]">{{ $status['percentage'] }}% of volume</div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-black tracking-tight" style="color: {{ $status['color'] }}">
-                                {{ $status['count'] }}
-                            </div>
-                            <div class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Invoices</div>
-                        </div>
-                    </div>
-                </a>
-                @endif
-                @endforeach
-            </div>
-        </div>
-    </x-card>
-    @endif
-
-    <!-- Business Insights -->
-    @if(isset($insights))
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Revenue Trends Chart -->
-        @if(isset($insights['revenue_trends']) && count($insights['revenue_trends']) > 0)
+    <!-- Specialized Metrics Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- eTIMS Compliance -->
         <x-card>
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5]">Revenue Trends</h2>
-                <span class="text-xs font-semibold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Last 12 Months</span>
+                <div>
+                    <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">eTIMS Compliance</h3>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Submission Health</p>
+                </div>
+                <div class="badge-{{ ($complianceData['etimsComplianceRate'] ?? 0) >= 95 ? 'emerald' : (($complianceData['etimsComplianceRate'] ?? 0) >= 80 ? 'amber' : 'red') }}">
+                    {{ number_format($complianceData['etimsComplianceRate'] ?? 0, 1) }}%
+                </div>
             </div>
-            <div class="chart-container" style="position: relative; height: 320px; max-width: 100%;">
-                <canvas id="revenueChart"></canvas>
+            <div class="space-y-4">
+                <div class="w-full bg-gray-100 dark:bg-[#2A2A2A] rounded-full h-1.5 overflow-hidden">
+                    <div class="{{ ($complianceData['etimsComplianceRate'] ?? 0) >= 95 ? 'bg-emerald-500' : (($complianceData['etimsComplianceRate'] ?? 0) >= 80 ? 'bg-amber-500' : 'bg-red-500') }} h-full rounded-full transition-all duration-1000" style="width: {{ (int)($complianceData['etimsComplianceRate'] ?? 0) }}%;"></div>
+                </div>
+                <div class="flex justify-between items-end">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Submitted</span>
+                        <span class="text-xl font-black text-gray-900 dark:text-[#F5F5F5]">{{ $complianceData['etimsSubmittedCount'] ?? 0 }}</span>
+                    </div>
+                    <div class="flex flex-col text-right">
+                        <span class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Target</span>
+                        <span class="text-xl font-black text-gray-900 dark:text-[#F5F5F5]">{{ $complianceData['totalInvoicesForCompliance'] ?? 0 }}</span>
+                    </div>
+                </div>
             </div>
         </x-card>
-        @endif
 
-        <!-- Invoice Aging Report -->
-        @if(isset($insights['invoice_aging']))
+        <!-- Risk Assessment -->
         <x-card>
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5]">Invoice Aging Report</h2>
-                <div class="icon-bg-amber/10 p-2 rounded-lg">
+                <div>
+                    <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Risk Assessment</h3>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Fraud Indicators</p>
+                </div>
+                <div class="icon-bg-red p-2 rounded-lg">
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-50 dark:bg-[#111111] border border-gray-100 dark:border-[#2A2A2A] rounded-2xl">
+                    <div class="text-2xl font-black {{ ($fraudIndicators['flagged_count'] ?? 0) > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-[#F5F5F5]' }}">
+                        {{ $fraudIndicators['flagged_count'] ?? 0 }}
+                    </div>
+                    <div class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mt-1">Flagged</div>
+                </div>
+                <div class="p-4 bg-gray-50 dark:bg-[#111111] border border-gray-100 dark:border-[#2A2A2A] rounded-2xl">
+                    <div class="text-2xl font-black text-gray-900 dark:text-[#F5F5F5]">{{ number_format($fraudIndicators['average_fraud_score'] ?? 0, 1) }}</div>
+                    <div class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mt-1">Avg Score</div>
+                </div>
+            </div>
+        </x-card>
+
+        <!-- DSO Analytics -->
+        <x-card>
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">DSO Analytics</h3>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Days Sales Outstanding</p>
+                </div>
+                <div class="icon-bg-amber p-2 rounded-lg">
                     <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
             </div>
-            <div class="space-y-3">
-                @foreach($insights['invoice_aging'] as $ageGroup => $data)
-                @if($data['count'] > 0)
-                <div class="group flex items-center justify-between p-4 bg-gray-50 dark:bg-[#111111] border border-gray-100 dark:border-[#2A2A2A] rounded-2xl hover:border-blue-500/30 transition-all">
+            <div class="flex items-end justify-between">
+                <div>
+                    <p class="text-4xl font-black text-gray-900 dark:text-[#F5F5F5] tracking-tighter">{{ number_format($insights['dso'] ?? 0, 1) }}</p>
+                    <p class="text-[10px] font-black text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Avg Days to Pay</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-black {{ ($insights['dso_change'] ?? 0) <= 0 ? 'text-emerald-500' : 'text-red-500' }}">
+                        {{ ($insights['dso_change'] ?? 0) <= 0 ? '↓' : '↑' }} {{ abs(number_format($insights['dso_change'] ?? 0, 1)) }}%
+                    </p>
+                    <p class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">vs prev period</p>
+                </div>
+            </div>
+        </x-card>
+    </div>
+
+    <!-- Activity & Analytics Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Activity Feed -->
+        <x-card padding="none">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-[#2A2A2A] flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Recent Activity</h2>
+                    <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Direct transaction log</p>
+                </div>
+                <a href="{{ route('user.invoices.index') }}" class="text-xs font-black text-blue-500 hover:text-blue-600 uppercase tracking-widest">View All</a>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-[#2A2A2A]">
+                @forelse($recentActivity ?? [] as $activity)
+                <div class="px-8 py-5 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                                @if($activity['type'] === 'invoice')
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                @elseif($activity['type'] === 'payment')
+                                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                @else
+                                <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                @endif
+                            </div>
+                            <div>
+                                <p class="text-sm font-black text-gray-900 dark:text-white">{{ $activity['title'] }}</p>
+                                <p class="text-xs font-medium text-gray-500 dark:text-[#9A9A9A]">{{ $activity['description'] }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-black text-gray-900 dark:text-white">KES {{ number_format($activity['amount'] ?? 0, 0) }}</p>
+                            <p class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">{{ \Carbon\Carbon::parse($activity['date'])->diffForHumans() }}</p>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="px-8 py-12 text-center text-gray-500">No recent activity found.</div>
+                @endforelse
+            </div>
+        </x-card>
+
+        <!-- Aging & Top Clients -->
+        <div class="space-y-8">
+            <!-- Invoice Aging Report -->
+            <x-card>
+                <div class="flex items-center justify-between mb-8">
                     <div>
-                        <p class="text-sm font-bold text-gray-900 dark:text-[#F5F5F5]">{{ $ageGroup }} Days</p>
-                        <p class="text-xs font-medium text-gray-500 dark:text-[#9A9A9A]">{{ $data['count'] }} outstanding invoice(s)</p>
+                        <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Aging Report</h2>
+                        <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Receivables by age group</p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-lg font-black text-gray-900 dark:text-[#F5F5F5]">KES {{ number_format($data['amount'], 2) }}</p>
+                    <div class="icon-bg-amber p-2 rounded-lg">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                     </div>
                 </div>
-                @endif
-                @endforeach
-            </div>
-        </x-card>
-        @endif
+                <div class="space-y-4">
+                    @foreach($insights['invoice_aging'] ?? [] as $ageGroup => $data)
+                    @if($data['count'] > 0)
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-[#2A2A2A] rounded-2xl">
+                        <div>
+                            <p class="text-sm font-black text-gray-900 dark:text-white">{{ $ageGroup }} Days</p>
+                            <p class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">{{ $data['count'] }} Open Invoices</p>
+                        </div>
+                        <p class="text-lg font-black text-gray-900 dark:text-white tracking-tight">KES {{ number_format($data['amount'], 0) }}</p>
+                    </div>
+                    @endif
+                    @endforeach
+                </div>
+            </x-card>
+
+            <!-- Top Clients -->
+            <x-card>
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Top Performance</h2>
+                        <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Highest revenue contributors</p>
+                    </div>
+                </div>
+                <div class="h-[200px] relative">
+                    <canvas id="topClientsChart"
+                        data-labels="{{ json_encode(collect($insights['top_clients'] ?? [])->slice(0, 5)->pluck('client_name')) }}"
+                        data-values="{{ json_encode(collect($insights['top_clients'] ?? [])->slice(0, 5)->pluck('revenue')) }}"></canvas>
+                </div>
+            </x-card>
+        </div>
     </div>
 
-    <!-- DSO & Top Clients -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- DSO Metrics -->
-        @if(isset($insights['dso']))
-        <x-card>
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5]">Days Sales Outstanding</h2>
-                <div class="icon-bg-blue/10 p-2 rounded-lg">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="flex flex-col">
-                    <span class="text-xs font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">30-Day DSO</span>
-                    <span class="text-3xl font-black text-gray-900 dark:text-[#F5F5F5]">{{ number_format($insights['dso'], 1) }}</span>
-                    <span class="text-xs font-medium text-gray-500 dark:text-[#9A9A9A]">days average</span>
-                </div>
-                @if(isset($insights['dso_90']))
-                <div class="flex flex-col md:border-l border-gray-100 dark:border-[#2A2A2A] md:pl-6">
-                    <span class="text-xs font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">90-Day DSO</span>
-                    <span class="text-3xl font-black text-gray-900 dark:text-[#F5F5F5]">{{ number_format($insights['dso_90'], 1) }}</span>
-                    <span class="text-xs font-medium text-gray-500 dark:text-[#9A9A9A]">stability index</span>
-                </div>
-                @endif
-                @if(isset($insights['avg_payment_time']))
-                <div class="flex flex-col md:border-l border-gray-100 dark:border-[#2A2A2A] md:pl-6">
-                    <span class="text-xs font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest mb-1">Avg Pay Time</span>
-                    <span class="text-3xl font-black text-emerald-600 dark:text-emerald-400">{{ number_format($insights['avg_payment_time'], 1) }}</span>
-                    <span class="text-xs font-medium text-gray-500 dark:text-[#9A9A9A]">calendar days</span>
-                </div>
-                @endif
-            </div>
-            <div class="mt-8 p-4 bg-blue-500/5 border border-blue-500/10 rounded-2xl">
-                <p class="text-xs font-medium text-blue-700 dark:text-blue-400 leading-relaxed">
-                    <span class="font-bold">Pro Tip:</span> Your DSO of {{ number_format($insights['dso'], 1) }} days is
-                    @if($insights['dso'] < 30) <span class="text-emerald-600 font-bold">excellent</span>. Most SaaS businesses aim for sub-45 days.
-                        @else <span class="text-amber-600 font-bold">trending high</span>. Consider automated follow-ups. @endif
-                </p>
-            </div>
-        </x-card>
-        @endif
-
-        <!-- Top Clients -->
-        @if(isset($insights['top_clients']) && count($insights['top_clients']) > 0)
-        <x-card>
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5]">Top Clients</h2>
-                <div class="icon-bg-purple/10 p-2 rounded-lg">
-                    <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </div>
-            </div>
-            <div class="chart-container" style="position: relative; height: 320px; max-width: 100%;">
-                <canvas id="topClientsChart"></canvas>
-            </div>
-        </x-card>
-        @endif
-    </div>
-    @endif
 
     <!-- Additional Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -612,15 +436,12 @@
         @if(isset($paymentMethodBreakdown) && count($paymentMethodBreakdown['breakdown'] ?? []) > 0)
         <x-card>
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5]">Payment Methods</h2>
-                <div class="icon-bg-emerald/10 p-2 rounded-lg">
-                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                </div>
+                <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Payment Methods</h2>
+                <p class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Revenue Distribution</p>
             </div>
-            <div class="chart-container" style="position: relative; height: 320px; max-width: 100%;">
-                <canvas id="paymentMethodChart"></canvas>
+            <div class="h-[300px] relative">
+                <canvas id="paymentMethodChart"
+                    data-values="{{ json_encode(collect($paymentMethodBreakdown['breakdown'])->map(fn($item) => ['method' => $item['method'], 'amount' => $item['total_amount'], 'percentage' => $item['percentage']])) }}"></canvas>
             </div>
         </x-card>
         @endif
@@ -628,12 +449,16 @@
         <!-- Cash Flow Forecast -->
         @if(isset($cashFlowForecast) && count($cashFlowForecast) > 0)
         <x-card>
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-[#F5F5F5]">Cash Flow Forecast</h2>
-                <span class="text-xs font-semibold text-gray-400 dark:text-[#9A9A9A] uppercase tracking-widest">Next 3 Months</span>
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Cash Flow Forecast</h2>
+                    <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Next 3 months projection</p>
+                </div>
             </div>
-            <div class="chart-container" style="position: relative; height: 320px; max-width: 100%;">
-                <canvas id="cashFlowForecastChart"></canvas>
+            <div class="h-[300px] relative">
+                <canvas id="cashFlowForecastChart"
+                    data-labels="{{ json_encode(collect($cashFlowForecast)->pluck('month')) }}"
+                    data-values="{{ json_encode(collect($cashFlowForecast)->map(fn($item) => ['inflow' => $item['projected_inflow'], 'outflow' => $item['projected_outflow'], 'net' => $item['projected_net']])) }}"></canvas>
             </div>
         </x-card>
         @endif
@@ -748,45 +573,44 @@
     @endif
 
     <!-- Export Tools Section -->
-    <x-card class="dark:bg-[#252525] dark:border dark:border-[#333333] rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
-        <div class="flex items-center justify-between mb-4">
+    <x-card class="interactive-card">
+        <div class="flex items-center justify-between mb-8">
             <div>
-                <h3 class="text-lg font-semibold text-gray-900">Export Data</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-300">Export your data for analysis or backup</p>
+                <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Export Authority</h3>
+                <p class="text-sm font-medium text-gray-500 dark:text-[#9A9A9A]">Direct data extraction tools</p>
+            </div>
+            <div class="icon-bg-blue p-2 rounded-lg">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
             </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="p-4 border border-gray-200 rounded-lg hover:border-[#2B6EF6] transition-colors">
-                <div class="flex items-center justify-between mb-2">
-                    <h4 class="text-sm font-medium text-gray-900">Export Invoices</h4>
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-6 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-[#2A2A2A] rounded-2xl group hover:border-blue-500/30 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">Invoice Ledger</h4>
+                    <span class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase">Full History</span>
                 </div>
-                <p class="text-xs text-gray-500 mb-3">Download invoices as CSV or Excel</p>
-                <div class="flex gap-2">
-                    <a href="{{ route('user.data-export.invoices.csv') }}" class="inline-flex items-center px-4 py-2 text-sm min-h-[36px] font-medium text-gray-700 dark:text-gray-200 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                        CSV
+                <div class="flex gap-3">
+                    <a href="{{ route('user.data-export.invoices.csv') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-xs font-black text-gray-700 dark:text-gray-200 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-all uppercase tracking-widest">
+                        CSV Extract
                     </a>
-                    <a href="{{ route('user.data-export.invoices.excel') }}" class="inline-flex items-center px-4 py-2 text-sm min-h-[36px] font-medium text-gray-700 dark:text-gray-200 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                        Excel
+                    <a href="{{ route('user.data-export.invoices.excel') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-xs font-black text-white bg-blue-600 rounded-xl hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 transition-all uppercase tracking-widest">
+                        Excel Pro
                     </a>
                 </div>
             </div>
-            <div class="p-4 border border-gray-200 rounded-lg hover:border-[#2B6EF6] transition-colors">
-                <div class="flex items-center justify-between mb-2">
-                    <h4 class="text-sm font-medium text-gray-900">Export Clients</h4>
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+            <div class="p-6 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-[#2A2A2A] rounded-2xl group hover:border-emerald-500/30 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">Client Audit</h4>
+                    <span class="text-[10px] font-bold text-gray-400 dark:text-[#9A9A9A] uppercase">Management</span>
                 </div>
-                <p class="text-xs text-gray-500 mb-3">Download client list as CSV or Excel</p>
-                <div class="flex gap-2">
-                    <a href="{{ route('user.data-export.clients.csv') }}" class="inline-flex items-center px-4 py-2 text-sm min-h-[36px] font-medium text-gray-700 dark:text-gray-200 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                        CSV
+                <div class="flex gap-3">
+                    <a href="{{ route('user.data-export.clients.csv') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-xs font-black text-gray-700 dark:text-gray-200 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/10 transition-all uppercase tracking-widest">
+                        CSV Extract
                     </a>
-                    <a href="{{ route('user.data-export.clients.excel') }}" class="inline-flex items-center px-4 py-2 text-sm min-h-[36px] font-medium text-gray-700 dark:text-gray-200 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                        Excel
+                    <a href="{{ route('user.data-export.clients.excel') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2.5 text-xs font-black text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-500/20 transition-all uppercase tracking-widest">
+                        Excel Pro
                     </a>
                 </div>
             </div>
@@ -1023,374 +847,278 @@
 
         function initCharts() {
             // Revenue Chart
-            const ctx = document.getElementById('revenueChart');
-            if (ctx && !revenueChartInstance) {
+            const revenueEl = document.getElementById('revenueChart');
+            if (revenueEl && !revenueChartInstance) {
                 try {
-                    const revenueData = @json($insights['revenue_trends'] ?? []);
-                    if (revenueData && revenueData.length > 0) {
-                        revenueChartInstance = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: revenueData.map(item => item.month),
-                                datasets: [{
-                                    label: 'Revenue (KES)',
-                                    data: revenueData.map(item => item.revenue),
-                                    borderColor: 'rgb(43, 110, 246)',
-                                    backgroundColor: 'rgba(43, 110, 246, 0.1)',
-                                    tension: 0.4,
-                                    fill: true
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: true,
-                                aspectRatio: 2,
-                                animation: {
-                                    duration: 1000,
-                                    easing: 'easeInOutQuart'
-                                },
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            callback: function(value) {
-                                                return 'KES ' + value.toLocaleString();
-                                            }
-                                        }
-                                    }
-                                },
-                                layout: {
-                                    padding: {
-                                        top: 10,
-                                        bottom: 10,
-                                        left: 10,
-                                        right: 10
-                                    }
-                                }
-                            }
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error initializing revenue chart:', error);
-                }
-            }
+                    const labels = JSON.parse(revenueEl.getAttribute('data-labels'));
+                    const values = JSON.parse(revenueEl.getAttribute('data-values'));
 
-            // Status Distribution Doughnut Chart
-            const statusCtx = document.getElementById('statusChart');
-            if (statusCtx && !statusChartInstance) {
-                try {
-                    const statusData = @json($statusDistribution ?? []);
-
-                    if (!statusData || statusData.length === 0) {
-                        console.warn('No status distribution data available');
-                        if (statusCtx.parentElement) {
-                            statusCtx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500"><div class="text-center"><p class="text-sm">No invoice data available</p><p class="text-xs mt-1 text-gray-400">Create an invoice to see status distribution</p></div></div>';
-                        }
-                        return;
-                    }
-
-                    // Filter out statuses with count 0 and sort by count (descending) for consistent display
-                    const filteredData = statusData
-                        .filter(item => item && item.count > 0)
-                        .sort((a, b) => (b.count || 0) - (a.count || 0));
-
-                    if (filteredData.length === 0) {
-                        console.warn('No invoices with status data to display');
-                        if (statusCtx.parentElement) {
-                            statusCtx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-500"><div class="text-center"><p class="text-sm">No invoices found</p><p class="text-xs mt-1 text-gray-400">Create an invoice to see status distribution</p></div></div>';
-                        }
-                        return;
-                    }
-
-                    // Ensure all required fields are present
-                    const chartData = {
-                        labels: filteredData.map(item => item.name || 'Unknown'),
-                        datasets: [{
-                            data: filteredData.map(item => item.count || 0),
-                            backgroundColor: filteredData.map(item => item.bgColor || '#9CA3AF'),
-                            borderColor: filteredData.map(item => item.color || '#6B7280'),
-                            borderWidth: 3,
-                            hoverBorderWidth: 5,
-                            hoverOffset: 4,
-                        }]
-                    };
-
-                    statusChartInstance = new Chart(statusCtx, {
-                        type: 'doughnut',
-                        data: chartData,
+                    revenueChartInstance = new Chart(revenueEl, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Revenue (KES)',
+                                data: values,
+                                borderColor: 'rgb(43, 110, 246)',
+                                backgroundColor: 'rgba(43, 110, 246, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 4,
+                                pointBackgroundColor: 'rgb(43, 110, 246)',
+                                pointBorderWidth: 2,
+                                pointBorderColor: '#fff',
+                            }]
+                        },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            animation: {
-                                animateRotate: true,
-                                animateScale: true,
-                                duration: 1000,
-                                easing: 'easeInOutQuart'
-                            },
                             plugins: {
                                 legend: {
                                     display: false
                                 },
                                 tooltip: {
-                                    enabled: true,
-                                    callbacks: {
-                                        label: function(context) {
-                                            const label = context.label || '';
-                                            const value = context.parsed || 0;
-                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                            if (total === 0) return label + ': ' + value;
-                                            const percentage = ((value / total) * 100).toFixed(1);
-                                            return label + ': ' + value + ' invoice' + (value !== 1 ? 's' : '') + ' (' + percentage + '%)';
-                                        }
-                                    },
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
                                     padding: 12,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                                    cornerRadius: 6,
-                                    displayColors: true,
-                                    titleColor: '#ffffff',
-                                    bodyColor: '#ffffff',
-                                    borderColor: 'rgba(255, 255, 255, 0.1)',
-                                    borderWidth: 1
+                                    titleFont: {
+                                        weight: '800'
+                                    },
+                                    callbacks: {
+                                        label: (context) => `KES ${context.parsed.y.toLocaleString()}`
+                                    }
                                 }
                             },
-                            cutout: '60%',
-                            interaction: {
-                                intersect: true,
-                                mode: 'point'
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: borderColor
+                                    },
+                                    ticks: {
+                                        callback: (value) => value >= 1000 ? (value / 1000) + 'k' : value
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
                             }
                         }
                     });
-
-                    console.log('Status chart initialized successfully with', filteredData.length, 'statuses');
                 } catch (error) {
-                    console.error('Error initializing status chart:', error);
-                    console.error('Error details:', error.message, error.stack);
-                    // Show error message in the chart container
-                    if (statusCtx && statusCtx.parentElement) {
-                        statusCtx.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-red-500"><div class="text-center"><p class="text-sm">Error loading chart</p><p class="text-xs mt-1 text-gray-400">Please refresh the page</p></div></div>';
-                    }
+                    console.error('Revenue Chart Error:', error);
                 }
-            } else if (!statusCtx) {
-                console.warn('Status chart canvas element not found');
             }
 
-            // Top Clients Bar Chart
-            const topClientsCtx = document.getElementById('topClientsChart');
-            if (topClientsCtx && !topClientsChartInstance) {
+            // Status Distribution Chart
+            const statusEl = document.getElementById('statusChart');
+            if (statusEl && !statusChartInstance) {
                 try {
-                    const topClientsData = @json($insights['top_clients'] ?? []);
-                    if (topClientsData.length > 0) {
-                        topClientsChartInstance = new Chart(topClientsCtx, {
-                            type: 'bar',
-                            data: {
-                                labels: topClientsData.slice(0, 10).map(item => item.client_name),
-                                datasets: [{
-                                    label: 'Revenue (KES)',
-                                    data: topClientsData.slice(0, 10).map(item => item.revenue),
-                                    backgroundColor: 'rgba(43, 110, 246, 0.8)',
-                                    borderColor: 'rgb(43, 110, 246)',
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: true,
-                                aspectRatio: 2,
-                                animation: {
-                                    duration: 1000,
-                                    easing: 'easeInOutQuart'
+                    const data = JSON.parse(statusEl.getAttribute('data-values'));
+                    statusChartInstance = new Chart(statusEl, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.map(d => d.name),
+                            datasets: [{
+                                data: data.map(d => d.count),
+                                backgroundColor: data.map(d => d.color),
+                                borderWidth: 0,
+                                hoverOffset: 10
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '75%',
+                            plugins: {
+                                legend: {
+                                    display: false
                                 },
-                                plugins: {
-                                    legend: {
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    padding: 12,
+                                    callbacks: {
+                                        label: (context) => `${context.label}: ${context.parsed} item(s)`
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Status Chart Error:', error);
+                }
+            }
+
+            // Top Clients Chart
+            const clientsEl = document.getElementById('topClientsChart');
+            if (clientsEl && !topClientsChartInstance) {
+                try {
+                    const labels = JSON.parse(clientsEl.getAttribute('data-labels'));
+                    const values = JSON.parse(clientsEl.getAttribute('data-values'));
+                    topClientsChartInstance = new Chart(clientsEl, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Revenue',
+                                data: values,
+                                backgroundColor: 'rgba(43, 110, 246, 0.8)',
+                                borderRadius: 8,
+                                barThickness: 20
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: borderColor
+                                    },
+                                    ticks: {
                                         display: false
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                return 'KES ' + context.parsed.y.toLocaleString();
-                                            }
-                                        }
                                     }
                                 },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            callback: function(value) {
-                                                return 'KES ' + value.toLocaleString();
-                                            }
-                                        }
-                                    },
-                                    x: {
-                                        ticks: {
-                                            maxRotation: 45,
-                                            minRotation: 0
-                                        }
-                                    }
-                                },
-                                layout: {
-                                    padding: {
-                                        top: 10,
-                                        bottom: 10,
-                                        left: 10,
-                                        right: 10
+                                x: {
+                                    grid: {
+                                        display: false
                                     }
                                 }
                             }
-                        });
-                    }
+                        }
+                    });
                 } catch (error) {
-                    console.error('Error initializing top clients chart:', error);
+                    console.error('Clients Chart Error:', error);
+                }
+            }
+            // Payment Methods Chart
+            const paymentEl = document.getElementById('paymentMethodChart');
+            if (paymentEl && !paymentMethodChartInstance) {
+                try {
+                    const data = JSON.parse(paymentEl.getAttribute('data-values'));
+                    const colors = ['#2B6EF6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
+                    paymentMethodChartInstance = new Chart(paymentEl, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.map(d => d.method),
+                            datasets: [{
+                                data: data.map(d => d.amount),
+                                backgroundColor: colors,
+                                borderWidth: 0,
+                                hoverOffset: 12
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 10,
+                                        padding: 15
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    padding: 12,
+                                    callbacks: {
+                                        label: (context) => {
+                                            const item = data[context.dataIndex];
+                                            return `${context.label}: KES ${item.amount.toLocaleString()} (${item.percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Payment Chart Error:', error);
                 }
             }
 
-            // Payment Method Breakdown Donut Chart
-            const paymentMethodCtx = document.getElementById('paymentMethodChart');
-            if (paymentMethodCtx && !paymentMethodChartInstance) {
+            // Cash Flow Forecast Chart
+            const cashFlowEl = document.getElementById('cashFlowForecastChart');
+            if (cashFlowEl && !cashFlowForecastChartInstance) {
                 try {
-                    const paymentMethodData = @json($paymentMethodBreakdown['breakdown'] ?? []);
-                    if (paymentMethodData.length > 0) {
-                        const colors = ['#2B6EF6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'];
-                        paymentMethodChartInstance = new Chart(paymentMethodCtx, {
-                            type: 'doughnut',
-                            data: {
-                                labels: paymentMethodData.map(item => item.method),
-                                datasets: [{
-                                    data: paymentMethodData.map(item => item.total_amount),
-                                    backgroundColor: paymentMethodData.map((item, index) => colors[index % colors.length]),
-                                    borderWidth: 2,
-                                    borderColor: '#ffffff'
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: true,
-                                aspectRatio: 1,
-                                animation: {
-                                    duration: 1000,
-                                    easing: 'easeInOutQuart'
+                    const labels = JSON.parse(cashFlowEl.getAttribute('data-labels'));
+                    const data = JSON.parse(cashFlowEl.getAttribute('data-values'));
+                    cashFlowForecastChartInstance = new Chart(cashFlowEl, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                    label: 'Inflow',
+                                    data: data.map(d => d.inflow),
+                                    borderColor: '#10B981',
+                                    tension: 0.4,
+                                    fill: false
                                 },
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom'
+                                {
+                                    label: 'Outflow',
+                                    data: data.map(d => d.outflow),
+                                    borderColor: '#EF4444',
+                                    tension: 0.4,
+                                    fill: false
+                                },
+                                {
+                                    label: 'Net',
+                                    data: data.map(d => d.net),
+                                    borderColor: '#2B6EF6',
+                                    backgroundColor: 'rgba(43, 110, 246, 0.1)',
+                                    tension: 0.4,
+                                    fill: true,
+                                    borderDash: [5, 5]
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.8)',
+                                    padding: 12,
+                                    callbacks: {
+                                        label: (context) => `${context.dataset.label}: KES ${context.parsed.y.toLocaleString()}`
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    grid: {
+                                        color: borderColor
                                     },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                const label = context.label || '';
-                                                const value = context.parsed || 0;
-                                                const percentage = paymentMethodData[context.dataIndex]?.percentage || 0;
-                                                return label + ': KES ' + value.toLocaleString() + ' (' + percentage + '%)';
-                                            }
-                                        }
+                                    ticks: {
+                                        callback: (v) => v >= 1000 ? (v / 1000) + 'k' : v
                                     }
                                 },
-                                layout: {
-                                    padding: {
-                                        top: 10,
-                                        bottom: 10,
-                                        left: 10,
-                                        right: 10
+                                x: {
+                                    grid: {
+                                        display: false
                                     }
                                 }
                             }
-                        });
-                    }
+                        }
+                    });
                 } catch (error) {
-                    console.error('Error initializing payment method chart:', error);
-                }
-            }
-
-            // Cash Flow Forecast Line Chart
-            const cashFlowForecastCtx = document.getElementById('cashFlowForecastChart');
-            if (cashFlowForecastCtx && !cashFlowForecastChartInstance) {
-                try {
-                    const forecastData = @json($cashFlowForecast ?? []);
-                    if (forecastData.length > 0) {
-                        cashFlowForecastChartInstance = new Chart(cashFlowForecastCtx, {
-                            type: 'line',
-                            data: {
-                                labels: forecastData.map(item => item.month),
-                                datasets: [{
-                                        label: 'Projected Inflow',
-                                        data: forecastData.map(item => item.projected_inflow),
-                                        borderColor: 'rgb(16, 185, 129)',
-                                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                        tension: 0.4,
-                                        fill: false
-                                    },
-                                    {
-                                        label: 'Projected Outflow',
-                                        data: forecastData.map(item => item.projected_outflow),
-                                        borderColor: 'rgb(239, 68, 68)',
-                                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                        tension: 0.4,
-                                        fill: false
-                                    },
-                                    {
-                                        label: 'Projected Net',
-                                        data: forecastData.map(item => item.projected_net),
-                                        borderColor: 'rgb(43, 110, 246)',
-                                        backgroundColor: 'rgba(43, 110, 246, 0.1)',
-                                        tension: 0.4,
-                                        fill: true,
-                                        borderDash: [5, 5]
-                                    }
-                                ]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: true,
-                                aspectRatio: 2,
-                                animation: {
-                                    duration: 1000,
-                                    easing: 'easeInOutQuart'
-                                },
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom'
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                return context.dataset.label + ': KES ' + context.parsed.y.toLocaleString();
-                                            }
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: false,
-                                        ticks: {
-                                            callback: function(value) {
-                                                return 'KES ' + value.toLocaleString();
-                                            }
-                                        }
-                                    }
-                                },
-                                layout: {
-                                    padding: {
-                                        top: 10,
-                                        bottom: 10,
-                                        left: 10,
-                                        right: 10
-                                    }
-                                }
-                            }
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error initializing cash flow forecast chart:', error);
+                    console.error('Cash Flow Chart Error:', error);
                 }
             }
         }
 
-        // Initialize chart s when DOM is ready
+        // Initialize charts when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initCharts);
         } else {
@@ -1398,9 +1126,7 @@
         }
     })();
 </script>
-
-
-
+</div>
 
 <script>
     // Dashboard Tour

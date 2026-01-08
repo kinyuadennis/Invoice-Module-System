@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -8,14 +8,21 @@
     <title>@yield('title', 'Admin') - {{ config('app.name', 'InvoiceHub') }}</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="alternate icon" href="{{ route('favicon') }}" type="image/x-icon">
-    <!-- Inter Font - Modern, professional typography -->
+    <!-- Outfit Font - Modern, geometric typography for Nuvemite theme -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
 </head>
 
-<body class="bg-[#0A0A0A] text-gray-900 dark:text-[#E5E5E5] antialiased selection:bg-blue-500/30">
+<body class="bg-gray-50 dark:bg-[#0A0A0A] text-gray-900 dark:text-[#E5E5E5] antialiased selection:bg-blue-500/30 transition-colors duration-200">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
         <aside class="hidden lg:flex lg:flex-shrink-0">
@@ -130,7 +137,35 @@
 
                     <!-- User Actions -->
                     <div class="flex items-center gap-4">
-                        <a href="{{ route('user.dashboard') }}" class="btn-ripple hidden md:inline-flex items-center px-4 py-2 text-xs font-bold text-gray-600 dark:text-[#9A9A9A] bg-gray-50 dark:bg-[#111111] border border-gray-200 dark:border-[#222222] rounded-xl hover:bg-gray-100 dark:hover:bg-[#181818] transition-all">
+                        <!-- Theme Toggle -->
+                        <button
+                            x-data="{
+                                darkMode: localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
+                                toggleTheme() {
+                                    this.darkMode = !this.darkMode;
+                                    if (this.darkMode) {
+                                        document.documentElement.classList.add('dark');
+                                        localStorage.theme = 'dark';
+                                    } else {
+                                        document.documentElement.classList.remove('dark');
+                                        localStorage.theme = 'light';
+                                    }
+                                }
+                            }"
+                            @click="toggleTheme()"
+                            class="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-[#1A1A1A]"
+                            aria-label="Toggle Dark Mode">
+                            <!-- Sun Icon -->
+                            <svg x-show="darkMode" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <!-- Moon Icon -->
+                            <svg x-show="!darkMode" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                        </button>
+
+                        <a href="{{ route('user.dashboard') }}" class="btn-ripple hidden md:inline-flex items-center px-4 py-2 text-xs font-black uppercase tracking-wider text-gray-600 dark:text-[#9A9A9A] bg-gray-50 dark:bg-[#111111] border border-gray-200 dark:border-[#222222] rounded-xl hover:bg-gray-100 dark:hover:bg-[#181818] transition-all">
                             Switch to User Mode
                         </a>
 
@@ -162,7 +197,7 @@
             </header>
 
             <!-- Page content -->
-            <main class="flex-1 overflow-y-auto bg-[#0A0A0A]">
+            <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#0A0A0A] transition-colors duration-200">
                 <div class="py-8">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <!-- Flash messages -->

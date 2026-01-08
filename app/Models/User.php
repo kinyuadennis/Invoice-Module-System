@@ -143,7 +143,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function rolesForCompany(int $companyId): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_company_roles')
-            ->wherePivot('company_id', $companyId)
+            ->where('user_company_roles.company_id', $companyId)
             ->withPivot('company_id')
             ->withTimestamps();
     }
@@ -236,6 +236,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function removeRole(Role $role, int $companyId): void
     {
-        $this->roles()->wherePivot('company_id', $companyId)->detach($role->id);
+        $this->roles()->where('user_company_roles.company_id', $companyId)->detach($role->id);
     }
 }

@@ -9,6 +9,15 @@
   <title>{{ config('app.name', 'InvoiceHub') }} - KRA-Ready Invoicing for Kenyan SMEs</title>
   <meta name="description" content="Create invoices, accept Lipa na M-PESA, and file tax seamlessly with InvoiceHub – Kenya’s #1 eTIMS-compliant billing solution.">
 
+  <script>
+    // FOUC prevention: check theme preference immediately
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  </script>
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
